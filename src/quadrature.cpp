@@ -1,5 +1,7 @@
-#include "quadrature.hpp"
+#include "../include/quadrature.hpp"
 
-double TrapezoidalQuadrature::integrate(double a, double b) const{
+//QuadratureBase::~QuadratureBase(){}
 
+double TrapezoidalQuadrature::integrate(double a, double b) const {
+    return 0.0;
 }

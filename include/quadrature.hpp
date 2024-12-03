@@ -7,7 +7,9 @@ class QuadratureBase{
     public:
     QuadratureBase(Function _f) : function(_f) {}
 
-    virtual double integrate(double a, double b) const;
+    virtual ~QuadratureBase(){}
+
+    virtual double integrate(double a, double b) const = 0;
 
     protected:
 
@@ -16,13 +18,11 @@ class QuadratureBase{
 
 class TrapezoidalQuadrature : public QuadratureBase{
     public:
+    //virtual ~TrapezoidalQuadrature() = default;
     TrapezoidalQuadrature(Function _f) : QuadratureBase(_f) {}
 
     double integrate(double a, double b) const override;
 
-    private: 
-    int weightA = 1;
-    int weightB = 1;
 };
 
 
