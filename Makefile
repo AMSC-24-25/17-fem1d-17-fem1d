@@ -12,14 +12,15 @@ SRCFILES = $(wildcard $(SRCDIR)/*.cpp)
 OBJFILES = $(SRCFILES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
 
 # Output executable
-TARGET = my_project
+TARGET = my_project.exe
 
 # Default target
-all: $(TARGET)
+all: clean $(TARGET)
 
 # Link the object files to create the executable
 $(TARGET): $(OBJFILES)
 	$(CXX) $(OBJFILES) -o $@
+	./$(TARGET)
 
 # Compile source files into object files
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
