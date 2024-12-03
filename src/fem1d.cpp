@@ -25,14 +25,14 @@ void Fem1D::assemble() {
         }
 
         TwoPointsQuadrature quad(forcing_term*phiVect[i]);
-            
-        if(boundary_conds.getBc1())
-            b[i] = quad.integrate(mesh(i), mesh(i+1)) + 
-                    boundary_conds.getValue1()(mesh.getEnd()) * phiVect[i](mesh.getEnd());
 
-        if(boundary_conds.getBc2())
-            b[i] = quad.integrate(mesh(i), mesh(i+1)) + 
-                    boundary_conds.getValue2()(mesh.getEnd()) * phiVect[i](mesh.getEnd());
+
+        for (int j = 0; j < boundary_conds.size(); j++){
+            if ((boundary_conds[j]).isNeuman()) {
+                b[i] = quad.integrate(mesh(i), mesh(i+1)) +
+                       boundary_conds[j].getBoundary()(mesh.getEnd()) * phiVect[i](mesh.getEnd());
+            }
+        }
 
         TwoPointsQuadrature quad2(forcing_term *phiVect[i]);
         b[i] = quad2.integrate(mesh(i), mesh(i+1));
@@ -43,11 +43,11 @@ void Fem1D::assemble() {
     
 
     // Dirichlet
-    if (!boundary_conds.getBc1()) {
+    if (!boundary_conds[0].isNeuman()) {
         A(0,0) = 0;
         A(0,1) = 0;
     }
-    if (!boundary_conds.getBc2()) {
+    if (!boundary_conds[1].isNeuman()) {
         int n = A.getSize();
         A(n,n-1) = 0;
         A(n,n) = 0;

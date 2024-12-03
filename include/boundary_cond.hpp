@@ -3,24 +3,24 @@
 
 #include "function.hpp"
 
-class BoundaryConds {
+
+class BoundaryCond {
 
     private:
+    bool is_neuman;
+    Function boundary;
     //0 == D, 1 == N
-    bool bc1;
-    bool bc2;
-    Function value1;
-    Function value2;
 
     public:
-    BoundaryConds(bool bc1, bool bc2, Function value1, Function value2):
-        bc1(bc1), bc2(bc2), value1(value1), value2(value2)
-     {};
+    BoundaryCond(bool is_neuman, Function boundary) : boundary(boundary), is_neuman(is_neuman) {};
 
-    bool getBc1() const{ return bc1;}
-    bool getBc2() const{ return bc2;}
-    Function getValue1() const{ return value1;}
-    Function getValue2() const{ return value2;}
+    inline const bool isNeuman() const{
+        return is_neuman;
+    }
+
+    inline const Function getBoundary() const{
+        return boundary;
+    }
 
 };
 
