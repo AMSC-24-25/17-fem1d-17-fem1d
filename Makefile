@@ -1,6 +1,6 @@
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall -g
+CXXFLAGS = -std=c++17 -Wall
 
 # Directories
 SRCDIR = src
@@ -17,9 +17,11 @@ TARGET = my_project
 # Default target
 all: $(TARGET)
 
+
 # Link the object files to create the executable
 $(TARGET): $(OBJFILES)
 	$(CXX) $(OBJFILES) -o $@
+	./$(TARGET)
 
 # Compile source files into object files
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
