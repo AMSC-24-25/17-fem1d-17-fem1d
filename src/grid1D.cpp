@@ -1,4 +1,4 @@
-#include "grid1D.hpp"
+#include "../include/grid1D.hpp"
 
 
 FunctionVector Grid1D::getPhiFunctions() const{

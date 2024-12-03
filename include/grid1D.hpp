@@ -28,6 +28,8 @@ class Grid1D{
         return start + k*h;
     }
 
+    double getH(){ return h;}
+
     FunctionVector getPhiFunctions() const;
 };
 

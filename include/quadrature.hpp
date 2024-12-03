@@ -16,10 +16,17 @@ class QuadratureBase{
     const Function function; 
 };
 
-class TrapezoidalQuadrature : public QuadratureBase{
+class SimpsonQuadrature : public QuadratureBase{
     public:
-    //virtual ~TrapezoidalQuadrature() = default;
-    TrapezoidalQuadrature(Function _f) : QuadratureBase(_f) {}
+    SimpsonQuadrature(Function _f) : QuadratureBase(_f) {}
+
+    double integrate(double a, double b) const override;
+
+};
+
+class TwoPointsQuadrature : public QuadratureBase{
+    public:
+    TwoPointsQuadrature(Function _f) : QuadratureBase(_f) {}
 
     double integrate(double a, double b) const override;
 
