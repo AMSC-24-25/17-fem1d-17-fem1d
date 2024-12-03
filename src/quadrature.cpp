@@ -1,3 +1,4 @@
+#include <math.h>
 #include "../include/quadrature.hpp"
 #include "../include/grid1D.hpp"
 
@@ -9,4 +10,9 @@ double SimpsonQuadrature::integrate(double a, double b) const {
     }
 
     return (grid1D.getH()/6.0) * temp;
+}
+
+double TwoPointsQuadrature::integrate(double a, double b) const {
+
+    return ((b-a)/2)*(function(((a+b)/2)) + ((b-a)/2)*(-(1/sqrt(3))) + function(((a+b)/2)) + ((b-a)/2)*(1/sqrt(3)));
 }
