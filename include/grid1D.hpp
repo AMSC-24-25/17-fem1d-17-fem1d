@@ -1,14 +1,18 @@
 #ifndef GRID_1D
 #define GRID_1D
 
+#include "function.hpp"
+
 #include <iostream>
+#include <vector>
+
+using FunctionVector = std::vector<Function>;
 
 class Grid1D{
     private:
     const double start;
     const double end;
     const int N;
-
     const double h;
 
     public:
@@ -23,6 +27,8 @@ class Grid1D{
         }
         return start + k*h;
     }
+
+    FunctionVector getPhiFunctions() const;
 };
 
 

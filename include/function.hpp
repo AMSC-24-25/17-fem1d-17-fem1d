@@ -12,7 +12,8 @@ class Function{
 
     public:
     Function(fun f, fun g) : function(f) , gradient(g) {}
-    
+    Function(fun f) : function(f) , gradient(0) {}
+
     inline double value(double x) const{
         return function(x);
     }
