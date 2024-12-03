@@ -6,14 +6,17 @@
 using fun = std::function<double(double)>;
 
 class Function{
+    private:
+    const fun function;
+    const fun gradient;
+
     public:
+    Function(fun f, fun g) : function(f) , gradient(g) {}
     
-    Function(fun _f) : function(_f) {}
-    
-    inline double Function::value(double x) const{
+    inline double value(double x) const{
         return function(x);
     }
-    inline double Function::grad(double x) const{
+    inline double grad(double x) const{
         return gradient(x);
     }
 
@@ -23,10 +26,6 @@ class Function{
         return value(x);
     }
 
-    private:
-
-    fun function;
-    fun gradient;
  };
 
 
