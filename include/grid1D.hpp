@@ -28,9 +28,10 @@ class Grid1D{
         return start + k*h;
     }
 
-    double getH() const{ return h;}
-    double getN() const{ return N;}
 
+    inline double getH() const noexcept { return h; }
+    inline int getN() const noexcept { return N; }
+    
     FunctionVector getPhiFunctions() const;
 };
 

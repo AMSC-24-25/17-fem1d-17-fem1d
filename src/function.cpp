@@ -24,3 +24,16 @@ Function Function::operator *(const Function& f) const{
     
     return Function(resultFunction, resultGradient);
 }
+
+Function Function::operator *(const double k) const {
+    fun resultFunction = [this, k](double x) -> double {
+        return k*this->value(x);
+    };  
+
+    //grad(a*b) = a*grad(b) + grad(a)*b
+    fun resultGradient = [this, k](double x) -> double {
+        return k*this->grad(x);
+    };
+
+    return Function(resultFunction, resultGradient);
+}

@@ -1,6 +1,5 @@
 #include <math.h>
 #include "../include/quadrature.hpp"
-#include "../include/grid1D.hpp"
 
 double MidPointQuadrature::integrate(double a, double b) const{
 

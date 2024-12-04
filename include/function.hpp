@@ -27,6 +27,8 @@ class Function{
 
     Function operator +(const Function& f) const;
     Function operator *(const Function& f) const;
+    Function operator +(const double k) const;
+    Function operator *(const double k) const;
     inline double operator ()(double x) const{
         return value(x);
     }

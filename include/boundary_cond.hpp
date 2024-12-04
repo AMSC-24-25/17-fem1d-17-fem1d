@@ -24,4 +24,4 @@ class BoundaryConds {
 
 };
 
-#endif BOUNDARY_HPP
+#endif
