@@ -16,6 +16,22 @@ class QuadratureBase{
     const Function function; 
 };
 
+class MidPointQuadrature : public QuadratureBase{
+    public:
+    MidPointQuadrature(Function _f) : QuadratureBase(_f) {}
+
+    double integrate(double a, double b) const override;
+
+};
+
+class TrapezoidalQuadrature : public QuadratureBase{
+    public:
+    TrapeizodalQuadrature(Function _f) : QuadratureBase(_f) {}
+
+    double integrate(double a, double b) const override;
+
+};
+
 class SimpsonQuadrature : public QuadratureBase{
     public:
     SimpsonQuadrature(Function _f) : QuadratureBase(_f) {}
