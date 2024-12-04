@@ -4,12 +4,12 @@
 #include "thomas.hpp"
 
 void Fem1D::assemble() {
-
+    FunctionVector phiVect = mesh.getPhiFunctions();
+    
     for(int i=0; i<mesh.getN()-1 ; i++) {
 
         Matrix mat(2);
         Vector b(2);
-        FunctionVector phiVect = mesh.getPhiFunctions();
         for(int k1=0 ; k1<=1 ; k1++) {
             for(int k2=0 ; k2<=1 ; k2++) {
 
