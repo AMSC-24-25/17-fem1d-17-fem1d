@@ -1,8 +1,9 @@
+#include "../include/thomas.hpp"
 #include <math.h>
 #include "../include/matrix.hpp"
 #include "../include/vector.hpp"
 
-void ForwardSubstitution(Vector& a, Vector& b, Vector& c, Vector& x, Vector& rhs) {
+void Thomas::ForwardSubstitution(Vector& a, Vector& b, Vector& c, Vector& x, Vector& rhs) {
     int n = b.size();
 
     for(int i=1; i<n; i++){
@@ -11,7 +12,7 @@ void ForwardSubstitution(Vector& a, Vector& b, Vector& c, Vector& x, Vector& rhs
         rhs[i] -= m * c[i-1];
     }
 }
-void BackwardSubstitution(Vector& a, Vector& b, Vector& c, Vector& x, Vector& rhs) {
+void Thomas::BackwardSubstitution(Vector& a, Vector& b, Vector& c, Vector& x, Vector& rhs) {
     int n = b.size();
 
     x[n-1] = rhs[n-1]/b[n-1];
@@ -20,7 +21,7 @@ void BackwardSubstitution(Vector& a, Vector& b, Vector& c, Vector& x, Vector& rh
     }
 }
 
-Vector ThomasAlgorithm(Matrix A, Vector& rhs){
+Vector Thomas::ThomasAlgorithm(Matrix A, Vector& rhs){
     Vector x(A.getSize());
     Vector a = A.getDiagonal(-1);
     Vector b = A.getDiagonal(0);

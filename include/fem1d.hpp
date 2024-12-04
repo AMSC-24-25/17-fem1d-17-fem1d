@@ -5,6 +5,7 @@
 #include "grid1D.hpp"
 #include "boundary_cond.hpp"
 #include "matrix.hpp"
+#include "vector.hpp"
 
 class Fem1D {
 
@@ -17,7 +18,7 @@ class Fem1D {
     BoundaryConds boundary_conds;
 
     Matrix A;
-    std::vector<double> rhs;
+    Vector rhs;
 
     public:
 

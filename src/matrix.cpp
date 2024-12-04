@@ -49,3 +49,11 @@ Matrix Matrix::operator -(Matrix& b) const {
     result -= b;
     return result;
 }
+
+Vector Matrix::getDiagonal(int diag) const {
+    Vector diagVec(getSize()-abs(diag));
+
+    //TODO: implement
+
+    return diagVec;
+}

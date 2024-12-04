@@ -12,12 +12,7 @@ class Grid1D{
     private:
     const double start;
     const double end;
-public:
-    const double getEnd() const {
-        return end;
-    }
 
-private:
     const int N;
     const double h;
 
@@ -25,6 +20,11 @@ private:
     Grid1D(double start, double end, int N) :
         start(start), end(end), N(N), h((end-start)/N) 
         {}
+
+        
+    const double getEnd() const {
+        return end;
+    }
 
     double operator()(int k) const{
         if(k > N){
