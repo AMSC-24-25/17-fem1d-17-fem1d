@@ -1,6 +1,8 @@
 #ifndef FEM1D_HPP
 #define FEM1D_HPP
 
+#include <vector>
+
 #include "function.hpp"
 #include "grid1D.hpp"
 #include "boundary_cond.hpp"
@@ -15,22 +17,25 @@ class Fem1D {
     Function reaction_term;
     Function diffusion_term;
     
-    BoundaryConds boundary_conds;
+    std::vector<BoundaryCond> boundary_conds;
 
     Matrix A;
     Vector rhs;
 
     public:
-
     Fem1D(Grid1D mesh, Function forcing_term, Function reaction_term, Function diffusion_term,
-        bool bc1, bool bc2, Function value1, Function value2):
+        bool isNeuman1, bool isNeuman2, Function value1, Function value2):
         mesh(mesh),
         forcing_term(forcing_term),
         reaction_term(reaction_term),
         diffusion_term(diffusion_term),
-        boundary_conds(bc1, bc2, value1, value2),
-        A(mesh.getN()), rhs(mesh.getN()) {};
-
+        A(mesh.getN()), rhs(mesh.getN()) {
+            BoundaryCond boundary1(isNeuman1, value1);
+            BoundaryCond boundary2(isNeuman2, value2);
+            boundary_conds.push_back(boundary1);
+            boundary_conds.push_back(boundary2);
+        };
+    
     void assemble();
     void solve();
     
