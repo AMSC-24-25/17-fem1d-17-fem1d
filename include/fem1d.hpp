@@ -12,6 +12,7 @@ class Fem1D {
     Grid1D mesh;
     Function forcing_term;
     Function reaction_term;
+    Function diffusion_term;
     
     BoundaryConds boundary_conds;
 
@@ -20,11 +21,12 @@ class Fem1D {
 
     public:
 
-    Fem1D(int L, int N, Function forcing_term, Function reaction_term,
+    Fem1D(int L, int N, Function forcing_term, Function reaction_term, Function diffusion_term,
         bool bc1, bool bc2, Function value1, Function value2):
         mesh(0, L, N),
         forcing_term(forcing_term),
         reaction_term(reaction_term),
+        diffusion_term(diffusion_term),
         boundary_conds(bc1, bc2, value1, value2),
         A(N), rhs(N) {};
 

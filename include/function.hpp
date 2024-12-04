@@ -21,6 +21,10 @@ class Function{
         return gradient(x);
     }
 
+    Function getGrad() const {
+        return gradient;
+    }
+
     Function operator +(const Function& f) const;
     Function operator *(const Function& f) const;
     inline double operator ()(double x) const{

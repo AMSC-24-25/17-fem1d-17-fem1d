@@ -14,6 +14,10 @@ class Matrix {
     // Add contribution from only 1 segment of mesh to the actual matrix
     void add_contributions(Matrix small_matrix);
 
+    inline double& operator ()(int i, int j) {
+        return matrix[i][j];
+    }
+
 };
 
 
