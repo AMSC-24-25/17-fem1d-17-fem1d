@@ -2,6 +2,7 @@
 #define MATRIX_HPP
 
 #include <vector>
+#include "vector.hpp"
 
 class Matrix {
 
@@ -19,14 +20,15 @@ class Matrix {
     inline double& operator ()(int i, int j) {
         return matrix[i][j];
     }
-    inline int size() const { return N; }
+    
+    inline int getSize() const { return N; }
 
     Matrix& operator +=(Matrix& b);
     Matrix& operator -=(Matrix& b);
     Matrix operator +(Matrix& b) const;
     Matrix operator -(Matrix& b) const;
-
+    Vector getDiagonal(int diag) const;
+    
 };
-
 
 #endif // MATRIX_HPP

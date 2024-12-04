@@ -11,12 +11,12 @@ class Vector{
 
     Vector(int N) : vector(N, 0.0) {};
 
-    const double& operator[](int index) const{
+    inline double& operator[](int index){
         return vector[index];
     };
 
     Vector operator +(const Vector& other) const;
     Vector operator *(const Vector& other) const;
-}
+};
 
 #endif // VECTOR_HPP

@@ -32,7 +32,7 @@ void Fem1D::assemble() {
             TwoPointsQuadrature quad2(forcing_term *phis[i+k1]);
             rhs[i] = quad2.integrate(mesh(i), mesh(i+1));
         }
-        A.add_contributions(mat, i);
+        A.add_contribution(i, mat);
 
         // Aggiusta Dirichlet
 
