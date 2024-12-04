@@ -10,6 +10,7 @@ using FunctionVector = std::vector<Function>;
 
 class Grid1D{
     private:
+
     const double start;
     const double end;
     const int N;
@@ -28,7 +29,8 @@ class Grid1D{
         return start + k*h;
     }
 
-    double getH(){ return h;}
+    inline double getH() const noexcept { return h; }
+    inline int getN() const noexcept { return N; }
 
     FunctionVector getPhiFunctions() const;
 };
