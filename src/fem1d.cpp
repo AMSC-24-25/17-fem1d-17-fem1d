@@ -40,7 +40,6 @@ void Fem1D::assemble() {
         A.add_contribution(i, mat);
 
     }
-    
 
     // Dirichlet
     if (!boundary_conds.getBc1()) {
@@ -58,4 +57,7 @@ void Fem1D::assemble() {
 void Fem1D::solve() {
     Thomas solver;
     Vector solution = solver.ThomasAlgorithm(A, rhs);
+    for (int i=0; i < solution.size(); i++){
+        std::cout << solution[i] << std::endl;
+    }
 };

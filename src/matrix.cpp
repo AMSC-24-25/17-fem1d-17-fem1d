@@ -51,9 +51,33 @@ Matrix Matrix::operator -(Matrix& b) const {
 }
 
 Vector Matrix::getDiagonal(int diag) const {
-    Vector diagVec(getSize()-abs(diag));
+    if (N == 0) {
+        std::cerr << "Empty matrix";
+    }
 
-    //TODO: implement
+    int diagonalSize = 0;
+    if (diag >= 0) {
+        for (int i = 0; i < N && i + diag < N; ++i) {
+            ++diagonalSize;
+        }
+    } else {
+        for (int i = 0; i < N && i - diag < N; ++i) {
+            ++diagonalSize;
+        }
+    }
 
-    return diagVec;
+    Vector diagonal(diagonalSize);
+    for (int i = 0; i < diagonalSize; ++i) {
+        int row, col;
+        if (diag >= 0) {
+            row = i;
+            col = i + diag;
+        } else {
+            row = i - diag;
+            col = i;
+        }
+        diagonal[i] = (*this)(row,col);
+    }
+
+    return diagonal;
 }

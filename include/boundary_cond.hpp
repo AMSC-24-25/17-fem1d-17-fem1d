@@ -6,6 +6,7 @@
 class BoundaryConds {
 
     private:
+    
     //0 == D, 1 == N
     bool bc1;
     bool bc2;

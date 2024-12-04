@@ -38,5 +38,29 @@ class Function{
 
  };
 
+ class ZeroFunction : public Function {
+    public:
+    ZeroFunction() : Function(0,0) {}
+
+    inline double value(double x) const override{
+        return 0.0;
+    }
+    inline double grad(double x) const override{
+        return 0.0;
+    }
+ };
+ 
+ class OneFunction : public Function {
+    public:
+    OneFunction() : Function(0,0) {}
+
+    inline double value(double x) const override{
+        return 1.0;
+    }
+    inline double grad(double x) const override{
+        return 1.0;
+    }
+ };
+
 
 #endif //FUNCTION

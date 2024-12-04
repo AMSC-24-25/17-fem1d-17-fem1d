@@ -20,7 +20,7 @@ all: clean $(TARGET)
 # Link the object files to create the executable
 $(TARGET): $(OBJFILES)
 	$(CXX) $(OBJFILES) -o $@
-	./$(TARGET)
+# ./$(TARGET)
 
 # Compile source files into object files
 $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
