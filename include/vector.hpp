@@ -15,6 +15,8 @@ class Vector{
         return vector[index];
     };
 
+    inline double size() const { return vector.size(); }
+
     Vector operator +(const Vector& other) const;
     Vector operator *(const Vector& other) const;
 };

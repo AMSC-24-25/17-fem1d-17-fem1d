@@ -21,8 +21,11 @@ class Function{
         return gradient(x);
     }
 
+    /**
+     * @return this a new Function evaluating to its gradient
+     */
     Function getGrad() const {
-        return gradient;
+        return gradient; 
     }
 
     Function operator +(const Function& f) const;
