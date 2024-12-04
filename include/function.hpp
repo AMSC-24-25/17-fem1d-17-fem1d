@@ -14,10 +14,10 @@ class Function{
     Function(fun f, fun g) : function(f) , gradient(g) {}
     Function(fun f) : function(f) , gradient(0) {}
 
-    inline double value(double x) const{
+    inline virtual double value(double x) const{
         return function(x);
     }
-    inline double grad(double x) const{
+    inline virtual double grad(double x) const{
         return gradient(x);
     }
 
