@@ -3,7 +3,7 @@
 
 Vector Vector::operator +(const Vector& other) const {
     
-    if((*this).size != other.size())
+    if((*this).size() != other.size())
         std::cerr << "Different sizes";
 
     Vector result(vector.size());
@@ -16,7 +16,7 @@ Vector Vector::operator +(const Vector& other) const {
 
 Vector Vector::operator *(const Vector& other) const{
 
-    if((*this).size != other.size())
+    if((*this).size() != other.size())
         std::cerr << "Different sizes";
 
     Vector result(vector.size());

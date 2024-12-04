@@ -4,6 +4,7 @@
 #include <vector>
 
 class Vector{
+    private:
 
     std::vector<double> vector;
 
@@ -11,9 +12,12 @@ class Vector{
 
     Vector(int N) : vector(N, 0.0) {};
 
-    inline double& operator[](int index){
+    inline const double& operator[](int index) const {
         return vector[index];
-    };
+    }
+    inline double& operator[](int index) {
+        return vector[index];
+    }
 
     inline double size() const { return vector.size(); }
 

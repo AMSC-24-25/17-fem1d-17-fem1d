@@ -7,12 +7,11 @@ void Matrix::add_contribution(int a, Matrix small_matrix) {
     (*this)(a, a+1) += small_matrix(0, 1);
     (*this)(a+1, a) += small_matrix(1, 0);
     (*this)(a+1, a+1) += small_matrix(1, 1);
-
 }
 
 Matrix& Matrix::operator+=(Matrix &b)
 {
-    if(N != b.size())
+    if(N != b.getSize())
         std::cerr << "b.size != this.size";
 
 
@@ -27,7 +26,7 @@ Matrix& Matrix::operator+=(Matrix &b)
 
 Matrix& Matrix::operator-=(Matrix &b)
 {
-    if(N != b.size())
+    if(N != b.getSize())
         std::cerr << "b.size != this.size";
 
     for (int i = 0; i < N; i++)
