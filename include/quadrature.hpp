@@ -7,7 +7,7 @@ class QuadratureBase{
     public:
     QuadratureBase(Function _f) : function(_f) {}
 
-    virtual ~QuadratureBase(){}
+    virtual ~QuadratureBase() = default;
 
     virtual double integrate(double a, double b) const = 0;
 
