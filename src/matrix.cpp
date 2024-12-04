@@ -1,6 +1,4 @@
-
-#include "matrix.hpp"
-#include "vector.hpp"
+#include "../include/matrix.hpp"
 
 #include <iostream>
 
@@ -14,7 +12,7 @@ void Matrix::add_contribution(int a, Matrix small_matrix) {
 
 Matrix& Matrix::operator+=(Matrix &b)
 {
-    if(N != b.getSize())
+    if(N != b.size())
         std::cerr << "b.size != this.size";
 
 
@@ -29,7 +27,7 @@ Matrix& Matrix::operator+=(Matrix &b)
 
 Matrix& Matrix::operator-=(Matrix &b)
 {
-    if(N != b.getSize())
+    if(N != b.size())
         std::cerr << "b.size != this.size";
 
     for (int i = 0; i < N; i++)
@@ -51,41 +49,4 @@ Matrix Matrix::operator -(Matrix& b) const {
     Matrix result(*this);
     result -= b;
     return result;
-}
-
-Vector Matrix::getDiagonal(int diag) const {
-    
-    int N; 
-
-    if (N == 0) {
-        std::cerr << "Empty matrix";
-    }
-
-    int diagonalSize = 0;
-
-    if (diag >= 0) {
-        for (int i = 0; i < N && i + diag < N; ++i) {
-            ++diagonalSize;
-        }
-    } else {
-        for (int i = 0; i < N && i - diag < N; ++i) {
-            ++diagonalSize;
-        }
-    }
-
-    Vector diagonal(diagonalSize);
-
-    for (int i = 0; i < diagonalSize; ++i) {
-        int row, col;
-        if (diag >= 0) {
-            row = i;
-            col = i + diag;
-        } else {
-            row = i - diag;
-            col = i;
-        }
-        diagonal[i]=(*this)(row,col);
-    }
-
-    return diagonal;
 }

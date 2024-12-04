@@ -1,5 +1,6 @@
 #include "fem1d.hpp"
 #include "quadrature.hpp"
+#include "../include/matrix.hpp"
 
 void Fem1D::assemble() {
 

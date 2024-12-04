@@ -1,4 +1,5 @@
-#include "vector.hpp"
+#include <iostream>
+#include "../include/vector.hpp"
 
 Vector Vector::operator +(const Vector& other) const {
     

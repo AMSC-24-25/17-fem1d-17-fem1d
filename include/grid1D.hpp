@@ -12,6 +12,12 @@ class Grid1D{
     private:
     const double start;
     const double end;
+public:
+    const double getEnd() const {
+        return end;
+    }
+
+private:
     const int N;
     const double h;
 
