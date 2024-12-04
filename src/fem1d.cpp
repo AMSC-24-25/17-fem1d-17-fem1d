@@ -17,13 +17,34 @@ void Fem1D::assemble() {
 
                 mat(k1, k2) = quad.integrate(mesh(i), mesh(i+1));
 
-                //TODO: RHS assemble
-                // controlla neumann
             }
+            //TODO: RHS assemble
+            // controlla neumann
+
+            /*if (boundary_conds.getBc1() && i == 0){
+                TwoPointsQuadrature quad2(
+                        forcing_term *
+                        phis[i+k1] +
+                        phis[i+k1].value(0) );
+
+                rhs[i] =
+            }*/
+            TwoPointsQuadrature quad2(forcing_term *phis[i+k1]);
+            rhs[i] = quad2.integrate(mesh(i), mesh(i+1));
         }
+        A.add_contributions(mat, i);
 
         // Aggiusta Dirichlet
 
+    }
+    if (!boundary_conds.getBc1()) {
+        A(0,0) = 0;
+        A(0,1) = 0;
+    }
+    if (!boundary_conds.getBc2()) {
+        int n = A.getSize();
+        A(n,n-1) = 0;
+        A(n,n) = 0;
     }
 
 };

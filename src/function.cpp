@@ -1,4 +1,4 @@
-#include "function.hpp"
+#include "../include/function.hpp"
 
 Function Function::operator +(const Function& f) const{
     fun resultFunction = [this, f](double x) -> double {
@@ -15,7 +15,7 @@ Function Function::operator +(const Function& f) const{
 Function Function::operator *(const Function& f) const{
     fun resultFunction = [this, f](double x) -> double {
         return this->value(x) * f.value(x);
-    };  
+    };
 
     //grad(a*b) = a*grad(b) + grad(a)*b
     fun resultGradient = [this, f](double x) -> double {
