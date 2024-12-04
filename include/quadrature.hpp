@@ -26,7 +26,7 @@ class MidPointQuadrature : public QuadratureBase{
 
 class TrapezoidalQuadrature : public QuadratureBase{
     public:
-    TrapeizodalQuadrature(Function _f) : QuadratureBase(_f) {}
+    TrapezoidalQuadrature(Function _f) : QuadratureBase(_f) {}
 
     double integrate(double a, double b) const override;
 
