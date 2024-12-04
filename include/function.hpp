@@ -19,11 +19,9 @@ class Function{
     explicit Function(fun f) : function(f) , gradient(zeroFun) {}
 
     inline virtual double value(double x) const{
-        std::cout << "baseValue call" << std::endl;
         return function(x);
     }
     inline virtual double grad(double x) const{
-        std::cout << "baseGrad call" << std::endl;
         return gradient(x);
     }
 
