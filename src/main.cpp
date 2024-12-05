@@ -31,8 +31,7 @@ int main(int argc, char *argv[])
 
     Function diffusion_term = OneFunction();
     Function reaction_term = ZeroFunction();
-    Function diffusion_term = OneFunction();
-
+    
     bool isNeumann1 = false;
     Function boundary1 = ZeroFunction();
     bool isNeumann2 = false;

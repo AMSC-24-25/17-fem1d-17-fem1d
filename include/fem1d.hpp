@@ -4,11 +4,18 @@
 #include <vector>
 #include <fstream>
 
+#include <iostream>
 #include "function.hpp"
 #include "grid1D.hpp"
 #include "boundary_cond.hpp"
-#include <Eigen/Eigen>
+#include "fem1d.hpp"
+#include "quadrature.hpp"
+#include "thomas.hpp"
+#include <Eigen/Dense>
+#include <unsupported/Eigen/SparseExtra>
 #include <Eigen/Sparse>
+#include <Eigen/IterativeLinearSolvers>
+
 
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SparseMat;
 typedef Eigen::Triplet<double> T;

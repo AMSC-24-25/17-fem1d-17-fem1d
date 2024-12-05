@@ -1,14 +1,7 @@
-#include "fem1d.hpp"
-#include "quadrature.hpp"
-#include "thomas.hpp"
-#include <Eigen/Eigen>
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
-#include <unsupported/Eigen/SparseExtra>
+#include "../include/fem1d.hpp"
+
 
 using namespace Eigen;
-
-typedef Triplet<double> Triplet;
 
 void Fem1D::assemble() {
     FunctionVector phiVect = mesh.getPhiFunctions();
@@ -66,7 +59,15 @@ void Fem1D::assemble() {
 
 void Fem1D::solve() {
     Thomas solver;
-    sol = solver.ThomasAlgorithm(A, rhs);
+    try {
+        sol = solver.ThomasAlgorithm(A, rhs);
+    } catch (const std::runtime_error& e) {
+        std::cout << "Caught exception: " << e.what() << " solving with GMRES" << '\n';
+        //implment GMRES
+    }
+
+    
+    
 };
 
 void Fem1D::solve(std::ofstream &fout) {

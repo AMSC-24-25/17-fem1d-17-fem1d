@@ -13,7 +13,7 @@ void Thomas::ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd
     int n = b.size();
 
     for(int i=1; i<n-1; i++){
-        double m = b[i-1] != 0 ? a[i] / b[i-1] : 0;
+        double m = b[i-1] != 0 ? a[i] / b[i-1] : throw std::runtime_error("rhs has zero value");
         b[i] -= m * c[i-1]; 
         rhs[i] -= m * rhs[i-1];
     }
@@ -23,11 +23,11 @@ void Thomas::BackwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorX
 
     // std::cout << "B = " << b[n-1] << std::endl;
     // std::cout << "RHS = " << b[n-1] << std::endl;
-    x[n-1] = b[n-1] != 0 ? rhs[n-1]/b[n-1] : 0;
+    x[n-1] = b[n-1] != 0 ? rhs[n-1]/b[n-1] : throw std::runtime_error("rhs has zero value");
     // std::cout << "X = " << x[n-1] << std::endl;
     for(int i=n-2; i>=0; i--){
         // std::cout << "B[" << i << "] = " << i << b[i] << std::endl;
-        x[i] = b[i] != 0 ? (rhs[i] - (c[i]*x[i+1])) / b[i] : 0;
+        x[i] = b[i] != 0 ? (rhs[i] - (c[i]*x[i+1])) / b[i] : throw std::runtime_error("rhs has zero value");
     }
 }
 
