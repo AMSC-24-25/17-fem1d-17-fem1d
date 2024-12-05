@@ -18,7 +18,7 @@ class Grid1D{
 
     public:
     Grid1D(double start, double end, int N) :
-        start(start), end(end), N(N), h((end-start)/N) 
+        start(start), end(end), N(N), h((end-start)/(N-1))
         {}
 
         

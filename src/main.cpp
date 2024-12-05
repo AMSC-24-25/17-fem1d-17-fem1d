@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <math.h>
+#include <cstdlib>
 #include "fem1d.hpp"
  
 using std::cout;
@@ -35,8 +36,6 @@ int main(int argc, char *argv[])
         false, false, ZeroFunction(), ZeroFunction()
     );
 
-    std::cout << "provaaaaaaaaaaaaaaaa";
-
     std::ofstream fsol("sol.csv");
     fem.assemble();
     fem.solve(fsol);
@@ -44,6 +43,7 @@ int main(int argc, char *argv[])
 
     cout << "Solution:\n" << fem.getSolution() << endl;
 
+    // system("python scripts/plot_sol.py");
     return 0;
 }
 
