@@ -2,6 +2,7 @@
 #define FEM1D_HPP
 
 #include <vector>
+#include <fstream>
 
 #include "function.hpp"
 #include "grid1D.hpp"
@@ -44,7 +45,8 @@ class Fem1D {
     
     void assemble();
     void solve();
-    
+    void solve(std::ofstream &fout);
+
     inline Eigen::VectorXd getSolution() const {
         return sol;
     };

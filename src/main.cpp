@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <math.h>
 #include "fem1d.hpp"
  
@@ -34,8 +35,12 @@ int main(int argc, char *argv[])
         false, false, ZeroFunction(), ZeroFunction()
     );
 
+    std::cout << "provaaaaaaaaaaaaaaaa";
+
+    std::ofstream fsol("sol.csv");
     fem.assemble();
-    fem.solve();
+    fem.solve(fsol);
+    fsol.close();
 
     cout << "Solution:\n" << fem.getSolution() << endl;
 

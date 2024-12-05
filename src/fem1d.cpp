@@ -68,3 +68,11 @@ void Fem1D::solve() {
     Thomas solver;
     sol = solver.ThomasAlgorithm(A, rhs);
 };
+
+void Fem1D::solve(std::ofstream &fout) {
+    solve();
+    fout << "x,f(x)" << std::endl;
+    for(int i=0 ; i<mesh.getN() ; i++) {
+        fout << mesh(i) << "," << sol[i] << std::endl;
+    }
+};

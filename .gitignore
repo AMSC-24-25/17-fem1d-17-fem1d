@@ -6,6 +6,7 @@
 
 # Debug/Outputs
 *.txt
+*.csv
 
 # Compiled Object files
 *.slo

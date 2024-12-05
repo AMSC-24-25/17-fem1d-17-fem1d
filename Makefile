@@ -26,7 +26,7 @@ $(TARGET): $(OBJFILES)
 # ./$(TARGET)
 
 # Compile source files into object files
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp $(INCDIR)/%.hpp
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -I$(INCDIR) -c $< -o $@
 
 # Clean up the build directory
