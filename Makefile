@@ -15,7 +15,10 @@ OBJFILES = $(SRCFILES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
 TARGET = fem1d.exe
 
 # Default target
-all: clean $(TARGET)
+all: $(TARGET)
+
+# Clean build (rebuild all objects files)
+rebuild: clean all
 
 # Link the object files to create the executable
 $(TARGET): $(OBJFILES)
@@ -23,7 +26,7 @@ $(TARGET): $(OBJFILES)
 # ./$(TARGET)
 
 # Compile source files into object files
-$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp $(INCDIR)/%.hpp
 	$(CXX) $(CXXFLAGS) -I$(INCDIR) -c $< -o $@
 
 # Clean up the build directory

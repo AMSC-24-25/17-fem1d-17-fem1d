@@ -24,6 +24,7 @@ class Fem1D {
 
     SparseMat A;
     Eigen::VectorXd rhs;
+    Eigen::VectorXd sol;
 
     public:
     Fem1D(Grid1D mesh, Function forcing_term, Function reaction_term, Function diffusion_term,
@@ -32,7 +33,9 @@ class Fem1D {
         forcing_term(forcing_term),
         reaction_term(reaction_term),
         diffusion_term(diffusion_term),
-        A(mesh.getN(), mesh.getN()), rhs(mesh.getN()) {
+        A(mesh.getN(), mesh.getN()),
+        rhs(mesh.getN()),
+        sol(mesh.getN()) {
             BoundaryCond boundary1(isNeuman1, value1);
             BoundaryCond boundary2(isNeuman2, value2);
             boundary_conds.push_back(boundary1);
@@ -41,6 +44,10 @@ class Fem1D {
     
     void assemble();
     void solve();
+    
+    inline Eigen::VectorXd getSolution() const {
+        return sol;
+    };
     
 };
 

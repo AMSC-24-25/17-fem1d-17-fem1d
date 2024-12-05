@@ -21,12 +21,12 @@ void Thomas::ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd
 void Thomas::BackwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs) {
     int n = b.size();
 
-    std::cout << "B = " << b[n-1] << std::endl;
-    std::cout << "RHS = " << b[n-1] << std::endl;
+    // std::cout << "B = " << b[n-1] << std::endl;
+    // std::cout << "RHS = " << b[n-1] << std::endl;
     x[n-1] = b[n-1] != 0 ? rhs[n-1]/b[n-1] : 0;
-    std::cout << "X = " << x[n-1] << std::endl;
+    // std::cout << "X = " << x[n-1] << std::endl;
     for(int i=n-2; i>=0; i--){
-        std::cout << "B[i] = " << i << b[i] << std::endl;
+        // std::cout << "B[" << i << "] = " << i << b[i] << std::endl;
         x[i] = b[i] != 0 ? (rhs[i] - (c[i]*x[i+1])) / b[i] : 0;
     }
 }
@@ -48,6 +48,6 @@ VectorXd Thomas::ThomasAlgorithm(SparseMat A, VectorXd& rhs){
 
     ForwardSubstitution(a,b,c,x,rhs);
     BackwardSubstitution(a,b,c,x,rhs);
-    std::cout << "X: \n" << x << std::endl;
+    // std::cout << "X:\n" << x << std::endl;
     return x;
 }

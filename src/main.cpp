@@ -8,13 +8,12 @@ using std::endl;
 constexpr double PI = 3.14;
 
 /**
- * Arg1 = start
- * Arg2 = end
- * Arg3 = N
+ * Arg1 = L (end of domain)
+ * Arg3 = N (# DoFs)
  */
 int main(int argc, char *argv[])
 {
-    std::cout << "-------------17-FEM1D PROJECT-----------" << std::endl;
+    cout << "-------------17-FEM1D PROJECT-----------" << endl;
     if(argc < 3){
         cout << "Usage: ./exe L N" << endl;
         exit(-1);
@@ -37,6 +36,8 @@ int main(int argc, char *argv[])
 
     fem.assemble();
     fem.solve();
+
+    cout << "Solution:\n" << fem.getSolution() << endl;
 
     return 0;
 }
