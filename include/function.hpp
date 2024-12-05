@@ -2,8 +2,12 @@
 #define FUNCTION
 
 #include <functional>
+#include <iostream>
 
 using fun = std::function<double(double)>;
+
+const fun zeroFun = [](double x) -> double { return 0; };
+const fun oneFun =  [](double x) -> double { return 1; };
 
 class Function{
     private:
@@ -11,28 +15,30 @@ class Function{
     const fun gradient;
 
     public:
-    Function(fun f, fun g) : function(f) , gradient(g) {}
-    Function(fun f) : function(f) , gradient(0) {}
+    explicit Function(fun f, fun g) : function(f) , gradient(g) {}
+    explicit Function(fun f) : function(f) , gradient(zeroFun) {}
 
     inline virtual double value(double x) const{
+        std::cout << "baseValue call" << std::endl;
         return function(x);
     }
     inline virtual double grad(double x) const{
+        std::cout << "baseGrad call" << std::endl;
         return gradient(x);
     }
 
     /**
      * @return this a new Function evaluating to its gradient
      */
-    Function getGrad() const {
-        return gradient; 
+    virtual Function getGrad() const {
+        return Function(gradient);
     }
 
     Function operator +(const Function& f) const;
     Function operator *(const Function& f) const;
     Function operator +(const double k) const;
     Function operator *(const double k) const;
-    inline double operator ()(double x) const{
+    inline virtual double operator ()(double x) const{
         return value(x);
     }
 
@@ -40,26 +46,12 @@ class Function{
 
  class ZeroFunction : public Function {
     public:
-    ZeroFunction() : Function(0,0) {}
-
-    inline double value(double x) const override{
-        return 0.0;
-    }
-    inline double grad(double x) const override{
-        return 0.0;
-    }
+    ZeroFunction() : Function(zeroFun, zeroFun) {}
  };
  
  class OneFunction : public Function {
     public:
-    OneFunction() : Function(0,0) {}
-
-    inline double value(double x) const override{
-        return 1.0;
-    }
-    inline double grad(double x) const override{
-        return 1.0;
-    }
+    OneFunction() : Function(oneFun, zeroFun) {}
  };
 
 

@@ -4,6 +4,9 @@
 # VSCode
 .VSCode/*
 
+# Debug/Outputs
+*.txt
+
 # Compiled Object files
 *.slo
 *.lo

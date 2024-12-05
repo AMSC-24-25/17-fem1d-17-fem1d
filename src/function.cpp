@@ -34,7 +34,7 @@ Function Function::operator *(const double k) const {
 
     fun resultFunction = [thisFun, k](double x) -> double {
         return k*thisFun.value(x);
-    };  
+    };
 
     fun resultGradient = [thisFun, k](double x) -> double {
         return k*thisFun.grad(x);

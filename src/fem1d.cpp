@@ -61,9 +61,9 @@ void Fem1D::assemble() {
         A.coeffRef(0,1) = 0;
     }
     if (!boundary_conds[1].isNeumann()) {
-        int n = A.rows();
-        A.coeffRef(n-1,n-2) = 0;
-        A.coeffRef(n-1,n-1) = 0;
+        int n = A.rows()-1;
+        A.coeffRef(n,n-1) = 0;
+        A.coeffRef(n,n) = 0;
     }
 
 };

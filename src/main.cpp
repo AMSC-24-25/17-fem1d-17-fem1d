@@ -40,3 +40,8 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+
+
+//alias v='valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-out.txt ./fem1d.exe 5 20'
+
