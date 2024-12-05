@@ -48,8 +48,8 @@ void Fem1D::assemble() {
     }
     if (!boundary_conds[1].isNeuman()) {
         int n = A.getSize();
-        A(n,n-1) = 0;
-        A(n,n) = 0;
+        A(n-1,n-2) = 0;
+        A(n-1,n-1) = 0;
     }
 
 };

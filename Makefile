@@ -12,7 +12,7 @@ SRCFILES = $(wildcard $(SRCDIR)/*.cpp)
 OBJFILES = $(SRCFILES:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
 
 # Output executable
-TARGET = my_project.exe
+TARGET = fem1d.exe
 
 # Default target
 all: clean $(TARGET)
