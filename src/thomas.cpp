@@ -17,7 +17,10 @@ void Thomas::ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd
         b[i] -= m * c[i-1]; 
         rhs[i] -= m * rhs[i-1];
     }
+
 }
+
+
 void Thomas::BackwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs) {
     int n = b.size();
 

@@ -1,5 +1,7 @@
 #include "../include/fem1d.hpp"
-
+#include <Eigen/Eigen>
+#include <Eigen/Sparse>
+#include <Eigen/IterativeLinearSolvers>
 
 using namespace Eigen;
 
@@ -62,8 +64,11 @@ void Fem1D::solve() {
     try {
         sol = solver.ThomasAlgorithm(A, rhs);
     } catch (const std::runtime_error& e) {
-        std::cout << "Caught exception: " << e.what() << " solving with GMRES" << '\n';
-        //implment GMRES
+        std::cout << "Caught exception: " << e.what() << " Solving with BiCGSTAB" << '\n';
+        //implement BiCGSTAB
+        BiCGSTAB<SparseMat> solver;
+        solver.compute(A);
+        sol = solver.solve(rhs);
     }
 
     
