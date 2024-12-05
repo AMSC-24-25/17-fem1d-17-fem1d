@@ -7,15 +7,15 @@
 class BoundaryCond {
 
     private:
-    bool is_neuman;
+    bool is_neumann;
     Function boundary;
     //0 == D, 1 == N
 
     public:
-    BoundaryCond(bool is_neuman, Function boundary) : boundary(boundary), is_neuman(is_neuman) {};
+    BoundaryCond(bool is_neumann, Function boundary) : is_neumann(is_neumann), boundary(boundary) {};
 
-    inline const bool isNeuman() const{
-        return is_neuman;
+    inline const bool isNeumann() const{
+        return is_neumann;
     }
 
     inline const Function getBoundary() const{

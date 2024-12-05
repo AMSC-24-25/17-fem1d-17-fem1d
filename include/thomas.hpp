@@ -1,8 +1,13 @@
 #ifndef THOMAS
 #define THOMAS
 
-#include "vector.hpp"
-#include "matrix.hpp"
+#include <Eigen/Eigen>
+#include <Eigen/Sparse>
+#include <unsupported/Eigen/SparseExtra>
+
+using namespace Eigen;
+
+typedef SparseMatrix<double, RowMajor> SparseMat;
 
 class Thomas {
     
@@ -10,11 +15,11 @@ class Thomas {
 
     Thomas() {};
     
-    void ForwardSubstitution(Vector& a, Vector& b, Vector& c, Vector& x, Vector& rhs);
+    void ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs);
 
-    void BackwardSubstitution(Vector& a, Vector& b, Vector& c, Vector& x, Vector& rhs);
+    void BackwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs);
     
-    Vector ThomasAlgorithm(Matrix A, Vector& rhs);
+    VectorXd ThomasAlgorithm(SparseMat A, VectorXd& rhs);
 
 };
 

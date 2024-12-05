@@ -6,8 +6,11 @@
 #include "function.hpp"
 #include "grid1D.hpp"
 #include "boundary_cond.hpp"
-#include "matrix.hpp"
-#include "vector.hpp"
+#include <Eigen/Eigen>
+#include <Eigen/Sparse>
+
+typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SparseMat;
+typedef Eigen::Triplet<double> T;
 
 class Fem1D {
 
@@ -19,8 +22,8 @@ class Fem1D {
     
     std::vector<BoundaryCond> boundary_conds;
 
-    Matrix A;
-    Vector rhs;
+    SparseMat A;
+    Eigen::VectorXd rhs;
 
     public:
     Fem1D(Grid1D mesh, Function forcing_term, Function reaction_term, Function diffusion_term,
@@ -29,11 +32,12 @@ class Fem1D {
         forcing_term(forcing_term),
         reaction_term(reaction_term),
         diffusion_term(diffusion_term),
-        A(mesh.getN()), rhs(mesh.getN()) {
+        A(mesh.getN(), mesh.getN()), rhs(mesh.getN()) {
             BoundaryCond boundary1(isNeuman1, value1);
             BoundaryCond boundary2(isNeuman2, value2);
-            boundary_conds.push_back(boundary1);
-            boundary_conds.push_back(boundary2);
+           // boundary_conds.push_back(boundary1);
+           // boundary_conds.push_back(boundary2);
+            
         };
     
     void assemble();
@@ -44,3 +48,12 @@ class Fem1D {
 
 
 #endif  // FEM1D_HPP
+
+
+
+/*std::vector<T> tripletList;
+            tripletList.reserve(3*mesh.getN()-2);
+            for(int i=0; i<10; i++) {
+                tripletList.push_back(T(i, i, 1.0));
+            }
+            A.setFromTriplets(tripletList.begin(), tripletList.end());*/
