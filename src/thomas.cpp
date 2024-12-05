@@ -1,6 +1,7 @@
 #include "../include/thomas.hpp"
 #include <math.h>
 #include <Eigen/Eigen>
+#include <memory>
 #include <Eigen/Sparse>
 #include <unsupported/Eigen/SparseExtra>
 
@@ -11,8 +12,8 @@ typedef SparseMatrix<double, RowMajor> SparseMat;
 void Thomas::ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs) {
     int n = b.size();
 
-    for(int i=1; i<n; i++){
-        double m = a[i] / b[i-1];
+    for(int i=1; i<n-1; i++){
+        double m = b[i-1] != 0 ? a[i] / b[i-1] : 0;
         b[i] -= m * c[i-1]; 
         rhs[i] -= m * rhs[i-1];
     }
@@ -20,26 +21,33 @@ void Thomas::ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd
 void Thomas::BackwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs) {
     int n = b.size();
 
-    x[n-1] = rhs[n-1]/b[n-1];
+    std::cout << "B = " << b[n-1] << std::endl;
+    std::cout << "RHS = " << b[n-1] << std::endl;
+    x[n-1] = b[n-1] != 0 ? rhs[n-1]/b[n-1] : 0;
+    std::cout << "X = " << x[n-1] << std::endl;
     for(int i=n-2; i>=0; i--){
-        x[i] = (rhs[i] - (c[i]*x[i+1])) / b[i];
+        std::cout << "B[i] = " << i << b[i] << std::endl;
+        x[i] = b[i] != 0 ? (rhs[i] - (c[i]*x[i+1])) / b[i] : 0;
     }
 }
 
 VectorXd Thomas::ThomasAlgorithm(SparseMat A, VectorXd& rhs){
 
-    VectorXd x(A.rows());
+    VectorXd x = VectorXd::Zero(A.rows());
     VectorXd a(A.rows()-1);
     VectorXd b(A.rows());
     VectorXd c(A.rows()-1);
 
-    MatrixXd mat(A);
+    std::unique_ptr<MatrixXd> mat = std::make_unique<MatrixXd>(MatrixXd(A));
 
-    b = mat.diagonal(0); 
-    a = mat.diagonal(-1); 
-    c = mat.diagonal(1); 
+    b = VectorXd(mat->diagonal(0)); 
+    a = VectorXd(mat->diagonal(-1)); 
+    c = VectorXd(mat->diagonal(1)); 
+
+    mat.reset();
 
     ForwardSubstitution(a,b,c,x,rhs);
     BackwardSubstitution(a,b,c,x,rhs);
+    std::cout << "X: \n" << x << std::endl;
     return x;
 }
