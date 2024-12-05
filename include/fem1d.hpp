@@ -35,8 +35,8 @@ class Fem1D {
         A(mesh.getN(), mesh.getN()), rhs(mesh.getN()) {
             BoundaryCond boundary1(isNeuman1, value1);
             BoundaryCond boundary2(isNeuman2, value2);
-            boundary_conds.push_back(boundary1); 
-            boundary_conds.push_back(boundary2);
+            boundary_conds.push_back(boundary1);
+            boundary_conds.push_back(boundary2); 
         };
     
     void assemble();
