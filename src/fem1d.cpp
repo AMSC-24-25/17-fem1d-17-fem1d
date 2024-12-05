@@ -24,28 +24,25 @@ void Fem1D::assemble() {
             for(int k2=0 ; k2<=1 ; k2++) {
 
                 TwoPointsQuadrature quad(
-                    diffusion_term *
-                    phiVect[i+k1].getGrad() *
-                    phiVect[i+k2].getGrad()
+                    (diffusion_term * phiVect[i+k1].getGrad() * phiVect[i+k2].getGrad()) 
+                    +
+                    (reaction_term * phiVect[i+k1] * phiVect[i+k2])
                 );
 
                 mat(k1, k2) = quad.integrate(mesh(i), mesh(i+1));
             }
-
+            TwoPointsQuadrature quad2(forcing_term *phiVect[i]);
+            b[k1]=quad2.integrate(mesh(i+k1), mesh(i+1+k1));
         }
-
-        TwoPointsQuadrature quad(forcing_term*phiVect[i]);
-
+        
+        rhs[i] += b[0];
+        rhs[i+1] += b[1];
 
         for (BoundaryCond boundary_cond : boundary_conds){
             if ((boundary_cond).isNeumann()) {
-                b[i] = quad.integrate(mesh(i), mesh(i+1)) +
-                       boundary_cond.getBoundary()(mesh.getEnd()) * phiVect[i](mesh.getEnd());
+                rhs[i] =  boundary_cond.getBoundary()(mesh.getEnd()) * phiVect[i](mesh.getEnd());
             }
         }
-
-        TwoPointsQuadrature quad2(forcing_term *phiVect[i]);
-        b[i] = quad2.integrate(mesh(i), mesh(i+1));
         
         triplets.emplace_back(i, i, mat(0, 0));
         triplets.emplace_back(i, i + 1, mat(0, 1));

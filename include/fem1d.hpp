@@ -35,9 +35,6 @@ class Fem1D {
         A(mesh.getN(), mesh.getN()), rhs(mesh.getN()) {
             BoundaryCond boundary1(isNeuman1, value1);
             BoundaryCond boundary2(isNeuman2, value2);
-           // boundary_conds.push_back(boundary1);
-           // boundary_conds.push_back(boundary2);
-            
         };
     
     void assemble();
@@ -45,15 +42,4 @@ class Fem1D {
     
 };
 
-
-
 #endif  // FEM1D_HPP
-
-
-
-/*std::vector<T> tripletList;
-            tripletList.reserve(3*mesh.getN()-2);
-            for(int i=0; i<10; i++) {
-                tripletList.push_back(T(i, i, 1.0));
-            }
-            A.setFromTriplets(tripletList.begin(), tripletList.end());*/
