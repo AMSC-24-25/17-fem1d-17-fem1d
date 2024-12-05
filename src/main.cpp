@@ -11,7 +11,7 @@ constexpr double PI = 3.14;
 
 /**
  * Arg1 = L (end of domain)
- * Arg3 = N (# DoFs)
+ * Arg2 = N (# DoFs)
  */
 int main(int argc, char *argv[])
 {
@@ -30,10 +30,17 @@ int main(int argc, char *argv[])
     );
 
     Function diffusion_term = OneFunction();
+    Function reaction_term = ZeroFunction();
+    Function diffusion_term = OneFunction();
+
+    bool isNeumann1 = false;
+    Function boundary1 = ZeroFunction();
+    bool isNeumann2 = false;
+    Function boundary2 = ZeroFunction();
 
     Fem1D fem(
-        grid, forcing, ZeroFunction(), diffusion_term, 
-        false, false, ZeroFunction(), ZeroFunction()
+        grid, forcing, reaction_term, diffusion_term, 
+        isNeumann1, isNeumann2, boundary1, boundary2
     );
 
     std::ofstream fsol("sol.csv");
