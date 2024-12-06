@@ -44,18 +44,35 @@ void Fem1D::assemble() {
 
     // Dirichlet
     if (!boundary_conds[0].isNeumann()) {
-        A.coeffRef(0,0) = 0;
+        A.coeffRef(0,0) = 1;
         A.coeffRef(0,1) = 0;
+        rhs[0] = boundary_conds[0].getBoundary()(mesh(0));
     }
     if (!boundary_conds[1].isNeumann()) {
         int n = A.rows()-1;
         A.coeffRef(n,n-1) = 0;
-        A.coeffRef(n,n) = 0;
+        A.coeffRef(n,n) = 1;
+        rhs[n] = boundary_conds[1].getBoundary()(mesh.getEnd());
     }
 
     // std::cout << "Vector RHS:\n" << rhs << std::endl;
     // std::cout << "Matrix A (LHS):\n" << A << std::endl;
 };
+
+const char* Fem1D::solverInfoToString(Eigen::ComputationInfo info){
+    switch(info){
+            case Eigen::ComputationInfo::Success:
+                return "Success";
+            case Eigen::ComputationInfo::NumericalIssue:
+                return "Numerical Issue (prerequisites not satisfied by data)";
+            case Eigen::ComputationInfo::NoConvergence:
+                return "Did not Converge, max iterations reached";
+            case Eigen::ComputationInfo::InvalidInput:
+                return "Input invalid";
+            default:
+                return "Unknown";
+        }
+}
 
 void Fem1D::solve() {
     Thomas solver;
@@ -63,10 +80,16 @@ void Fem1D::solve() {
         sol = solver.ThomasAlgorithm(A, rhs);
     } catch (const std::runtime_error& e) {
         std::cout << "Caught exception: " << e.what() << " Solving with BiCGSTAB" << '\n';
-        //implement BiCGSTAB
+        //solve with BiCGSTAB instead
         Eigen::BiCGSTAB<SparseMat> solver;
+        solver.setMaxIterations(1e4);
+        solver.setTolerance(1e-9);
         solver.compute(A);
         sol = solver.solve(rhs);
+
+        std::cout << "BiCG Status: " << solverInfoToString(solver.info()) << std::endl;
+        std::cout << "Iterations: " << solver.iterations() << std::endl;
+        std::cout << "Error: " << solver.error() << std::endl;
     }
 };
 
@@ -75,16 +98,5 @@ void Fem1D::solve(std::ofstream &fout) {
     fout << "x,f(x)" << std::endl;
     for(int i=0 ; i<mesh.getN() ; i++) {
         fout << mesh(i) << "," << sol[i] << std::endl;
-    }
-
-    using Eigen::Lower, Eigen::Upper;
-    Eigen::ConjugateGradient<SparseMat, Lower|Upper, Eigen::DiagonalPreconditioner<double>> cgSolver;
-    cgSolver.setMaxIterations(1e4);
-    cgSolver.setTolerance(1e-9);
-    cgSolver.compute(A);
-    
-    VectorXd solutionCG = cgSolver.solve(rhs);
-    for (int i=0; i < solutionCG.size(); i++){
-        fout << solutionCG[i] << std::endl;
     }
 };

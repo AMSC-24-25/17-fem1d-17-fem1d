@@ -34,6 +34,9 @@ clean:
 	rm -f $(BUILDDIR)/*.o $(TARGET)
 
 run: all
-	./$(TARGET) 1 100
+	./$(TARGET) 1 20
+
+graph:
+	python scripts/plot_sol.py
 
 .PHONY: all clean

@@ -58,6 +58,9 @@ class Fem1D {
     inline VectorXd getSolution() const {
         return sol;
     };
+
+    private:
+    static const char* solverInfoToString(Eigen::ComputationInfo info);
     
 };
 
