@@ -12,8 +12,10 @@ typedef SparseMatrix<double, RowMajor> SparseMat;
 void Thomas::ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs) {
     int n = b.size();
 
-    for(int i=1; i<n-1; i++){
-        double m = b[i-1] != 0 ? a[i] / b[i-1] : throw std::runtime_error("rhs has zero value");
+    for(int i=1; i<n; i++){
+        if(b[i-1] != 0) throw std::runtime_error("A diag has zero value");
+        
+        double m = a[i-1] / b[i-1];
         b[i] -= m * c[i-1]; 
         rhs[i] -= m * rhs[i-1];
     }
