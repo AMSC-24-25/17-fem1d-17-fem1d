@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
     Function forcing(
         [](double x) -> double { //value
-            return (2*PI*x);
+            return sin(2*PI*x);
         }
     );
 

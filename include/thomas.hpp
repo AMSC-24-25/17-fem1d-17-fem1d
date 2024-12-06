@@ -7,9 +7,9 @@
 #include <Eigen/Sparse>
 #include <unsupported/Eigen/SparseExtra>
 
-using namespace Eigen;
 
-typedef SparseMatrix<double, RowMajor> SparseMat;
+using Eigen::VectorXd;
+typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SparseMat;
 
 class Thomas {
     

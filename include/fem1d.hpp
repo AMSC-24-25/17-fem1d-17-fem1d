@@ -15,8 +15,11 @@
 #include <Eigen/IterativeLinearSolvers>
 #include <unsupported/Eigen/SparseExtra>
 
+
+using Eigen::VectorXd;
+using Eigen::MatrixXd;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SparseMat;
-typedef Eigen::Triplet<double> T;
+typedef Eigen::Triplet<double> Triplet;
 
 class Fem1D {
 
@@ -29,8 +32,8 @@ class Fem1D {
     std::vector<BoundaryCond> boundary_conds;
 
     SparseMat A;
-    Eigen::VectorXd rhs;
-    Eigen::VectorXd sol;
+    VectorXd rhs;
+    VectorXd sol;
 
     public:
     Fem1D(Grid1D mesh, Function forcing_term, Function reaction_term, Function diffusion_term,
@@ -52,9 +55,12 @@ class Fem1D {
     void solve();
     void solve(std::ofstream &fout);
 
-    inline Eigen::VectorXd getSolution() const {
+    inline VectorXd getSolution() const {
         return sol;
     };
+
+    private:
+    static const char* solverInfoToString(Eigen::ComputationInfo info);
     
 };
 
