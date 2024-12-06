@@ -1,9 +1,4 @@
 #include "../include/thomas.hpp"
-#include <math.h>
-#include <Eigen/Eigen>
-#include <memory>
-#include <Eigen/Sparse>
-#include <unsupported/Eigen/SparseExtra>
 
 using namespace Eigen;
 

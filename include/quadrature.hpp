@@ -1,6 +1,7 @@
 #ifndef QUADRATURE
 #define QUADRATURE
 
+#include <math.h>
 #include "function.hpp"
 
 class QuadratureBase{

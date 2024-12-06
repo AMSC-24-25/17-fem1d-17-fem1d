@@ -1,7 +1,5 @@
 #include "../include/fem1d.hpp"
-#include <Eigen/Eigen>
-#include <Eigen/Sparse>
-#include <Eigen/IterativeLinearSolvers>
+
 
 using namespace Eigen;
 

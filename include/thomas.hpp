@@ -1,6 +1,8 @@
 #ifndef THOMAS
 #define THOMAS
 
+#include <math.h>
+#include <memory>
 #include <Eigen/Eigen>
 #include <Eigen/Sparse>
 #include <unsupported/Eigen/SparseExtra>

@@ -1,21 +1,19 @@
 #ifndef FEM1D_HPP
 #define FEM1D_HPP
 
-#include <vector>
-#include <fstream>
-
-#include <iostream>
 #include "function.hpp"
 #include "grid1D.hpp"
 #include "boundary_cond.hpp"
 #include "fem1d.hpp"
 #include "quadrature.hpp"
 #include "thomas.hpp"
+
+#include <fstream>
+#include <iostream>
 #include <Eigen/Dense>
-#include <unsupported/Eigen/SparseExtra>
 #include <Eigen/Sparse>
 #include <Eigen/IterativeLinearSolvers>
-
+#include <unsupported/Eigen/SparseExtra>
 
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SparseMat;
 typedef Eigen::Triplet<double> T;

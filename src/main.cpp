@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <math.h>
 #include <cstdlib>
 #include "fem1d.hpp"
  
