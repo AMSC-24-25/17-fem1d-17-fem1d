@@ -1,6 +1,13 @@
 # Prerequisites
 *.d
 
+# VSCode
+.VSCode/*
+
+# Debug/Outputs
+valgrind-out.txt
+*.csv
+
 # Compiled Object files
 *.slo
 *.lo
@@ -30,3 +37,14 @@
 *.exe
 *.out
 *.app
+17_fem1d_17_fem1d
+
+#idea
+.idea
+
+
+#Cmake
+CMakeFiles
+CMakeCache.txt
+cmake-build-debug
+cmake_install.cmake
