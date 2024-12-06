@@ -33,4 +33,7 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 clean:
 	rm -f $(BUILDDIR)/*.o $(TARGET)
 
+run: all
+	./$(TARGET) 1 100
+
 .PHONY: all clean

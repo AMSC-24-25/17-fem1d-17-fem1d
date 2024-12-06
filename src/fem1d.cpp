@@ -3,11 +3,9 @@
 #include <Eigen/Sparse>
 #include <Eigen/IterativeLinearSolvers>
 
-using namespace Eigen;
-
 void Fem1D::assemble() {
     FunctionVector phiVect = mesh.getPhiFunctions();
-    std::vector<Eigen::Triplet<double>> triplets;
+    std::vector<Triplet> triplets;
 
     triplets.reserve(3 * mesh.getN() - 2);
     
@@ -66,13 +64,10 @@ void Fem1D::solve() {
     } catch (const std::runtime_error& e) {
         std::cout << "Caught exception: " << e.what() << " Solving with BiCGSTAB" << '\n';
         //implement BiCGSTAB
-        BiCGSTAB<SparseMat> solver;
+        Eigen::BiCGSTAB<SparseMat> solver;
         solver.compute(A);
         sol = solver.solve(rhs);
     }
-
-    
-    
 };
 
 void Fem1D::solve(std::ofstream &fout) {
@@ -80,5 +75,16 @@ void Fem1D::solve(std::ofstream &fout) {
     fout << "x,f(x)" << std::endl;
     for(int i=0 ; i<mesh.getN() ; i++) {
         fout << mesh(i) << "," << sol[i] << std::endl;
+    }
+
+    using Eigen::Lower, Eigen::Upper;
+    Eigen::ConjugateGradient<SparseMat, Lower|Upper, Eigen::DiagonalPreconditioner<double>> cgSolver;
+    cgSolver.setMaxIterations(1e4);
+    cgSolver.setTolerance(1e-9);
+    cgSolver.compute(A);
+    
+    VectorXd solutionCG = cgSolver.solve(rhs);
+    for (int i=0; i < solutionCG.size(); i++){
+        fout << solutionCG[i] << std::endl;
     }
 };
