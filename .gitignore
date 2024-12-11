@@ -8,6 +8,19 @@
 valgrind-out.txt
 *.csv
 
+# CMake
+CMakeFiles
+CMakeCache.txt
+cmake-build-debug
+cmake_install.cmake
+*.cmake
+Makefile
+./**Makefile
+
+# Test Library compiled objects
+*.pc
+Google_Tests_run
+
 # Compiled Object files
 *.slo
 *.lo
@@ -41,10 +54,3 @@ valgrind-out.txt
 
 #idea
 .idea
-
-
-#Cmake
-CMakeFiles
-CMakeCache.txt
-cmake-build-debug
-cmake_install.cmake
