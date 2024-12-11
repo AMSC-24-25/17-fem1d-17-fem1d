@@ -6,7 +6,7 @@
 using std::cout;
 using std::endl;
 
-constexpr double PI = 3.14;
+constexpr double PI = EIGEN_PI;
 
 /**
  * Arg1 = L (end of domain)
@@ -40,13 +40,18 @@ int main(int argc, char *argv[])
         grid, forcing, reaction_term, diffusion_term, 
         isNeumann1, isNeumann2, boundary1, boundary2
     );
-
-    std::ofstream fsol("sol.csv");
+    
+    const char* solPath = "../sol.csv";
+    std::ofstream fsol(solPath);
+    cout << "### ASSEMBLE ###" << endl;
     fem.assemble();
+    cout << "### SOLVE    ###" << endl;
     fem.solve(fsol);
+    cout << "### DONE     ###" << endl;
+    cout << "Solution graph saved in " << solPath << endl;
     fsol.close();
 
-    cout << "Solution:\n" << fem.getSolution() << endl;
+    // cout << "Solution:\n" << fem.getSolution() << endl;
 
     // system("python scripts/plot_sol.py");
     return 0;

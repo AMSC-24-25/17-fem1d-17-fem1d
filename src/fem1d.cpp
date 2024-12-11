@@ -12,17 +12,18 @@ void Fem1D::assemble() {
         VectorXd b(2);
         for(int k1=0 ; k1<=1 ; k1++) {
             for(int k2=0 ; k2<=1 ; k2++) {
+                // JxW = Weight of node (?) [Ale]
+                constexpr double JxW = 0.5; // see lab01 PDE to explain this
                 TwoPointsQuadrature quad(
-                    (diffusion_term * phiVect[i+k1].getGrad() * phiVect[i+k2].getGrad()) +
-                    (reaction_term * phiVect[i+k1] * phiVect[i+k2])
+                    (diffusion_term * phiVect[i+k1].getGrad() * phiVect[i+k2].getGrad() * JxW) +
+                    (reaction_term * phiVect[i+k1] * phiVect[i+k2] * JxW)
                 );
 
                 mat(k1, k2) = quad.integrate(mesh(i), mesh(i+1));
             }
-            TwoPointsQuadrature quad2(forcing_term *phiVect[i]);
+            SimpsonQuadrature quad2(forcing_term * phiVect[i]);
             b[k1]=quad2.integrate(mesh(i+k1), mesh(i+1+k1));
         }
-        // std::cout<< "Small matrix coming from " << i << "th element:\n" << mat << std::endl;
         
         rhs[i] += b[0];
         rhs[i+1] += b[1];
