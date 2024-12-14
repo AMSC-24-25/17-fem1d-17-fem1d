@@ -16,6 +16,7 @@ void Fem1D::assemble() {
                 constexpr double JxW = 0.5; // see lab01 PDE to explain this
                 TwoPointsQuadrature quad(
                     (diffusion_term * phiVect[i+k1].getGrad() * phiVect[i+k2].getGrad() * JxW) +
+                    (transport_term * phiVect[i+k1].getGrad() * phiVect[i+k2] * JxW) +
                     (reaction_term * phiVect[i+k1] * phiVect[i+k2] * JxW)
                 );
 

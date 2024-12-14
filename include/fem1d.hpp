@@ -28,6 +28,7 @@ class Fem1D {
     Function forcing_term;
     Function reaction_term;
     Function diffusion_term;
+    Function transport_term;
     
     std::vector<BoundaryCond> boundary_conds;
 
@@ -36,12 +37,13 @@ class Fem1D {
     VectorXd sol;
 
     public:
-    Fem1D(Grid1D mesh, Function forcing_term, Function reaction_term, Function diffusion_term,
+    Fem1D(Grid1D mesh, Function forcing_term, Function diffusion_term, Function transport_term, Function reaction_term, 
         bool isNeuman1, bool isNeuman2, Function value1, Function value2):
         mesh(mesh),
         forcing_term(forcing_term),
-        reaction_term(reaction_term),
         diffusion_term(diffusion_term),
+        transport_term(transport_term),
+        reaction_term(reaction_term),
         A(mesh.getN(), mesh.getN()),
         rhs(mesh.getN()),
         sol(mesh.getN()) {

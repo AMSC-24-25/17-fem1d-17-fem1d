@@ -1,8 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include <cstdlib>
 #include "fem1d.hpp"
- 
+
 using std::cout;
 using std::endl;
 
@@ -29,7 +28,17 @@ int main(int argc, char *argv[])
     );
 
     Function diffusion_term = OneFunction();
-    Function reaction_term = ZeroFunction();
+    Function reaction_term = Function(
+        [](double x) -> double {
+            // return log(x)*sin(2*PI*x);
+            return 1;
+        }
+    );
+    Function transport_term = Function(
+        [](double x) -> double {
+            return abs(log(x) * sin(2*PI*x) - 100);
+        }
+    );
     
     bool isNeumann1 = false;
     Function boundary1 = ZeroFunction();
@@ -37,7 +46,7 @@ int main(int argc, char *argv[])
     Function boundary2 = ZeroFunction();
 
     Fem1D fem(
-        grid, forcing, reaction_term, diffusion_term, 
+        grid, forcing, diffusion_term, transport_term, reaction_term,
         isNeumann1, isNeumann2, boundary1, boundary2
     );
     
