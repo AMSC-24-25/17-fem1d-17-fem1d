@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
     Function diffusion_term = OneFunction();
     Function reaction_term = Function(
         [](double x) -> double {
-            // return log(x)*sin(2*PI*x);
-            return 1;
+            return log(x)*sin(2*PI*x) - 1e2;
+            // return 1;
         }
     );
     Function transport_term = Function(
