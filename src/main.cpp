@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 {
     cout << "-------------17-FEM1D PROJECT-----------" << endl;
     if(argc < 3){
-        cout << "Usage: ./exe L N" << endl;
+        cout << "Usage: executable L N" << endl;
         exit(-1);
     }
 
