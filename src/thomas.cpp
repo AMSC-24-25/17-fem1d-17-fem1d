@@ -4,7 +4,7 @@ using namespace Eigen;
 
 typedef SparseMatrix<double, RowMajor> SparseMat;
 
-void Thomas::ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs) {
+void Thomas::forwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs) {
     int n = b.size();
 
     for(int i=1; i<n; i++){
@@ -18,7 +18,7 @@ void Thomas::ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd
 }
 
 
-void Thomas::BackwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs) {
+void Thomas::backwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs) {
     int n = b.size();
     
     if(b[n-1] == 0) throw std::runtime_error("rhs has zero value");
@@ -30,7 +30,8 @@ void Thomas::BackwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorX
     }
 }
 
-VectorXd Thomas::ThomasAlgorithm(SparseMat A, VectorXd& rhs){
+
+VectorXd Thomas::solve(SparseMat A, VectorXd& rhs){
 
     VectorXd x = VectorXd::Zero(A.rows());
     VectorXd a(A.rows()-1);
@@ -45,8 +46,8 @@ VectorXd Thomas::ThomasAlgorithm(SparseMat A, VectorXd& rhs){
 
     mat.reset();
 
-    ForwardSubstitution(a,b,c,x,rhs);
-    BackwardSubstitution(a,b,c,x,rhs);
+    forwardSubstitution(a,b,c,x,rhs);
+    backwardSubstitution(a,b,c,x,rhs);
     // std::cout << "X:\n" << x << std::endl;
     return x;
 }

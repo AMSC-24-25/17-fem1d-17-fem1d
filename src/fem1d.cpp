@@ -78,7 +78,7 @@ void Fem1D::solve() {
     Thomas solver;
     try {
         // throw std::runtime_error("Testing BiCG");
-        sol = solver.ThomasAlgorithm(A, rhs);
+        sol = solver.solve(A, rhs);
     } catch (const std::runtime_error& e) {
         std::cout << "Caught exception: " << e.what() << " Solving with BiCGSTAB" << '\n';
         //solve with BiCGSTAB instead

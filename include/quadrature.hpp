@@ -6,7 +6,7 @@
 
 class QuadratureBase{
     public:
-    QuadratureBase(Function _f) : function(_f) {}
+    QuadratureBase(Function f) : function(f) {}
 
     virtual ~QuadratureBase() = default;
 
@@ -19,7 +19,7 @@ class QuadratureBase{
 
 class MidPointQuadrature : public QuadratureBase{
     public:
-    MidPointQuadrature(Function _f) : QuadratureBase(_f) {}
+    MidPointQuadrature(Function f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
 
@@ -27,7 +27,7 @@ class MidPointQuadrature : public QuadratureBase{
 
 class TrapezoidalQuadrature : public QuadratureBase{
     public:
-    TrapezoidalQuadrature(Function _f) : QuadratureBase(_f) {}
+    TrapezoidalQuadrature(Function f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
 
@@ -35,7 +35,7 @@ class TrapezoidalQuadrature : public QuadratureBase{
 
 class SimpsonQuadrature : public QuadratureBase{
     public:
-    SimpsonQuadrature(Function _f) : QuadratureBase(_f) {}
+    SimpsonQuadrature(Function f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
 
@@ -43,9 +43,11 @@ class SimpsonQuadrature : public QuadratureBase{
 
 class TwoPointsQuadrature : public QuadratureBase{
     public:
-    TwoPointsQuadrature(Function _f) : QuadratureBase(_f) {}
+    TwoPointsQuadrature(Function f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
+
+    virtual ~TwoPointsQuadrature() = default;
 
 };
 

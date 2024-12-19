@@ -16,12 +16,16 @@ class Thomas {
     public:
 
     Thomas() {};
-    
-    void ForwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs);
 
-    void BackwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs);
+private:
     
-    VectorXd ThomasAlgorithm(SparseMat A, VectorXd& rhs);
+    void forwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs);
+
+    void backwardSubstitution(VectorXd& a, VectorXd& b, VectorXd& c, VectorXd& x, VectorXd& rhs);
+
+public:
+
+    VectorXd solve(SparseMat A, VectorXd& rhs);
 
 };
 
