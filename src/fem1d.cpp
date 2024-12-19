@@ -12,8 +12,8 @@ void Fem1D::assemble() {
         VectorXd b(2);
         for(int k1=0 ; k1<=1 ; k1++) {
             for(int k2=0 ; k2<=1 ; k2++) {
-                // JxW = Weight of node (?) [Ale]
-                constexpr double JxW = 0.5; // see lab01 PDE to explain this
+                // JxW = Weight of node
+                constexpr double JxW = 0.5;
                 TwoPointsQuadrature quad(
                     (diffusion_term * phiVect[i+k1].getGrad() * phiVect[i+k2].getGrad() * JxW) +
                     (transport_term * phiVect[i+k1].getGrad() * phiVect[i+k2] * JxW) +
@@ -28,17 +28,10 @@ void Fem1D::assemble() {
         
         rhs[i] += b[0];
         rhs[i+1] += b[1];
-        for (BoundaryCond boundary_cond : boundary_conds){
-            if ((boundary_cond).isNeumann()) {
-                rhs[i] +=  boundary_cond.getBoundary()(mesh.getEnd()) * phiVect[i](mesh.getEnd());
-            }
-        }
-        
-        triplets.emplace_back(i, i, mat(0, 0));
-        triplets.emplace_back(i, i + 1, mat(0, 1));
-        triplets.emplace_back(i + 1, i, mat(1, 0));
-        triplets.emplace_back(i + 1, i + 1, mat(1, 1));
 
+        for(int r=0; r<2; r++)
+            for(int c=0; c<2; c++)
+                triplets.emplace_back(i+r, i+c, mat(r, c));
     }
     A.setFromTriplets(triplets.begin(), triplets.end());
 
@@ -47,12 +40,20 @@ void Fem1D::assemble() {
         A.coeffRef(0,0) = 1;
         A.coeffRef(0,1) = 0;
         rhs[0] = boundary_conds[0].getBoundary()(mesh(0));
+    } 
+    else { // Neumann
+        rhs[0] -= boundary_conds[0].getBoundary()(mesh(0)) * 0.5;
     }
+
+    int n = A.rows()-1;
+    // Dirichlet
     if (!boundary_conds[1].isNeumann()) {
-        int n = A.rows()-1;
         A.coeffRef(n,n-1) = 0;
         A.coeffRef(n,n) = 1;
         rhs[n] = boundary_conds[1].getBoundary()(mesh.getEnd());
+    } 
+    else { // Neumann
+        rhs[n] -= boundary_conds[1].getBoundary()(mesh.getEnd()) * 0.5;
     }
 
     // std::cout << "Vector RHS:\n" << rhs << std::endl;

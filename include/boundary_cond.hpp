@@ -7,9 +7,8 @@
 class BoundaryCond {
 
     private:
-    bool is_neumann;
+    bool is_neumann; //False == D, True == N
     Function boundary;
-    //0 == D, 1 == N
 
     public:
     BoundaryCond(bool is_neumann, Function boundary) : is_neumann(is_neumann), boundary(boundary) {};
