@@ -7,7 +7,7 @@ f_vals = []
 
 try:
     # Read the CSV file
-    with open('./sol.csv', mode='r') as file:
+    with open('../sol.csv', mode='r') as file:
         csv_reader = csv.reader(file)
         next(csv_reader)  # Skip the header row
         for row in csv_reader:
