@@ -34,7 +34,8 @@ All the functions of the program are implemented using a specific class characte
 The most important class is fem1d. It is responsible of handling all the data of the problem, building the algebraic linear system associated to the analytical PDE through finite element method. This is done through
 <ul>
     <li>Constructor: takes all input data for the problem.
-    In particular, it takes already instantiated objects for attributes mesh, forcing_term, reaction_term, diffusion_term and transport term. Also a couple of boolean value and Function object is taken for the 2 extremal points of the 1d domain, specifying the type of boundary condition (true for Neumann, false for Dirichlet) and its value, and instantiating the corresponding BoundaryCond objects (in an array of size 2). Notice that for a 1d problem these are numerical values, but we implemented them as functions for greater flexibilities looking at future implementations.</li>
+    In particular, it takes already instantiated objects for attributes mesh, forcing_term, reaction_term, diffusion_term and transport term. Also a couple of boolean value and Function object is taken for the 2 extremal points of the 1d domain, specifying the type of boundary condition (true for Neumann, false for Dirichlet) and its value, and instantiating the corresponding BoundaryCond objects (in an array of size 2).
+    </li>
     <li>Assemble method: actually computes the matrix and rhs of the system, by applying fem and by using quadrature method to compute numerically the integrals.</li>
     <li>Solve method: implements Thomas algorithm to solve the linear system defined by the computed matrix and rhs.
     It has 2 overloads, one version without parameters and another one with an ofstream input. The latter executes the former, and subsequently writes the solution in a file in CSV format, listing x points and corresponding computed values of the approximated solution.</li>
@@ -44,7 +45,7 @@ The most important class is fem1d. It is responsible of handling all the data of
 
 #### GRID1D 
 This class abstract the mesh in 1d. The domain is described by the 2 extrema (start, end) and the number of nodes in which to divide it. The constructor of the class computes and stores the mesh size (h).
-Besides the basic getters, it exposes an overload of the call operator, which returns value of the kth node.
+Besides the basic getters, it exposes an overload of the call operator, which returns value of the k-th node.
 There is also the getPhiFunctions method, which returns a vector of the basis functions of fem for the grid, in the order of the corresponding nodes.
 
 #### PHI_FUNCTION
@@ -60,19 +61,20 @@ In solve, Thomas algorithm is implemented by splitting the problem in forward an
 
 ## What to do next?
 
-We will modify the program in order to solve PDE problems also in  2D or 3D. We will likely generalize some classes like Function, BoundaryCond
-After that, we will try to parallelize the program by changing Thomas algorithm or through domain decomposition.
+- Modify the program in order to solve PDE problems also in  2D or 3D.
+- Generalize some classes like Function, BoundaryCond
+- Parallelize the program by changing Thomas algorithm or through domain decomposition.
 
 ## Our results 
 ### Dirichlet problems, u(0)=u(1)=0
-Forcing = sin(2\*PI\*x) <br>
+Forcing = $sin(2 \pi x)$ <br>
 Diffusion term = 1 <br>
 Transport term = 0 <br>
 Reaction term = 0 <br>
 <img src="./imgs/Sin2PIX_zero_transport-reaction.jpg">
 
 <br><br>
-Forcing = sin(2\*PI\*x) <br>
+Forcing = $sin(2 \pi x)$ <br>
 Diffusion term = 1 <br>
 Transport term = 100 <br>
 Reaction term = -100 <br>
