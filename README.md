@@ -62,3 +62,32 @@ In solve, Thomas algorithm is implemented by splitting the problem in forward an
 
 We will modify the program in order to solve PDE problems also in  2D or 3D. We will likely generalize some classes like Function, BoundaryCond
 After that, we will try to parallelize the program by changing Thomas algorithm or through domain decomposition.
+
+## Our results 
+### Dirichlet problems, u(0)=u(1)=0
+Forcing = sin(2\*PI\*x) <br>
+Diffusion term = 1 <br>
+Transport term = 0 <br>
+Reaction term = 0 <br>
+<img src="./imgs/Sin2PIX_zero_transport-reaction.jpg">
+
+<br><br>
+Forcing = sin(2\*PI\*x) <br>
+Diffusion term = 1 <br>
+Transport term = 100 <br>
+Reaction term = -100 <br>
+<img src="./imgs/Sin2PIX_high_transport-reaction.jpg">
+
+### Dirichlet-Neumann u(0)=0 , u'(1)=0
+Forcing = +1 <br>
+Diffusion term = 1 <br>
+Transport term = 0 <br>
+Reaction term = 0 <br>
+<img src="./imgs/Neumann_forcing1.png">
+
+<br><br>
+Forcing = -1 <br>
+Diffusion term = 1 <br>
+Transport term = 0 <br>
+Reaction term = 0 <br>
+<img src="./imgs/Neumann_forcing-1.png">
