@@ -23,26 +23,26 @@ int main(int argc, char *argv[])
 
     Function forcing(
         [](double x) -> double { //value
-            return sin(2*PI*x);
+            // return sin(2*PI*x);
+            return -1;
         }
     );
 
     Function diffusion_term = OneFunction();
-    Function reaction_term = Function(
-        [](double x) -> double {
-            return log(x)*sin(2*PI*x) - 1e2;
-            // return 1;
-        }
-    );
     Function transport_term = Function(
         [](double x) -> double {
-            return abs(log(x) * sin(2*PI*x) - 100);
+            return 0;
+        }
+    );
+    Function reaction_term = Function(
+        [](double x) -> double {
+            return 0;
         }
     );
     
     bool isNeumann1 = false;
     Function boundary1 = ZeroFunction();
-    bool isNeumann2 = false;
+    bool isNeumann2 = true;
     Function boundary2 = ZeroFunction();
 
     Fem1D fem(

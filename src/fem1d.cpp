@@ -53,7 +53,7 @@ void Fem1D::assemble() {
         rhs[n] = boundary_conds[1].getBoundary()(mesh.getEnd());
     } 
     else { // Neumann
-        rhs[n] -= boundary_conds[1].getBoundary()(mesh.getEnd()) * 0.5;
+        rhs[n] += boundary_conds[1].getBoundary()(mesh.getEnd()) * 0.5;
     }
 
     // std::cout << "Vector RHS:\n" << rhs << std::endl;
