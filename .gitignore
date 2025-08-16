@@ -20,6 +20,7 @@ Makefile
 # Test Library compiled objects
 *.pc
 Google_Tests_run
+ExtractMatPlot
 
 # Compiled Object files
 *.slo
@@ -54,3 +55,6 @@ Google_Tests_run
 
 #idea
 .idea
+
+#build
+build/

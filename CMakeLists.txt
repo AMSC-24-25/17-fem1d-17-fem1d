@@ -3,6 +3,11 @@ project(17_fem1d_17_fem1d)
 
 set(CMAKE_CXX_STANDARD 14)
 
+
+#GoogleTest
+add_subdirectory(googletest)
+enable_testing()
+
 include_directories(include)
 
 set(CMAKE_PREFIX_PATH "/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/eigen/3.3.9/share/eigen3/cmake/")
@@ -27,5 +32,13 @@ add_executable(17_fem1d_17_fem1d
 
 target_link_libraries(17_fem1d_17_fem1d Eigen3::Eigen)
 
-add_subdirectory(Google_tests)
 
+# -------
+
+add_executable(17_fem1d_17_fem1d_test
+        test/test_fem1d.cpp)
+
+target_link_libraries(17_fem1d_17_fem1d_test Eigen3::Eigen gtest_main)
+include(GoogleTest)
+
+gtest_discover_tests(17_fem1d_17_fem1d_test)

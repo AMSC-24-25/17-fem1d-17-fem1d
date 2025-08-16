@@ -62,17 +62,17 @@ void Fem1D::assemble() {
 
 const char* Fem1D::solverInfoToString(Eigen::ComputationInfo info){
     switch(info){
-            case Eigen::ComputationInfo::Success:
-                return "Success";
-            case Eigen::ComputationInfo::NumericalIssue:
-                return "Numerical Issue (prerequisites not satisfied by data)";
-            case Eigen::ComputationInfo::NoConvergence:
-                return "Did not Converge, max iterations reached";
-            case Eigen::ComputationInfo::InvalidInput:
-                return "Input invalid";
-            default:
-                return "Unknown";
-        }
+        case Eigen::ComputationInfo::Success:
+            return "Success";
+        case Eigen::ComputationInfo::NumericalIssue:
+            return "Numerical Issue (prerequisites not satisfied by data)";
+        case Eigen::ComputationInfo::NoConvergence:
+            return "Did not Converge, max iterations reached";
+        case Eigen::ComputationInfo::InvalidInput:
+            return "Input invalid";
+        default:
+            return "Unknown";
+    }
 }
 
 void Fem1D::solve() {
