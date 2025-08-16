@@ -15,13 +15,15 @@ struct Point{
     {}
     Point() : coords(dim, 0.0) {}
     
+    Point(double x) : coords{ x } {
+        static_assert(dim == 1, "Passing 1 coordinate is only valid for 1D points");
+    }
     Point(double x, double y) : coords{ x, y } {
         static_assert(dim == 2, "Passing 2 coordinates is only valid for 2D points");
     }
     Point(double x, double y, double z) : coords{ x, y, z } {
         static_assert(dim == 3, "Passing 3 coordinates is only valid for 3D points");
     }
-
 
     double distance(Point p){
         double sum = 0.0;
