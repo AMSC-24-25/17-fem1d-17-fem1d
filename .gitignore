@@ -53,6 +53,9 @@ ExtractMatPlot
 *.app
 17_fem1d_17_fem1d
 
+# Meshes
+*.msh
+
 #idea
 .idea
 
