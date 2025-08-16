@@ -27,7 +27,9 @@ public:
         return cells.size();
     }
     unsigned int getNumNodes() const {
-        return cells.empty() ? 0 : cells[0].getN() * cells.size();
+        std::cerr << "Not yet implemented Grid2D::getNumNodes." << std::endl;
+        // Pay attention: some nodes are shared between cells, so this is not a simple count.
+        exit(-1);
     }
     const Cell<2>& getCell(int i) const {
         if (i < 0 || i >= cells.size()) {

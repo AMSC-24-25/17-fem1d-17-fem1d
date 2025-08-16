@@ -1,30 +1,35 @@
 #include "grid2D.hpp"
 
+bool compare(std::string line, std::string text) {
+    line.erase(line.find_last_not_of(" \r\n") + 1);
+    return line.compare(text) == 0;
+}
+
 // Assume format .msh 2.2
 void Grid2D::parseFromMsh(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error opening file: " << filename << std::endl;
-        return;
+        exit(-1);
     }
     
-    int dump;
+    int index, dump;
     std::string line;
     
     // Skip until line $Nodes
-    while (std::getline(file, line) && !line.compare("$Nodes"));
-    
+    while (std::getline(file, line) && !compare(line, "$Nodes"));
+
     NodeVector nodes;
     // Read number of nodes
     std::getline(file, line); 
     int numNodes = atoi(line.c_str());
     nodes.reserve(numNodes);
     // Read nodes
-    while (std::getline(file, line) && !line.compare("$EndNodes")) {
+    while (std::getline(file, line) && !compare(line, "$EndNodes")) {
         double x,y,z;
         // Parse line of format index x y z into variables
         if (line.empty()) continue; // Accept empty lines
-        if (sscanf(line.c_str(), "%d %lf %lf %lf", &dump, &x, &y, &z) != 4) {
+        if (sscanf(line.c_str(), "%d %lf %lf %lf", &index, &x, &y, &z) != 4) {
             std::cerr << "Error parsing node line: " << line << std::endl;
             exit(-1);
         }
@@ -32,7 +37,7 @@ void Grid2D::parseFromMsh(const std::string& filename) {
     }
 
     std::getline(file, line);
-    if (line != "$Elements") {
+    if (!compare(line, "$Elements")) {
         std::cerr << "Expected $Elements, found: " << line << std::endl;
         exit(-1);
     }
@@ -40,10 +45,11 @@ void Grid2D::parseFromMsh(const std::string& filename) {
     int numElements = atoi(line.c_str());
     cells.clear();
     cells.reserve(numElements);
-    while (std::getline(file, line) && !line.compare("$EndElements")) {
+
+    while (std::getline(file, line) && !compare(line, "$EndElements")) {
         Cell<2>::NodeVector elementNodes;
-        std::string elemLine;
-        if (sscanf(line.c_str(), "%d %d %d %d %d %s", &dump, &dump, &dump, &dump, &dump, &elemLine) != 6) {
+        char elemLine[256];
+        if (sscanf(line.c_str(), "%d %d %d %d %d %255s", &index, &dump, &dump, &dump, &dump, elemLine) != 6) {
             std::cerr << "Error parsing element line: " << line << std::endl;
             exit(-1);
         }

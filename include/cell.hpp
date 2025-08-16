@@ -1,6 +1,7 @@
 #ifndef CELL
 #define CELL
 
+#include "point.hpp"
 #include <iostream>
 #include <vector>
 
@@ -11,6 +12,7 @@ struct Cell {
 
     Cell(NodeVector nodes_) : nodes(nodes_)
     {}
+    Cell() = default;
 
     unsigned int getN() const {
         return nodes.size();

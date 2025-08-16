@@ -35,8 +35,8 @@ target_link_libraries(17_fem1d_17_fem1d Eigen3::Eigen)
 
 # -------
 
-add_executable(17_fem1d_17_fem1d_test
-        test/test_fem1d.cpp)
+add_executable(17_fem1d_17_fem1d_test test/main.cpp
+        test/fem1d.cpp test/grid2d.cpp src/grid2d.cpp)
 
 target_link_libraries(17_fem1d_17_fem1d_test Eigen3::Eigen gtest_main)
 include(GoogleTest)

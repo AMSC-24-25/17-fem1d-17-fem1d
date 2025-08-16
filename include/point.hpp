@@ -2,6 +2,7 @@
 #define POINT
 
 #include <iostream>
+#include <cmath>
 #include <vector>
 
 using CoordinateVector = std::vector<double>;
