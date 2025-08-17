@@ -3,6 +3,7 @@
 
 # VSCode
 .VSCode/*
+.vscode
 
 # Debug/Outputs
 valgrind-out.txt

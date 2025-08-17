@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "grid2d.hpp"
+#include "grid2D.hpp"
 #include <cmath>
 #include <vector>
 

@@ -19,12 +19,14 @@ add_executable(17_fem1d_17_fem1d
         include/fem1d.hpp
         include/function.hpp
         include/grid1D.hpp
+        include/grid2D.hpp
         include/phi_function.hpp
         include/quadrature.hpp
         include/thomas.hpp
         src/fem1d.cpp
         src/function.cpp
         src/grid1D.cpp
+        src/grid2D.cpp
         src/main.cpp
         src/phi_function.cpp
         src/quadrature.cpp
