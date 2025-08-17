@@ -13,12 +13,13 @@ class Grid2D{
     using CellVector = std::vector<Cell<2>>;
     using NodeVector = Cell<2>::NodeVector;
     CellVector cells;
+    NodeVector unique_nodes;
 
 public:
-    Grid2D(CellVector cells) : cells(cells)
+    Grid2D(CellVector cells, NodeVector unique_nodes) : cells(cells), unique_nodes(unique_nodes)
     {}
 
-    Grid2D() : cells() {}
+    Grid2D() : cells(), unique_nodes() {}
 
     void addCell(const Cell<2>& cell) {
         cells.push_back(cell);
@@ -27,16 +28,21 @@ public:
         return cells.size();
     }
     unsigned int getNumNodes() const {
-        std::cerr << "Not yet implemented Grid2D::getNumNodes." << std::endl;
-        // Pay attention: some nodes are shared between cells, so this is not a simple count.
-        exit(-1);
+        return unique_nodes.size();
     }
-    const Cell<2>& getCell(int i) const {
-        if (i < 0 || i >= cells.size()) {
+    const Cell<2>& getCell(unsigned int i) const {
+        if (i >= cells.size()) {
             std::cerr << "Index out of bounds in Grid2D::getCell\n";
             exit(-1);
         }
         return cells[i];
+    }
+    const Point<2>& getNode(unsigned int i) const {
+        if (i >= unique_nodes.size()) {
+            std::cerr << "Index out of bounds in Grid2D::getNode\n";
+            exit(-1);
+        }
+        return unique_nodes[i];
     }
 
     void parseFromMsh(const std::string& filename);

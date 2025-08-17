@@ -22,20 +22,20 @@ TEST_F(Grid2DTest, Parse_reprint_test) {
     }
     outFile << "$MeshFormat\n2.2 0 8\n$EndMeshFormat\n";
     outFile << "$Nodes\n" << grid.getNumNodes() << "\n";
-    for (int i = 0; i < grid.getNumElements(); ++i) {
-        const Cell<2>& cell = grid.getCell(i);
-        for (int j = 0; j < cell.getN(); ++j) {
-            const Point<2>& node = cell[j];
-            outFile << i + 1 << " " << node.coords[0] << " " << node.coords[1] << " 0.0\n";
-        }
+    for (int i = 0; i < grid.getNumNodes(); ++i) {
+        const Point<2>& node = grid.getNode(i);
+        outFile << i + 1 << " " << node.coords[0] << " " << node.coords[1] << " 0.0\n";
     }
     outFile << "$EndNodes\n";
 
     outFile << "$Elements\n" << grid.getNumElements() << "\n";
     for (int i = 0; i < grid.getNumElements(); ++i) {
         const Cell<2>& cell = grid.getCell(i);
-        outFile << i + 1 << " 2 2 0 0 ---- UNFINISHED ----\n";
-        // << cell.getType() << " " << cell.getNodeIndices() << "\n";
+        outFile << i + 1 << " 2 2 0 0 ";
+        for (int j = 0; j < cell.getN(); ++j) {
+            outFile << cell.getNodeIndex(j) << " ";
+        }
+        outFile << "\n";
     }
     outFile << "$EndElements\n";
 

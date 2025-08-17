@@ -8,10 +8,17 @@
 template<unsigned int dim>
 struct Cell {
     using NodeVector = std::vector<Point<dim>>;
-    NodeVector nodes;
+    using NodeIndexes = std::vector<unsigned int>;
+    const NodeVector nodes;
+    const NodeIndexes nodeIndices;
 
-    Cell(NodeVector nodes_) : nodes(nodes_)
-    {}
+    Cell(NodeVector nodes_, NodeIndexes nodeIndices_) : nodes(nodes_), nodeIndices(nodeIndices_)
+    {
+        if (nodes.size() != nodeIndices.size()) {
+            std::cerr << "Inconsistent node and index sizes in Cell\n";
+            exit(-1);
+        }
+    }
     Cell() = default;
 
     unsigned int getN() const {
@@ -19,11 +26,22 @@ struct Cell {
     }
     const Point<dim>& operator[](unsigned int i) const {
         if (i >= getN()) {
-            std::cerr << "Index out of bounds in Cell\n";
+            std::cerr << "Index out of bounds for node in Cell\n";
             exit(-1);
         }
         return nodes[i];
     }
+    const Point<dim>& getCell(unsigned int i) const{
+        return *this[i];
+    }
+    const unsigned int& getNodeIndex(unsigned int i) const {
+        if (i >= getN()) {
+            std::cerr << "Index out of bounds for node index in Cell\n";
+            exit(-1);
+        }
+        return nodeIndices[i];
+    }
+
 };
 
 #include <array>

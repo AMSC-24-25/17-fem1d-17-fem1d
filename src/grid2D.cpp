@@ -19,11 +19,12 @@ void Grid2D::parseFromMsh(const std::string& filename) {
     // Skip until line $Nodes
     while (std::getline(file, line) && !compare(line, "$Nodes"));
 
-    NodeVector nodes;
     // Read number of nodes
     std::getline(file, line); 
     int numNodes = atoi(line.c_str());
-    nodes.reserve(numNodes);
+    unique_nodes.clear();
+    unique_nodes.reserve(numNodes);
+
     // Read nodes
     while (std::getline(file, line) && !compare(line, "$EndNodes")) {
         double x,y,z;
@@ -33,21 +34,26 @@ void Grid2D::parseFromMsh(const std::string& filename) {
             std::cerr << "Error parsing node line: " << line << std::endl;
             exit(-1);
         }
-        nodes.emplace_back(Point<2>(x, y));
+        unique_nodes.emplace_back(Point<2>(x, y));
     }
 
+    // Skip $Elements line
     std::getline(file, line);
     if (!compare(line, "$Elements")) {
         std::cerr << "Expected $Elements, found: " << line << std::endl;
         exit(-1);
     }
+
+    // Read number of elements
     std::getline(file, line);
     int numElements = atoi(line.c_str());
     cells.clear();
     cells.reserve(numElements);
 
+    // Read elements
     while (std::getline(file, line) && !compare(line, "$EndElements")) {
         Cell<2>::NodeVector elementNodes;
+        Cell<2>::NodeIndexes elementNodeIndices;
         char elemLine[256];
         if (sscanf(line.c_str(), "%d %d %d %d %d %255s", &index, &dump, &dump, &dump, &dump, elemLine) != 6) {
             std::cerr << "Error parsing element line: " << line << std::endl;
@@ -57,14 +63,15 @@ void Grid2D::parseFromMsh(const std::string& filename) {
         std::istringstream iss(elemLine);
         int nodeIdx;
         while (iss >> nodeIdx) {
-            if (nodeIdx < 1 || nodeIdx > nodes.size()) {
+            if (nodeIdx < 1 || nodeIdx > unique_nodes.size()) {
                 std::cerr << "Node index out of bounds: " << nodeIdx << std::endl;
                 exit(-1);
             }
-            elementNodes.push_back(nodes[nodeIdx - 1]);
+            elementNodes.push_back(unique_nodes[nodeIdx - 1]);
+            elementNodeIndices.push_back(nodeIdx - 1);
         }
 
-        cells.emplace_back(Cell<2>(elementNodes));
+        cells.emplace_back(Cell<2>(elementNodes, elementNodeIndices));
     }
 
     file.close();
