@@ -76,3 +76,17 @@ void Grid2D::parseFromMsh(const std::string& filename) {
 
     file.close();
 }
+
+Grid2D::PhiFunctionVector2D Grid2D::getPhiFunctions() const {
+    PhiFunctionVector2D phiFunctions;
+    
+    // Per ogni cella, crea le shape functions per i suoi nodi
+    for (unsigned int cellIdx = 0; cellIdx < cells.size(); ++cellIdx) {
+        const Cell<2>& cell = cells[cellIdx];
+        for (unsigned int nodeIdx = 0; nodeIdx < cell.getN(); ++nodeIdx) {
+            phiFunctions.push_back(PhiFunction2D(nodeIdx, cell));
+        }
+    }
+    
+    return phiFunctions;
+}

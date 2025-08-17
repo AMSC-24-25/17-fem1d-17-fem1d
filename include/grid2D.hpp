@@ -3,6 +3,7 @@
 
 #include "cell.hpp"
 #include "point.hpp"
+#include "phi_function2d.hpp"
 
 #include <iostream>
 #include <vector>
@@ -12,6 +13,7 @@
 class Grid2D{
     using CellVector = std::vector<Cell<2>>;
     using NodeVector = Cell<2>::NodeVector;
+    using PhiFunctionVector2D = std::vector<PhiFunction2D>;
     CellVector cells;
     NodeVector unique_nodes;
 
@@ -46,6 +48,8 @@ public:
     }
 
     void parseFromMsh(const std::string& filename);
+    
+    PhiFunctionVector2D getPhiFunctions() const;
 };
 
 #endif
