@@ -6,7 +6,7 @@
 #include "cell.hpp"
 #include "point.hpp"
 
-class PhiFunction2D : public Function {
+class PhiFunction2D : public Function<2> {
 private:
     int nodeIndex;
     Cell<2> triangle;

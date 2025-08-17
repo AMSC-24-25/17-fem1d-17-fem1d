@@ -3,22 +3,22 @@
 PhiFunction::PhiFunction(int i, Grid1D grid) :
         Function(
             // Value
-            [grid, i](double x) -> double {
+            [grid, i](Point<1> p) -> double {
                 double h = grid.getH();
 
-                if(x <= grid(i-1)) return 0.0;
-                if(x < grid(i)) return (x - grid(i-1))/h;
-                if(x < grid(i+1)) return 1 - (x - grid(i))/h;
+                if(p[0] <= grid(i-1)) return 0.0;
+                if(p[0] < grid(i)) return (p[0] - grid(i-1))/h;
+                if(p[0] < grid(i+1)) return 1 - (p[0] - grid(i))/h;
                 else return 0.0;
             },
 
             // Gradient
-            [grid, i](double x) -> double {
+            [grid, i](Point<1> p) -> double {
                 int N = grid.getN();
 
-                if(x <= grid(i-1)) return 0.0;
-                if(x < grid(i)) return N;
-                if(x < grid(i+1)) return -N;
+                if(p[0] <= grid(i-1)) return 0.0;
+                if(p[0] < grid(i)) return N;
+                if(p[0] < grid(i+1)) return -N;
                 else return 0.0;
             }
         )

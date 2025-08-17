@@ -4,9 +4,12 @@
 #include <math.h>
 #include "function.hpp"
 
+//da togliere prima o poi
+const int dim = 1;
+
 class QuadratureBase{
     public:
-    QuadratureBase(Function f) : function(f) {}
+    QuadratureBase(Function<dim> f) : function(f) {}
 
     virtual ~QuadratureBase() = default;
 
@@ -14,12 +17,12 @@ class QuadratureBase{
 
     protected:
 
-    const Function function; 
+    const Function<dim> function; 
 };
 
 class MidPointQuadrature : public QuadratureBase{
     public:
-    MidPointQuadrature(Function f) : QuadratureBase(f) {}
+    MidPointQuadrature(Function<dim> f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
 
@@ -27,7 +30,7 @@ class MidPointQuadrature : public QuadratureBase{
 
 class TrapezoidalQuadrature : public QuadratureBase{
     public:
-    TrapezoidalQuadrature(Function f) : QuadratureBase(f) {}
+    TrapezoidalQuadrature(Function<dim> f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
 
@@ -35,7 +38,7 @@ class TrapezoidalQuadrature : public QuadratureBase{
 
 class SimpsonQuadrature : public QuadratureBase{
     public:
-    SimpsonQuadrature(Function f) : QuadratureBase(f) {}
+    SimpsonQuadrature(Function<dim> f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
 
@@ -43,7 +46,7 @@ class SimpsonQuadrature : public QuadratureBase{
 
 class TwoPointsQuadrature : public QuadratureBase{
     public:
-    TwoPointsQuadrature(Function f) : QuadratureBase(f) {}
+    TwoPointsQuadrature(Function<dim> f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
 

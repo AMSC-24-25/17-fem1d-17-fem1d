@@ -6,7 +6,7 @@
 #include <iostream>
 #include <vector>
 
-using FunctionVector = std::vector<Function>;
+using FunctionVector = std::vector<Function<1>>;
 
 class Grid1D{
     private:

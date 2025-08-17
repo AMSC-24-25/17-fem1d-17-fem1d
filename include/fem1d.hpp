@@ -25,11 +25,11 @@ class Fem1D {
 
     private:
     Grid1D mesh;
-    Function forcing_term;
-    Function reaction_term;
-    Function diffusion_term;
-    Function transport_term;
-    
+    Function<1> forcing_term;
+    Function<1> reaction_term;
+    Function<1> diffusion_term;
+    Function<1> transport_term;
+
     std::vector<BoundaryCond> boundary_conds;
 
     SparseMat A;
@@ -37,8 +37,8 @@ class Fem1D {
     VectorXd sol;
 
     public:
-    Fem1D(Grid1D mesh, Function forcing_term, Function diffusion_term, Function transport_term, Function reaction_term, 
-        bool isNeuman1, bool isNeuman2, Function value1, Function value2):
+    Fem1D(Grid1D mesh, Function<1> forcing_term, Function<1> diffusion_term, Function<1> transport_term, Function<1> reaction_term, 
+        bool isNeuman1, bool isNeuman2, Function<1> value1, Function<1> value2):
         mesh(mesh),
         forcing_term(forcing_term),
         diffusion_term(diffusion_term),

@@ -21,29 +21,29 @@ int main(int argc, char *argv[])
 
     Grid1D grid(0, atoi(argv[1]), atoi(argv[2]));
 
-    Function forcing(
-        [](double x) -> double { //value
+    Function<1> forcing(
+        [](Point<1> p) -> double { //value
             // return sin(2*PI*x);
             return -1;
         }
     );
 
-    Function diffusion_term = OneFunction();
-    Function transport_term = Function(
-        [](double x) -> double {
+    Function<1> diffusion_term = OneFunction<1>();
+    Function<1> transport_term = Function<1>(
+        [](Point<1> p) -> double {
             return 0;
         }
     );
-    Function reaction_term = Function(
-        [](double x) -> double {
+    Function<1> reaction_term = Function<1>(
+        [](Point<1> p) -> double {
             return 0;
         }
     );
     
     bool isNeumann1 = false;
-    Function boundary1 = ZeroFunction();
+    Function<1> boundary1 = ZeroFunction<1>();
     bool isNeumann2 = true;
-    Function boundary2 = ZeroFunction();
+    Function<1> boundary2 = ZeroFunction<1>();
 
     Fem1D fem(
         grid, forcing, diffusion_term, transport_term, reaction_term,

@@ -1,5 +1,5 @@
-#include "../include/grid1D.hpp"
-#include "../include/phi_function.hpp"
+#include "grid1D.hpp"
+#include "phi_function.hpp"
 
 FunctionVector Grid1D::getPhiFunctions() const{
     //phi_i = 1 on x_i ; 0 on x_j (j != i)

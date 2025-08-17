@@ -4,7 +4,7 @@
 #include "function.hpp"
 #include "grid1D.hpp"
 
-class PhiFunction : public Function{
+class PhiFunction : public Function<1>{
     public:
     PhiFunction(int i, Grid1D grid);
 };

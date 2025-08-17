@@ -6,12 +6,15 @@
 #include "point.hpp"
 
 
-template<unsigned int dim>
+
+template<unsigned int dim> 
 class Function{
+
     using fun = std::function<double(Point<dim>)>;
 
-    static const fun zeroFun = [](Point<dim> p) -> double { return 0; };
-    static const fun oneFun =  [](Point<dim> p) -> double { return 1; };
+
+    static const inline fun zeroFun = [](Point<dim> p) -> double { return 0; };
+    static const inline fun oneFun =  [](Point<dim> p) -> double { return 1; };
 
     private:
     const fun function;
@@ -31,21 +34,36 @@ class Function{
         static_assert(dim >= 3, "Error in gradient: Dimension is less than 3D");
     }
 
+    explicit Function(fun f, std::vector<fun> gradient) : function(f), gradient(gradient) {
+        static_assert(dim >= 3, "Error in gradient: Dimension is less than 3D");
+    }
 
-    inline virtual double value(Point<dim> p) const{
+
+    inline double value(Point<dim> p) const{
         return function(p);
     }
-    inline virtual double dx(Point<dim> p) const{
+
+    inline double dx_value(Point<dim> p) const{
         return gradient[0](p);
     }
-    inline virtual double dy(Point<dim> p) const{
+    inline double dy_value(Point<dim> p) const{
         return gradient[1](p);
     }
-    inline virtual double dz(Point<dim> p) const{
+    inline double dz_value(Point<dim> p) const{
         return gradient[2](p);
     }
 
-    inline virtual std::vector<fun> gradient(Point<dim> p) const{}
+    inline std::vector<double> getGradValues(Point<dim> p) const{
+        std::vector<double> gradValues;
+        for (const fun grad : gradient) {
+            gradValues.push_back(grad(p));
+        }
+        return gradValues;
+    }
+
+    inline  std::vector<fun> getGrad() const{
+        return gradient;
+    }
 
 
     // vecchio metodo
@@ -61,20 +79,36 @@ class Function{
     Function operator *(const Function& f) const;
     Function operator +(const double k) const;
     Function operator *(const double k) const;
-    inline virtual double operator ()(double x) const{
-        return value(x);
+
+    inline double operator ()(Point<dim> p) const{
+        return value(p);
     }
 
  };
 
- class ZeroFunction : public Function {
+template<unsigned int dim>
+class ZeroFunction : public Function<dim> {
+
+    using fun = std::function<double(Point<dim>)>;
+
     public:
-    ZeroFunction() : Function(zeroFun, zeroFun) {}
+    static const inline fun zeroFun = [](Point<dim> p) -> double { return 0; };
+
+
+    ZeroFunction() : Function<dim>(zeroFun, zeroFun) {}
  };
- 
- class OneFunction : public Function {
+
+
+template<unsigned int dim>
+class OneFunction : public Function<dim> {
+
+    using fun = std::function<double(Point<dim>)>;
+
     public:
-    OneFunction() : Function(oneFun, zeroFun) {}
+    static const inline fun oneFun =  [](Point<dim> p) -> double { return 1; };
+    static const inline fun zeroFun =  [](Point<dim> p) -> double { return 0; };
+
+    OneFunction() : Function<dim>(oneFun, zeroFun) {}
  };
 
 
