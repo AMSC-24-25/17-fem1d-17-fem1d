@@ -1,10 +1,22 @@
 #include "../include/function.hpp"
 
+
+
+inline virtual std::vector<fun> gradient(Point<dim> p) const{
+    std::vector<fun> evaluated_gradient;
+    for (const fun grad : gradient) {
+        evaluated_gradient.push_back(grad(p));
+    }
+    return evaluated_gradient;
+}
+
+
+
 Function Function::operator +(const Function& f) const{
     const Function& thisFun = *this;
 
-    fun resultFunction = [thisFun, f](double x) -> double {
-        return thisFun.value(x) + f.value(x);
+    fun resultFunction = [thisFun, f](Point<dim> p) -> double {
+        return thisFun.value(p) + f.value(p);
     };
 
     fun resultGradient = [thisFun, f](double x) -> double {

@@ -19,17 +19,27 @@ include_directories(${mkEigenInc})
 
 # ----- Sources -----
 
-file(GLOB SRC_FILES src/*.cpp)
-add_executable(17_fem1d_17_fem1d ${SRC_FILES})
-target_link_libraries(17_fem1d_17_fem1d Eigen3::Eigen)
+# file(GLOB SRC_FILES src/*.cpp)
+# add_executable(17_fem1d_17_fem1d ${SRC_FILES})
+# target_link_libraries(17_fem1d_17_fem1d Eigen3::Eigen)
 
 
 # -------testing----
 
-add_executable(17_fem1d_17_fem1d_test test/main.cpp
-        test/fem1d.cpp test/grid2d.cpp src/grid2D.cpp)
+# Crea una libreria con i file sorgente comuni
+file(GLOB LIB_SRC_FILES src/*.cpp)
+add_library(fem1d_lib STATIC ${LIB_SRC_FILES})
+target_link_libraries(fem1d_lib Eigen3::Eigen)
 
-target_link_libraries(17_fem1d_17_fem1d_test Eigen3::Eigen gtest_main)
+# Eseguibile principale
+add_executable(17_fem1d_17_fem1d src/main.cpp)
+target_link_libraries(17_fem1d_17_fem1d fem1d_lib)
+
+# Test - Auto-include all test files
+file(GLOB TEST_SRC_FILES test/*.cpp)
+add_executable(17_fem1d_17_fem1d_test ${TEST_SRC_FILES})
+# Collegamento alla libreria invece di includere i file .cpp direttamente
+target_link_libraries(17_fem1d_17_fem1d_test fem1d_lib gtest_main)
 
 include(GoogleTest)
 

@@ -41,6 +41,21 @@ struct Point{
         }
         return coords[i];
     }
+
+    double x() const {
+        static_assert(dim >= 1, "Point is not 1D");
+        return coords[0];
+    }
+
+    double y() const {
+        static_assert(dim >= 2, "Point is not 2D");
+        return coords[1];
+    }
+
+    double z() const {
+        static_assert(dim >= 3, "Point is not 3D");
+        return coords[2];
+    }
 };
 
 #endif
