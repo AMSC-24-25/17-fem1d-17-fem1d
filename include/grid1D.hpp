@@ -20,7 +20,6 @@ class Grid1D{
     Grid1D(double start, double end, int N) :
         start(start), end(end), N(N), h((end-start)/(N-1))
         {}
-
         
     const double getEnd() const {
         return end;
@@ -34,12 +33,8 @@ class Grid1D{
         return start + k*h;
     }
 
-
     inline double getH() const noexcept { return h; }
     inline int getN() const noexcept { return N; }
-    
-    FunctionVector getPhiFunctions() const;
 };
-
 
 #endif

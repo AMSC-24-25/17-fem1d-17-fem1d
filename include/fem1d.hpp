@@ -4,8 +4,6 @@
 #include "function.hpp"
 #include "grid1D.hpp"
 #include "boundary_cond.hpp"
-#include "fem1d.hpp"
-#include "quadrature.hpp"
 #include "thomas.hpp"
 
 #include <fstream>
@@ -14,7 +12,6 @@
 #include <Eigen/Sparse>
 #include <Eigen/IterativeLinearSolvers>
 #include <unsupported/Eigen/SparseExtra>
-
 
 using Eigen::VectorXd;
 using Eigen::MatrixXd;
@@ -63,7 +60,6 @@ class Fem1D {
 
     private:
     static const char* solverInfoToString(Eigen::ComputationInfo info);
-    
 };
 
 #endif  // FEM1D_HPP

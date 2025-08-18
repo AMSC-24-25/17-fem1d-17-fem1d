@@ -14,50 +14,6 @@ using Eigen::Matrix3d;
 using Eigen::Vector3d; 
 using Eigen::Vector2d;
 
-class QuadratureBase{
-    public:
-    QuadratureBase(Function<1> f) : function(f) {}
-
-    virtual ~QuadratureBase() = default;
-
-    virtual double integrate(double a, double b) const = 0;
-
-    protected:
-
-    const Function<1> function; 
-};
-
-class MidPointQuadrature : public QuadratureBase{
-    public:
-    MidPointQuadrature(Function<1> f) : QuadratureBase(f) {}
-
-    double integrate(double a, double b) const override;
-};
-
-class TrapezoidalQuadrature : public QuadratureBase{
-    public:
-    TrapezoidalQuadrature(Function<1> f) : QuadratureBase(f) {}
-
-    double integrate(double a, double b) const override;
-};
-
-class SimpsonQuadrature : public QuadratureBase{
-    public:
-    SimpsonQuadrature(Function<1> f) : QuadratureBase(f) {}
-
-    double integrate(double a, double b) const override;
-};
-
-class TwoPointsQuadrature : public QuadratureBase{
-    public:
-    TwoPointsQuadrature(Function<1> f) : QuadratureBase(f) {}
-
-    double integrate(double a, double b) const override;
-
-    virtual ~TwoPointsQuadrature() = default;
-
-};
-
 struct BarycentricQuadRule {
     std::vector<std::array<double,3>> barycPoints; // barycentric pts
     std::vector<double> w;                 // weights summing to 1
