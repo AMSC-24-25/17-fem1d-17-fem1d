@@ -61,8 +61,12 @@ class Function{
         return gradValues;
     }
 
-    inline  std::vector<fun> getGrad() const{
-        return gradient;
+    inline  std::vector<Function<dim>> getGrad() const{
+        std::vector<Function<dim>> gradFunctions;
+        for (const fun& grad : gradient) {
+            gradFunctions.emplace_back(Function(grad));
+        }
+        return gradFunctions;
     }
 
 
