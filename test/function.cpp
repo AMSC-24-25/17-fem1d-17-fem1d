@@ -60,3 +60,34 @@ TEST_F(functionTest, Operators_Sum_Product_Functions_And_Scalars) {
     EXPECT_DOUBLE_EQ(s(p), 3.0 * 4.0);
     EXPECT_DOUBLE_EQ(s.dx_value(p), 3.0 * 4.0);
 }
+
+TEST_F(functionTest, dot_product) {
+    Vector<2> v1({Function<2>([](Point<2> p) {return p[0];}), Function<2>([](Point<2> p) {return p[1];})});
+    Vector<2> v2({Function<2>([](Point<2> p) {return p[0];}), Function<2>([](Point<2> p) {return 2 * p[1];})});
+    std::cout << (v1 * v2)(Point<2>(1.0, 2.0)) << std::endl;
+    std::cout << (v1 * v2)(Point<2>(2.0, 2.0)) << std::endl;
+    std::cout << (v1 * v2)(Point<2>(2.0, 3.0)) << std::endl;
+    std::cout << (v1 * v2)(Point<2>(2.0, 4.0)) << std::endl;
+
+    EXPECT_DOUBLE_EQ((v1 * v2)(Point<2>(1.0, 2.0)), 1.0 + 8.0);
+    EXPECT_DOUBLE_EQ((v1 * v2)(Point<2>(2.0, 2.0)), 4.0 + 8.0);
+    EXPECT_DOUBLE_EQ((v1 * v2)(Point<2>(2.0, 3.0)), 4.0 + 18.0);
+    EXPECT_DOUBLE_EQ((v1 * v2)(Point<2>(2.0, 4.0)), 4.0 + 32.0);
+}
+
+TEST_F(functionTest, InPlacePlusEquals_WithFunction_And_Scalar) {
+    Function<1> f([](Point<1> x) { return x[0]; }, [](Point<1>){ return 0.0; });
+    Function<1> g([](Point<1> x) { return x[0] * x[0]; }, [](Point<1> x){ return 2.0 * x[0]; });
+
+    Point<1> p(2.0);
+
+    // f += g -> f(x) = x + x^2, f'(x) = 0 + 2x
+    f += g;
+    EXPECT_DOUBLE_EQ(f(p), 2.0 + 4.0);
+    EXPECT_DOUBLE_EQ(f.dx_value(p), 4.0);
+
+    // f += 3 -> f(x) = x + x^2 + 3, derivative unchanged
+    f += 3.0;
+    EXPECT_DOUBLE_EQ(f(p), 2.0 + 4.0 + 3.0);
+    EXPECT_DOUBLE_EQ(f.dx_value(p), 4.0);
+}

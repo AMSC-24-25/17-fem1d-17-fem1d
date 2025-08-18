@@ -3,8 +3,12 @@
 
 #include <functional>
 #include <iostream>
+#include <vector>
 #include "point.hpp"
 
+// Forward declaration to break include cycle
+template <unsigned int dim>
+class Vector;
 
 
 template<unsigned int dim> 
@@ -17,8 +21,8 @@ class Function{
     static const inline fun oneFun =  [](Point<dim> p) -> double { return 1; };
 
     private:
-    const fun function;
-    const std::vector<fun> gradient;
+    fun function;
+    std::vector<fun> gradient;
 
     public:
     explicit Function(fun f) : function(f) , gradient{zeroFun} {}
@@ -61,14 +65,8 @@ class Function{
         return gradValues;
     }
 
-    inline  std::vector<Function<dim>> getGrad() const{
-        std::vector<Function<dim>> gradFunctions;
-        for (const fun& grad : gradient) {
-            gradFunctions.emplace_back(Function(grad));
-        }
-        return gradFunctions;
-    }
-
+    // Return the gradient as Vector<dim> of component functions
+    Vector<dim> getGrad() const;
 
     // vecchio metodo
 
@@ -83,6 +81,10 @@ class Function{
     Function<dim> operator *(const Function<dim>& f) const;
     Function<dim> operator +(const double k) const;
     Function<dim> operator *(const double k) const;
+
+    // In-place operators
+    Function<dim>& operator +=(const Function<dim>& f);
+    Function<dim>& operator +=(double k);
 
     inline double operator ()(Point<dim> p) const{
         return value(p);
