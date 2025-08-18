@@ -1,5 +1,4 @@
 #include "../include/quadrature.hpp"
-#include "../include/phi_function2d.hpp"
 
 double MidPointQuadrature::integrate(double a, double b) const{
     return (b-a) * function((a+b)/2);

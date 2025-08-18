@@ -96,30 +96,3 @@ void Grid2D::parseFromMsh(const std::string& filename) {
 
     file.close();
 }
-
-Grid2D::PhiFunctionVector2D Grid2D::getPhiFunctions() const {
-    PhiFunctionVector2D phiFunctions;
-    
-    // Per ogni cella, crea le shape functions per i suoi nodi
-    for (unsigned int cellIdx = 0; cellIdx < cells.size(); ++cellIdx) {
-        const Cell<2>& cell = cells[cellIdx];
-        for (unsigned int nodeIdx = 0; nodeIdx < cell.getN(); ++nodeIdx) {
-            phiFunctions.push_back(PhiFunction2D(nodeIdx, cell));
-        }
-    }
-    
-    return phiFunctions;
-}
-// Grid2D::PhiFunctionVector2D Grid2D::getBoundaryPhiFunctions() const {
-//     PhiFunctionVector2D phiFunctions;
-    
-//     // Per ogni cella, crea le shape functions per i suoi nodi
-//     for (unsigned int cellIdx = 0; cellIdx < boundary_cells.size(); ++cellIdx) {
-//         const BoundaryCell<1>& boundary_cell = boundary_cells[cellIdx];
-//         for (unsigned int nodeIdx = 0; nodeIdx < boundary_cell.getN(); ++nodeIdx) {
-//             phiFunctions.push_back(PhiFunction2D(nodeIdx, boundary_cell));
-//         }
-//     }
-    
-//     return phiFunctions;
-// }

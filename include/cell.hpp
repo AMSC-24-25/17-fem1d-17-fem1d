@@ -64,9 +64,9 @@ struct BoundaryCell : public Cell<dim+1> {
 
 // Calcola le coordinate baricentriche di p rispetto al triangolo cell (2D)
 inline std::array<double, 3> barycentricCoordinates(const Cell<2>& cell, const Point<2>& p) {
-    const auto& A = cell[0];
-    const auto& B = cell[1];
-    const auto& C = cell[2];
+    const Point<2>& A = cell[0];
+    const Point<2>& B = cell[1];
+    const Point<2>& C = cell[2];
     double x = p[0], y = p[1];
     double xA = A[0], yA = A[1];
     double xB = B[0], yB = B[1];
@@ -85,9 +85,9 @@ inline std::array<double, 3> barycentricCoordinates(const Cell<2>& cell, const P
 
 // Restituisce il gradiente della shape function baricentrica i-esima (costante su triangolo)
 inline Point<2> barycentricGradient(const Cell<2>& cell, int i) {
-    const auto& A = cell[0];
-    const auto& B = cell[1];
-    const auto& C = cell[2];
+    const Point<2>& A = cell[0];
+    const Point<2>& B = cell[1];
+    const Point<2>& C = cell[2];
     double xA = A[0], yA = A[1];
     double xB = B[0], yB = B[1];
     double xC = C[0], yC = C[1];
