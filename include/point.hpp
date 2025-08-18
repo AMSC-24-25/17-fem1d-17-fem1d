@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <vector>
+#include <array>
 
 using CoordinateVector = std::vector<double>;
 
@@ -12,6 +13,8 @@ struct Point{
     CoordinateVector coords;
 
     Point(CoordinateVector coords_) : coords(coords_) 
+    {}
+    Point(std::array<double, dim> coords_) : coords(coords_.begin(), coords_.end()) 
     {}
     Point() : coords(dim, 0.0) {}
     
