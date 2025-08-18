@@ -41,7 +41,24 @@ struct Cell {
         }
         return nodeIndices[i];
     }
+};
 
+template<unsigned int dim>
+struct BoundaryCell : public Cell<dim> {
+    using NodeVector = Cell<dim+1>::NodeVector;
+    using NodeIndexes = Cell<dim>::NodeIndexes;
+
+    unsigned int boundary_id;
+
+    BoundaryCell(NodeVector nodes_, NodeIndexes nodeIndices_, unsigned int boundary_id_) 
+    : Cell<dim>(nodes_, nodeIndices_), boundary_id(boundary_id_)
+    {
+        if (nodes_.size() < 2) {
+            std::cerr << "BoundaryCell must have at least 2 nodes\n";
+            exit(-1);
+        }
+    }
+    BoundaryCell() = default;
 };
 
 #include <array>

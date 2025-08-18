@@ -12,9 +12,14 @@
 
 class Grid2D{
     using CellVector = std::vector<Cell<2>>;
+    using BoundaryCellVector = std::vector<BoundaryCell<1>>;
     using NodeVector = Cell<2>::NodeVector;
+    using BoundaryNodeVector = Cell<1>::NodeVector;
     using PhiFunctionVector2D = std::vector<PhiFunction2D>;
+    using BoundaryPhiFunctionVector2D = std::vector<BoundaryPhiFunction2D>;
+
     CellVector cells;
+    BoundaryCellVector boundary_cells;
     NodeVector unique_nodes;
 
 public:
@@ -50,6 +55,7 @@ public:
     void parseFromMsh(const std::string& filename);
     
     PhiFunctionVector2D getPhiFunctions() const;
+    PhiFunctionVector2D getBoundaryPhiFunctions() const;
 };
 
 #endif
