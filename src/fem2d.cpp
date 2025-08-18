@@ -54,6 +54,14 @@ void Fem2D::assembleElement(int elemIndex, BarycentricQuadRule& quad,
                            std::vector<Triplet>& triplets) {
     
     const Cell<2>& triangle = mesh.getCell(elemIndex);
+    std::cout << "DEBUG: Element " << elemIndex << " has " << triangle.getN() << " nodes" << std::endl;
+    
+    // Verifica che sia effettivamente un triangolo
+    if (triangle.getN() != 3) {
+        std::cerr << "ERROR: Element " << elemIndex << " is not a triangle (has " 
+                  << triangle.getN() << " nodes)" << std::endl;
+        return; // Skip this element
+    }
     
     // Calcola matrici locali 3x3 usando la quadratura esistente
     Matrix3d diffusionLocal, transportLocal, reactionLocal;

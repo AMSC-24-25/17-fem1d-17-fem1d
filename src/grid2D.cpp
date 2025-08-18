@@ -53,44 +53,60 @@ void Grid2D::parseFromMsh(const std::string& filename) {
     int elemType, elemPhysTag, elemGeomTag;
     // Read elements
     while (std::getline(file, line) && !compare(line, "$EndElements")) {
-        char elemLine[256];
-        if (sscanf(line.c_str(), "%d %d %d %d %d %255s", &index, &elemType, &dump, &elemPhysTag, &elemGeomTag, elemLine) != 6) {
-            std::cerr << "Error parsing element line: " << line << std::endl;
-            exit(-1);
+        if (line.empty()) continue;
+        
+        std::istringstream iss(line);
+        int numTags;
+        iss >> index >> elemType >> numTags;
+        
+        // Skip all tags
+        for (int i = 0; i < numTags; i++) {
+            int tag;
+            iss >> tag;
         }
 
         if(elemType == 1){ // Line element == boundary
             BoundaryCell<1>::NodeVector elementNodes;
             BoundaryCell<1>::NodeIndexes elementNodeIndices;
 
-            std::istringstream iss(elemLine);
-            int nodeIdx;
-            while (iss >> nodeIdx) {
-                if (nodeIdx < 1 || nodeIdx > unique_nodes.size()) {
-                    std::cerr << "Node index out of bounds: " << nodeIdx << std::endl;
-                    exit(-1);
+            std::vector<int> nodeIds(2);
+            for (int i = 0; i < 2; ++i) {
+                iss >> nodeIds[i];
+                
+                if (nodeIds[i] < 1 || nodeIds[i] > unique_nodes.size()) {
+                    std::cerr << "Boundary node index out of bounds: " << nodeIds[i] 
+                              << " (max: " << unique_nodes.size() << ")" << std::endl;
+                    continue; // Skip this element
                 }
-                elementNodes.push_back(unique_nodes[nodeIdx - 1]);
-                elementNodeIndices.push_back(nodeIdx - 1);
+
+                elementNodes.push_back(unique_nodes[nodeIds[i] - 1]);
+                elementNodeIndices.push_back(nodeIds[i] - 1);
             }
 
             boundary_cells.emplace_back(BoundaryCell<1>(elementNodes, elementNodeIndices, elemPhysTag));
-        } 
-        else{ // 2D element == internal
+        }else if(elemType == 2) { // Triangle element == internal
             Cell<2>::NodeVector elementNodes;
             Cell<2>::NodeIndexes elementNodeIndices;
-            std::istringstream iss(elemLine);
-            int nodeIdx;
-            while (iss >> nodeIdx) {
-                if (nodeIdx < 1 || nodeIdx > unique_nodes.size()) {
-                    std::cerr << "Node index out of bounds: " << nodeIdx << std::endl;
+
+            std::vector<int> nodeIds(3);
+            for (int i = 0; i < 3; ++i) {
+                iss >> nodeIds[i];
+
+                if (nodeIds[i] < 1 || nodeIds[i] > unique_nodes.size()) {
+                    std::cerr << "Triangle node index out of bounds: " << nodeIds[i] 
+                              << " (max: " << unique_nodes.size() << ")" << std::endl;
                     exit(-1);
                 }
-                elementNodes.push_back(unique_nodes[nodeIdx - 1]);
-                elementNodeIndices.push_back(nodeIdx - 1);
+
+                elementNodes.push_back(unique_nodes[nodeIds[i] - 1]);
+                elementNodeIndices.push_back(nodeIds[i] - 1);
             }
-            
+
             cells.emplace_back(Cell<2>(elementNodes, elementNodeIndices));
+        } else {
+            // Unsupported element type, we require triangular elements
+            std::cerr << "Unsupported element type: " << elemType << std::endl;
+            exit(-1);
         }
     }
 
