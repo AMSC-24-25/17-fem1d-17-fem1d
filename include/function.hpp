@@ -24,18 +24,18 @@ class Function{
     explicit Function(fun f) : function(f) , gradient{zeroFun} {}
 
     explicit Function(fun f, fun gx) : function(f), gradient{gx} {
-        static_assert(dim >= 1, "Error in gradient: Dimension is less than 1D");
+        static_assert(dim == 1, "Error in gradient: Dimension is less than 1D");
     }
     explicit Function(fun f, fun gx, fun gy) : function(f), gradient{gx, gy} {
-        static_assert(dim >= 2, "Error in gradient: Dimension is less than 2D");
+        static_assert(dim == 2, "Error in gradient: Dimension is less than 2D");
     }
 
     explicit Function(fun f, fun gx, fun gy, fun gz) : function(f), gradient{gx, gy, gz} {
-        static_assert(dim >= 3, "Error in gradient: Dimension is less than 3D");
+        static_assert(dim == 3, "Error in gradient: Dimension is less than 3D");
     }
 
     explicit Function(fun f, std::vector<fun> gradient) : function(f), gradient(gradient) {
-        static_assert(dim >= 3, "Error in gradient: Dimension is less than 3D");
+        static_assert(dim == 3, "Error in gradient: Dimension is less than 3D");
     }
 
 
@@ -75,16 +75,19 @@ class Function{
     //     return Function(gradient);
     // }
 
-    Function operator +(const Function& f) const;
-    Function operator *(const Function& f) const;
-    Function operator +(const double k) const;
-    Function operator *(const double k) const;
+    Function<dim> operator +(const Function<dim>& f) const;
+    Function<dim> operator *(const Function<dim>& f) const;
+    Function<dim> operator +(const double k) const;
+    Function<dim> operator *(const double k) const;
 
     inline double operator ()(Point<dim> p) const{
         return value(p);
     }
 
- };
+};
+
+#include "function.tpp"
+
 
 template<unsigned int dim>
 class ZeroFunction : public Function<dim> {
@@ -105,8 +108,8 @@ class OneFunction : public Function<dim> {
     using fun = std::function<double(Point<dim>)>;
 
     public:
-    static const inline fun oneFun =  [](Point<dim> p) -> double { return 1; };
-    static const inline fun zeroFun =  [](Point<dim> p) -> double { return 0; };
+    static const inline fun oneFun = [](Point<dim> p) -> double { return 1; };
+    static const inline fun zeroFun = [](Point<dim> p) -> double { return 0; };
 
     OneFunction() : Function<dim>(oneFun, zeroFun) {}
  };

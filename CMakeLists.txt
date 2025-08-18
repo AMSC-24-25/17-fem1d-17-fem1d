@@ -19,13 +19,6 @@ include_directories(${mkEigenInc})
 
 # ----- Sources -----
 
-# file(GLOB SRC_FILES src/*.cpp)
-# add_executable(17_fem1d_17_fem1d ${SRC_FILES})
-# target_link_libraries(17_fem1d_17_fem1d Eigen3::Eigen)
-
-
-# -------testing----
-
 # Crea una libreria con i file sorgente comuni
 file(GLOB LIB_SRC_FILES src/*.cpp)
 add_library(fem1d_lib STATIC ${LIB_SRC_FILES})
@@ -34,6 +27,8 @@ target_link_libraries(fem1d_lib Eigen3::Eigen)
 # Eseguibile principale
 add_executable(17_fem1d_17_fem1d src/main.cpp)
 target_link_libraries(17_fem1d_17_fem1d fem1d_lib)
+
+# -------testing----
 
 # Test - Auto-include all test files
 file(GLOB TEST_SRC_FILES test/*.cpp)

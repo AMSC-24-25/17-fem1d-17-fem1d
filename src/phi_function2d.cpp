@@ -6,10 +6,6 @@ PhiFunction2D::PhiFunction2D(int i, const Cell<2>& cell)
         // Value: dummy function per compatibilità con Function 1D
         [](Point<2> p) -> double {
             return 0.0; // Non usato in questo contesto 2D
-        },
-        // Gradient: dummy function per compatibilità
-        [](Point<2> p) -> double {
-            return 0.0; // Non usato in questo contesto 2D
         }
     ), nodeIndex(i), triangle(cell)
 {}
