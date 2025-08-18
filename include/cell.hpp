@@ -3,6 +3,7 @@
 
 #include "point.hpp"
 #include <iostream>
+#include <array>
 #include <vector>
 
 template<unsigned int dim>
@@ -60,8 +61,6 @@ struct BoundaryCell : public Cell<dim+1> {
     }
     BoundaryCell() = default;
 };
-
-#include <array>
 
 // Calcola le coordinate baricentriche di p rispetto al triangolo cell (2D)
 inline std::array<double, 3> barycentricCoordinates(const Cell<2>& cell, const Point<2>& p) {

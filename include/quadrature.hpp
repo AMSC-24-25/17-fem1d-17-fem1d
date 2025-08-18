@@ -1,8 +1,18 @@
 #ifndef QUADRATURE
 #define QUADRATURE
 
-#include <math.h>
 #include "function.hpp"
+#include "cell.hpp"
+#include "point.hpp"
+
+#include <array>
+#include <math.h>
+#include <functional>
+#include <Eigen/Dense>
+
+using Eigen::Matrix3d; 
+using Eigen::Vector3d; 
+using Eigen::Vector2d;
 
 class QuadratureBase{
     public:
@@ -22,7 +32,6 @@ class MidPointQuadrature : public QuadratureBase{
     MidPointQuadrature(Function<1> f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
-
 };
 
 class TrapezoidalQuadrature : public QuadratureBase{
@@ -30,7 +39,6 @@ class TrapezoidalQuadrature : public QuadratureBase{
     TrapezoidalQuadrature(Function<1> f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
-
 };
 
 class SimpsonQuadrature : public QuadratureBase{
@@ -38,7 +46,6 @@ class SimpsonQuadrature : public QuadratureBase{
     SimpsonQuadrature(Function<1> f) : QuadratureBase(f) {}
 
     double integrate(double a, double b) const override;
-
 };
 
 class TwoPointsQuadrature : public QuadratureBase{
@@ -51,17 +58,7 @@ class TwoPointsQuadrature : public QuadratureBase{
 
 };
 
-#include "cell.hpp"
-#include "point.hpp"
-#include <array>
-#include <functional>
-#include <Eigen/Dense>
-
-using Eigen::Matrix3d; 
-using Eigen::Vector3d; 
-using Eigen::Vector2d;
-
-struct QuadRuleTri {
+struct BarycentricQuadRule {
     std::vector<std::array<double,3>> barycPoints; // barycentric pts
     std::vector<double> w;                 // weights summing to 1
 
@@ -79,8 +76,8 @@ struct QuadRuleTri {
     );
 };
 
-inline QuadRuleTri quadTriOrder2() {
-    QuadRuleTri Q;
+inline BarycentricQuadRule quadTriOrder2() {
+    BarycentricQuadRule Q;
     Q.barycPoints = {
         {2/3.0, 1/6.0, 1/6.0},
         {1/6.0, 2/3.0, 1/6.0},
