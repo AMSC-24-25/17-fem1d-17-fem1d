@@ -14,44 +14,73 @@ using Eigen::Matrix3d;
 using Eigen::Vector3d; 
 using Eigen::Vector2d;
 
-struct BarycentricQuadRule {
-    std::vector<std::array<double,3>> barycPoints; // barycentric pts
+class BarycentricQuadRule {
+
+protected:
+    std::vector<std::vector<double>> barycPoints; // barycentric pts
     std::vector<double> w;                 // weights summing to 1
+    BarycentricQuadRule() = default;              // impedisce istanziazione diretta
+
+
+public:
+    virtual ~BarycentricQuadRule() = default;
 
     // Assemble local matrices for variable coefficients
-    void localMatricesP1(
+    virtual void getQuadratureData(
         const Cell<2>& cell,
-        const Function<2>& diffusion,
-        const Function<2>& react,
-        const std::function<Point<2>(const Point<2>&)>& transport,
-        const Function<2>& forcing,
-        Matrix3d &diffusionLocal,
-        Matrix3d &transportLocal,
-        Matrix3d &reactionLocal,
-        Vector3d &forcingLocal
-    );
+        std::vector<Point<2>>& grad_phi,
+        std::vector<Point<2>>& quadrature_points,
+        std::vector<std::vector<double>>& phi,
+        std::vector<double>& weight
+    ) = 0;
+
+
 };
 
-inline BarycentricQuadRule quadTriOrder2() {
-    BarycentricQuadRule Q;
-    Q.barycPoints = {
-        {2/3.0, 1/6.0, 1/6.0},
-        {1/6.0, 2/3.0, 1/6.0},
-        {1/6.0, 1/6.0, 2/3.0}
-    };
-    Q.w = {1/3.0, 1/3.0, 1/3.0};
-    return Q;
-}
 
-// Compute area and gradients
-inline double cellArea(const Cell<2>& cell, std::array<Point<2>,3>& gradLambda) {
-    for(int i=0;i<3;++i) gradLambda[i] = barycentricGradient(cell,i);
-    const Point<2>& A = cell[0]; 
-    const Point<2>& B = cell[1]; 
-    const Point<2>& C = cell[2];
+class orderTwoQuadrature : public BarycentricQuadRule {
+    public:
+    orderTwoQuadrature() {
+        barycPoints = {
+            {2/3.0, 1/6.0, 1/6.0},
+            {1/6.0, 2/3.0, 1/6.0},
+            {1/6.0, 1/6.0, 2/3.0}
+        };
+        w = {1/3.0, 1/3.0, 1/3.0};
+    }
 
-    double detT = (B[0]-A[0])*(C[1]-A[1]) - (C[0]-A[0])*(B[1]-A[1]);
-    return 0.5 * std::abs(detT);
-}
+    void getQuadratureData(
+        const Cell<2>& cell,
+        std::vector<Point<2>>& grad_phi,
+        std::vector<Point<2>>& quadrature_points,
+        std::vector<std::vector<double>>& phi,
+        std::vector<double>& weights
+    ) override;
+
+};
+
+
+class FourPointsQuadrature : public BarycentricQuadRule {
+public:
+    FourPointsQuadrature() {
+        // punti in baricentriche (λ1, λ2, λ3)
+        barycPoints = {
+            {1.0/3.0, 1.0/3.0, 1.0/3.0},   // baricentro
+            {1.0/5.0, 1.0/5.0, 3.0/5.0},
+            {1.0/5.0, 3.0/5.0, 1.0/5.0},
+            {3.0/5.0, 1.0/5.0, 1.0/5.0}
+        };
+        // pesi normalizzati a sommare 1 (non 1/2): moltiplicherai poi per area
+        w = { -27.0/48.0, 25.0/48.0, 25.0/48.0, 25.0/48.0 };
+    }
+
+    void getQuadratureData(
+        const Cell<2>& cell,
+        std::vector<Point<2>>& grad_phi,
+        std::vector<Point<2>>& quadrature_points,
+        std::vector<std::vector<double>>& phi,
+        std::vector<double>& weights
+    ) override;
+};
 
 #endif  // QUADRATURE

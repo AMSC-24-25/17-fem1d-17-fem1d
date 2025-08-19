@@ -10,6 +10,7 @@ template<unsigned int dim>
 struct Cell {
     using NodeVector = std::vector<Point<dim>>;
     using NodeIndexes = std::vector<unsigned int>;
+    
     const NodeVector nodes;
     const NodeIndexes nodeIndices;
 
@@ -120,5 +121,16 @@ inline Point<2> barycentricGradient(const Cell<2>& cell, int i) {
     std::cerr << "Indice shape function non valido in barycentricGradient\n";
     exit(-1);
 }
+
+
+inline double cellArea(const Cell<2>& cell) {
+    const Point<2>& A = cell[0];
+    const Point<2>& B = cell[1];
+    const Point<2>& C = cell[2];
+
+    double detT = (B[0]-A[0])*(C[1]-A[1]) - (C[0]-A[0])*(B[1]-A[1]);
+    return 0.5 * std::abs(detT);
+}
+
 
 #endif

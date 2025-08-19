@@ -1,45 +1,69 @@
-#include "../include/quadrature.hpp"
+#include "quadrature.hpp"
 
-void BarycentricQuadRule::localMatricesP1(
+void orderTwoQuadrature::getQuadratureData(
     const Cell<2>& cell,
-    const Function<2>& diffusion,
-    const Function<2>& react,
-    const std::function<Point<2>(const Point<2>&)>& transport,
-    const Function<2>& forcing,
-    Matrix3d &diffusionLocal,
-    Matrix3d &transportLocal,
-    Matrix3d &reactionLocal,
-    Vector3d &forcingLocal
-){
-    std::array<Point<2>,3> grad_phi;
-    double area = cellArea(cell, grad_phi);
-    diffusionLocal.setZero(); transportLocal.setZero(); 
-    reactionLocal.setZero(); forcingLocal.setZero();
+    std::vector<Point<2>>& grad_phi,
+    std::vector<Point<2>>& quadrature_points,
+    std::vector<std::vector<double>>& phi,
+    std::vector<double>& weights
 
+
+){
+    // compute constant gradients of P1 basis functions on this cell
+    grad_phi.resize(3);
+    double area = cellArea(cell);
+    for(int i=0;i<3;++i) grad_phi[i] = barycentricGradient(cell,i);
+
+
+
+    // Compute the local matrices by iterating through the quadrature points
     for(size_t q=0; q < barycPoints.size(); ++q){
         Point<3> barycPoint = Point<3>(barycPoints[q]);
         Point<2> p(
             barycPoint[0]*cell[0][0] + barycPoint[1]*cell[1][0] + barycPoint[2]*cell[2][0],
             barycPoint[0]*cell[0][1] + barycPoint[1]*cell[1][1] + barycPoint[2]*cell[2][1]
         );
-        double weight = w[q]*area;
-        double diff_loc = diffusion(p);
-        double react_loc = react(p);
-        Point<2> b = transport(p);
-        for(int i=0;i<3;++i){
-            double phi_i = barycPoint[i];
-            // LHS
-            for(int j=0;j<3;++j){
-                double phi_j = barycPoint[j];
-                double gradDot = (grad_phi[j][0]*grad_phi[i][0] + grad_phi[j][1]*grad_phi[i][1]);
-                double bDot = (b[0]*grad_phi[j][0] + b[1]*grad_phi[j][1]);
-                diffusionLocal(i,j) += diff_loc * gradDot * weight;
-                transportLocal(i,j) += bDot * phi_i * weight; // check sign via weak form
-                reactionLocal(i,j) += react_loc * phi_i * phi_j * weight;
-            }
-            
-            // RHS
-            forcingLocal[i] += forcing(p)*phi_i*weight;
-        }
+        quadrature_points.push_back(p);
+        std::vector<double> phi_i;
+        phi_i.reserve(3);
+        for(int i=0;i<3;++i) phi_i.push_back(barycPoint[i]);
+        phi.push_back(phi_i);
+        weights.push_back( w[q]*area);
+    }
+}
+
+
+
+void FourPointsQuadrature::getQuadratureData(
+    const Cell<2>& cell,
+    std::vector<Point<2>>& grad_phi,
+    std::vector<Point<2>>& quadrature_points,
+    std::vector<std::vector<double>>& phi,
+    std::vector<double>& weights
+){
+    // gradienti P1 costanti e area
+    grad_phi.resize(3);
+    double area = cellArea(cell);
+    for (int i = 0; i < 3; ++i) grad_phi[i] = barycentricGradient(cell, i);
+
+    // punti / pesi fisici e valori φ=λ nei punti
+    quadrature_points.clear();
+    phi.clear();
+    weights.clear();
+    quadrature_points.reserve(barycPoints.size());
+    phi.reserve(barycPoints.size());
+    weights.reserve(barycPoints.size());
+
+    for (size_t q = 0; q < barycPoints.size(); ++q) {
+        // λ → x fisico
+        Point<3> l = Point<3>(barycPoints[q]);
+        Point<2> x(
+            l[0]*cell[0][0] + l[1]*cell[1][0] + l[2]*cell[2][0],
+            l[0]*cell[0][1] + l[1]*cell[1][1] + l[2]*cell[2][1]
+        );
+        quadrature_points.push_back(x);
+
+        phi.push_back({ l[0], l[1], l[2] });     // P1: φ_i = λ_i
+        weights.push_back(w[q] * area);          // peso fisico
     }
 }

@@ -64,7 +64,7 @@ public:
 
 private:
     // Metodi helper per assemblaggio
-    void assembleElement(int elemIndex, BarycentricQuadRule& quad, 
+    void assembleElement(int elemIndex, orderTwoQuadrature& quad, 
                         std::vector<Triplet>& triplets);
         
     void applyDirichletBC();

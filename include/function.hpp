@@ -68,15 +68,7 @@ class Function{
     // Return the gradient as Vector<dim> of component functions
     Vector<dim> getGrad() const;
 
-    // vecchio metodo
-
-    // /**
-    //  * @return this a new Function evaluating to its gradient
-    //  */
-    // virtual Function getGrad() const {
-    //     return Function(gradient);
-    // }
-
+    
     Function<dim> operator +(const Function<dim>& f) const;
     Function<dim> operator *(const Function<dim>& f) const;
     Function<dim> operator +(const double k) const;
