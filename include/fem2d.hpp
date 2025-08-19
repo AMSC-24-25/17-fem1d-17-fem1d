@@ -4,6 +4,7 @@
 #include "function.hpp"
 #include "grid2D.hpp"
 #include "boundary_cond.hpp"
+#include "boundary_conditions.hpp"
 #include "quadrature.hpp"
 
 #include <fstream>
@@ -20,6 +21,7 @@ using Eigen::Vector3d;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SparseMat;
 typedef Eigen::Triplet<double> Triplet;
 
+// Struttura per boundary conditions moderne
 class Fem2D {
 private:
     Grid2D mesh;
@@ -28,16 +30,24 @@ private:
     Function<2> diffusion_term;
     Function<2> transport_term;
     
-    // Condizioni al contorno (semplified per ora)
+    // Condizioni al contorno (legacy per compatibilità)
     bool isNeumann1, isNeumann2;
     Function<2> boundary1, boundary2;
+    
+    // Boundary conditions moderne
+    BoundaryConditions boundaryConditions;
     
     SparseMat A;
     VectorXd rhs;
     VectorXd solution;
 
 public:
-    // Costruttore
+    // Costruttore moderno con BoundaryConditions
+    Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion, 
+          Function<2> transport, Function<2> reaction,
+          const BoundaryConditions& boundaryConditions);
+    
+    // Costruttore legacy (per compatibilità)
     Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion, 
           Function<2> transport, Function<2> reaction,
           bool isNeumann1, bool isNeumann2, 
@@ -57,7 +67,7 @@ private:
     void assembleElement(int elemIndex, BarycentricQuadRule& quad, 
                         std::vector<Triplet>& triplets);
         
-    void applyBoundaryConditions();
+    void applyDirichletBC();
 };
 
 #endif // FEM2D_HPP

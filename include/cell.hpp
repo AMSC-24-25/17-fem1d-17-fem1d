@@ -60,6 +60,15 @@ struct BoundaryCell : public Cell<dim+1> {
         }
     }
     BoundaryCell() = default;
+
+    // Aggiungi metodi mancanti
+    const NodeIndexes& getNodeIndexes() const {
+        return this->nodeIndices;
+    }
+
+    int getPhysicalTag() const {
+        return boundary_id;
+    }
 };
 
 // Calcola le coordinate baricentriche di p rispetto al triangolo cell (2D)

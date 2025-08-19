@@ -59,10 +59,12 @@ void Grid2D::parseFromMsh(const std::string& filename) {
         int numTags;
         iss >> index >> elemType >> numTags;
         
-        // Skip all tags
+        // Read physical tag (first tag) and skip the rest
+        elemPhysTag = 0; // Default value
         for (int i = 0; i < numTags; i++) {
             int tag;
             iss >> tag;
+            if (i == 0) elemPhysTag = tag; // Save physical tag
         }
 
         if(elemType == 1){ // Line element == boundary

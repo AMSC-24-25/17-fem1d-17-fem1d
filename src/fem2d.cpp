@@ -1,6 +1,26 @@
 #include "../include/fem2d.hpp"
 
-// Costruttore
+// Costruttore moderno con BoundaryConditions
+Fem2D::Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion, 
+             Function<2> transport, Function<2> reaction,
+             const BoundaryConditions& boundaryConditions) :
+    mesh(grid), forcing_term(forcing), diffusion_term(diffusion), 
+    transport_term(transport), reaction_term(reaction),
+    boundaryConditions(boundaryConditions),
+    isNeumann1(false), isNeumann2(false), 
+    boundary1([](Point<2> p) { return 0.0; }), 
+    boundary2([](Point<2> p) { return 0.0; })
+{
+    // Inizializza matrici
+    int numNodes = mesh.getNumNodes();
+    A.resize(numNodes, numNodes);
+    rhs.resize(numNodes);
+    solution.resize(numNodes);
+    rhs.setZero();
+    solution.setZero();
+}
+
+// Costruttore legacy (per compatibilità)
 Fem2D::Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion, 
              Function<2> transport, Function<2> reaction,
              bool isNeumann1, bool isNeumann2, 
@@ -15,9 +35,8 @@ Fem2D::Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion,
     A.resize(numNodes, numNodes);
     rhs.resize(numNodes);
     solution.resize(numNodes);
-    
-    std::cout << "Fem2D initialized with " << numNodes << " nodes and " 
-              << mesh.getNumElements() << " elements" << std::endl;
+    rhs.setZero();
+    solution.setZero();
 }
 
 // Assemblaggio principale
@@ -43,7 +62,7 @@ void Fem2D::assemble() {
     A.setFromTriplets(triplets.begin(), triplets.end());
     
     // Applica condizioni al contorno
-    applyBoundaryConditions();
+    boundaryConditions.apply(mesh, A, rhs);
     
     std::cout << "Matrix assembled: " << A.rows() << "x" << A.cols() 
               << " with " << A.nonZeros() << " non-zeros" << std::endl;
@@ -54,7 +73,6 @@ void Fem2D::assembleElement(int elemIndex, BarycentricQuadRule& quad,
                            std::vector<Triplet>& triplets) {
     
     const Cell<2>& triangle = mesh.getCell(elemIndex);
-    std::cout << "DEBUG: Element " << elemIndex << " has " << triangle.getN() << " nodes" << std::endl;
     
     // Verifica che sia effettivamente un triangolo
     if (triangle.getN() != 3) {
@@ -105,13 +123,6 @@ void Fem2D::assembleElement(int elemIndex, BarycentricQuadRule& quad,
         int globalI = mesh.getCell(elemIndex).getNodeIndex(i);
         rhs[globalI] += forcingLocal[i];
     }
-}
-
-// Applica condizioni al contorno
-void Fem2D::applyBoundaryConditions() {
-    std::cerr << "TODO Boundary Conditions" << std::endl;
-    
-    // TODO: Implementare condizioni al contorno 2D
 }
 
 // Risoluzione del sistema lineare

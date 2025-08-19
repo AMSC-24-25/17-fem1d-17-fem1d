@@ -3,6 +3,7 @@
 #include "fem1d.hpp"
 #include "fem2d.hpp"
 #include "grid2D.hpp"
+#include "boundary_conditions.hpp"
 
 using std::cout;
 using std::endl;
@@ -77,21 +78,40 @@ int main(int argc, char *argv[])
         // system("python scripts/plot_sol.py");
     }
     else if (argv[1][0] == '2') {
-        // 2D case 
+        // 2D case - Definizione del problema PRIMA del parsing
+        cout << "=== Configurazione problema 2D ===" << endl;
+        
+        // 1. Definizione delle funzioni del problema
+        Function<2> forcing([](Point<2> p) { 
+            return 2 * (p[0] + p[1]) - 2 * (p[0] * p[0] + p[1] * p[1]);
+        });
+        Function<2> diffusion([](Point<2> p) { return 1.0; });
+        Function<2> reaction([](Point<2> p) { return 0.0; });
+        Function<2> transport([](Point<2> p) { return 0.0; });
+        
+        // 2. Configurazione delle condizioni al contorno PRIMA del parsing
+        BoundaryConditions boundaryConditions;
+        
+        // Configurazione con mix di Dirichlet e Neumann
+        boundaryConditions.addDirichlet(0, 0.0);                                                    
+        boundaryConditions.addDirichlet(1, 0.0);                                                    
+        boundaryConditions.addDirichlet(2, 0.0);                                                    
+        boundaryConditions.addDirichlet(3, 0.0);                                                    
+
+        cout << "Condizioni al contorno configurate:" << endl;
+        cout << "  Physical tag 0 (lato sinistro): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 1 (lato destro): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 2 (lato inferiore): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 3 (lato superiore): Dirichlet u = 0" << endl;
+
+        // 3. Parse della mesh
         Grid2D grid;
         grid.parseFromMsh(argv[2]);
         
-        Function<2> forcing([](Point<2> p) { 
-            return -2.0 * PI * PI * sin(PI * p[0]) * sin(PI * p[1]); 
-        });
-        Function<2> diffusion([](Point<2> p) { return 1.0; }); // Fix: explicit function instead of OneFunction<2>
-        Function<2> reaction([](Point<2> p) { return 0.0; });  // Fix: explicit function instead of ZeroFunction<2>
-        Function<2> transport([](Point<2> p) { return 0.0; }); // Fix: scalar transport instead of vector
-        Function<2> boundary([](Point<2> p) { return 0.0; });  // Fix: explicit function
-
-        Fem2D fem2d(grid, forcing, diffusion, reaction, transport,
-                   false, false, boundary, boundary); // Fix: match constructor signature
+        // 4. Crea e risolvi il problema FEM con BoundaryConditions
+        Fem2D fem2d(grid, forcing, diffusion, transport, reaction, boundaryConditions);
         
+        cout << "=== Risoluzione problema FEM 2D ===" << endl;
         std::ofstream fsol("../sol2d.csv");
         fem2d.assemble();
         fem2d.solve(fsol);
