@@ -20,7 +20,10 @@ class Grid1D{
     Grid1D(double start, double end, int N) :
         start(start), end(end), N(N), h((end-start)/(N-1))
         {}
-        
+
+    const double getStart() const {
+        return start;
+    }
     const double getEnd() const {
         return end;
     }

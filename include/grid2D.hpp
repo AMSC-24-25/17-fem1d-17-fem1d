@@ -15,6 +15,7 @@ class Grid2D{
     using BoundaryCellVector = std::vector<BoundaryCell<1>>;
     using NodeVector = Cell<2>::NodeVector;
     using BoundaryNodeVector = Cell<1>::NodeVector;
+    using IndexVector = Cell<2>::NodeIndexes;
 
     CellVector cells;
     BoundaryCellVector boundary_cells;
@@ -76,15 +77,13 @@ public:
     }
 
     // Boundary nodes extraction methods
-    std::vector<int> getBoundaryNodes() const {
-        std::vector<int> boundaryNodes;
-        std::set<int> uniqueNodes; // Use set to avoid duplicates
+    IndexVector getBoundaryNodes() const {
+        IndexVector boundaryNodes;
+        std::set<unsigned int> uniqueNodes; // Use set to avoid duplicates
         
-        for (const auto& boundaryCell : boundary_cells) {
-            const auto& nodeIndices = boundaryCell.getNodeIndexes();
-            for (int nodeIndex : nodeIndices) {
-                uniqueNodes.insert(nodeIndex);
-            }
+        for (const BoundaryCell<1>& boundaryCell : boundary_cells) {
+            const IndexVector& nodeIndices = boundaryCell.getNodeIndexes();
+            uniqueNodes.insert(nodeIndices.begin(), nodeIndices.end());
         }
         
         // Convert set to vector
@@ -92,16 +91,14 @@ public:
         return boundaryNodes;
     }
 
-    std::vector<int> getBoundaryNodesByTag(int physicalTag) const {
-        std::vector<int> boundaryNodes;
-        std::set<int> uniqueNodes; // Use set to avoid duplicates
-        
-        for (const auto& boundaryCell : boundary_cells) {
-            if (boundaryCell.getPhysicalTag() == physicalTag) {
-                const auto& nodeIndices = boundaryCell.getNodeIndexes();
-                for (int nodeIndex : nodeIndices) {
-                    uniqueNodes.insert(nodeIndex);
-                }
+    IndexVector getBoundaryNodesByTag(int physicalTag) const {
+        IndexVector boundaryNodes;
+        std::set<unsigned int> uniqueNodes; // Use set to avoid duplicates
+
+        for (const BoundaryCell<1>& boundaryCell : boundary_cells) {
+            if (boundaryCell.getBoundaryId() == physicalTag) {
+                const IndexVector& nodeIndices = boundaryCell.getNodeIndexes();
+                uniqueNodes.insert(nodeIndices.begin(), nodeIndices.end());
             }
         }
         
@@ -135,15 +132,15 @@ public:
     }
 
     // Physical tags utility methods
-    std::vector<int> getPhysicalTags() const {
+    IndexVector getPhysicalTags() const {
         std::set<int> uniqueTags;
-        
-        for (const auto& boundaryCell : boundary_cells) {
-            uniqueTags.insert(boundaryCell.getPhysicalTag());
+
+        for (const BoundaryCell<1>& boundaryCell : boundary_cells) {
+            uniqueTags.insert(boundaryCell.getBoundaryId());
         }
         
         // Convert set to vector
-        std::vector<int> tags(uniqueTags.begin(), uniqueTags.end());
+        IndexVector tags(uniqueTags.begin(), uniqueTags.end());
         return tags;
     }
 };

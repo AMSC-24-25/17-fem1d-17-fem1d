@@ -67,7 +67,7 @@ struct BoundaryCell : public Cell<dim+1> {
         return this->nodeIndices;
     }
 
-    int getPhysicalTag() const {
+    int getBoundaryId() const {
         return boundary_id;
     }
 };
