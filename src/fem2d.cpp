@@ -5,7 +5,7 @@ template class Fem<2>;
 // Costruttore moderno con BoundaryConditions
 template<unsigned int dim>
 Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
-             Function<dim, 1> transport, Function<dim, 1> reaction,
+             Function<dim, dim> transport, Function<dim, 1> reaction,
              const BoundaryConditions<dim, 1>& boundaryConditions) :
     mesh(grid), forcing_term(forcing), diffusion_term(diffusion), 
     transport_term(transport), reaction_term(reaction),
@@ -83,6 +83,7 @@ void Fem<dim>::assembleElement(int elemIndex, BarycentricQuadRule& quad,
 
     // Local matrices for element
     MatrixXd diff_local = MatrixXd::Zero(matSize, matSize); // Diffusione
+    MatrixXd transport_local = MatrixXd::Zero(matSize, matSize); // Massa/Reazione
     MatrixXd react_local = MatrixXd::Zero(matSize, matSize); // Massa/Reazione
     VectorXd forc_local = VectorXd::Zero(matSize); // Termine forzante
 
@@ -99,12 +100,14 @@ void Fem<dim>::assembleElement(int elemIndex, BarycentricQuadRule& quad,
         // Contributions to local matrices
         for (int i = 0; i < matSize; ++i) {
             for (int j = 0; j < matSize; ++j) {
+                
                 // Diffusion contribution matrix: ∫ ∇φᵢ · ∇φⱼ dx
-                diff_local(i,j) += w * diff_val * (grad_phi[i][0] * grad_phi[j][0] + 
-                                              grad_phi[i][1] * grad_phi[j][1]);
-                
-                //TODO: Transport term ∫ (b·∇φᵢ) φⱼ dx
-                
+                // Transport contribution term ∫ (b·∇φᵢ) φⱼ dx
+                for (int d = 0; d < dim; ++d) {
+                    diff_local(i,j) += w * diff_val * grad_phi[i][d] * grad_phi[j][d];
+                    transport_local(i,j) += w * transport_term.value(p)[d] * grad_phi[i][d] * phi[q][j];
+                }
+
                 // Reaction contribution matrix: ∫ φᵢ φⱼ dx
                 react_local(i,j) += w * react_val * phi[q][i] * phi[q][j];
             }

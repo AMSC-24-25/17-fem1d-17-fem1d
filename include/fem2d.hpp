@@ -29,7 +29,7 @@ private:
     Function<dim, 1> forcing_term;
     Function<dim, 1> reaction_term;
     Function<dim, 1> diffusion_term;
-    Function<dim, 1> transport_term;
+    Function<dim, dim> transport_term;
 
     BoundaryConditions<dim, 1> boundaryConditions;
 
@@ -40,7 +40,7 @@ private:
 public:
     // Costruttore moderno con BoundaryConditions
     Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
-        Function<dim, 1> transport, Function<dim, 1> reaction,
+        Function<dim, dim> transport, Function<dim, 1> reaction,
         const BoundaryConditions<dim, 1>& boundaryConditions);
 
     // Assemblaggio matrici

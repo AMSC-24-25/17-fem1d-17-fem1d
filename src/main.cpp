@@ -84,8 +84,8 @@ int main(int argc, char *argv[])
         });
         Function<2,1> diffusion([](Point<2> p) { return 1.0; });
         Function<2,1> reaction([](Point<2> p) { return 0.0; });
-        Function<2,1> transport([](Point<2> p) { return 0.0; });
-        
+        Function<2,2> transport([](Point<2> p) { return Point<2>(0.0, 0.0); });
+
         // 2. Configurazione delle condizioni al contorno PRIMA del parsing
         BoundaryConditions<2,1> boundary_conditions;
         
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
         boundary_conditions.addDirichlet(0, Point<1>(0.0));
         boundary_conditions.addDirichlet(1, Point<1>(0.0));
         boundary_conditions.addDirichlet(2, Point<1>(0.0));
-        boundary_conditions.addDirichlet(3, Point<1>(0.0));
+        // boundary_conditions.addDirichlet(3, Point<1>(0.0));
 
         cout << "Condizioni al contorno configurate:" << endl;
         cout << "  Physical tag 0 (lato sinistro): Dirichlet u = 0" << endl;
