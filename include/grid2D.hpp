@@ -110,6 +110,18 @@ public:
         return boundaryNodes;
     }
 
+    std::vector<BoundaryCell<1>> getBoundaryEdgesByTag(int physicalTag) const {
+        std::vector<BoundaryCell<1>> boundaryEdges;
+        
+        for (const auto& boundaryCell : boundary_cells) {
+            if (boundaryCell.getPhysicalTag() == physicalTag) {
+                boundaryEdges.push_back(boundaryCell);
+            }
+        }
+        
+        return boundaryEdges;
+    }
+
     bool isBoundaryNode(int nodeIndex) const {
         for (const auto& boundaryCell : boundary_cells) {
             const auto& nodeIndices = boundaryCell.getNodeIndexes();

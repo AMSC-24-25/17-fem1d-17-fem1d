@@ -92,17 +92,21 @@ int main(int argc, char *argv[])
         // 2. Configurazione delle condizioni al contorno PRIMA del parsing
         BoundaryConditions boundaryConditions;
         
-        // Configurazione con mix di Dirichlet e Neumann
-        boundaryConditions.addDirichlet(0, 0.0);                                                    
-        boundaryConditions.addDirichlet(1, 0.0);                                                    
-        boundaryConditions.addDirichlet(2, 0.0);                                                    
-        boundaryConditions.addDirichlet(3, 0.0);                                                    
+        // Configurazione con mix di Dirichlet e Neumann per testare
+        boundaryConditions.addDirichlet(0, 0.0);  // Lato sinistro: Dirichlet u = 0
+        boundaryConditions.addDirichlet(1, 0.0);  // Lato destro: Dirichlet u = 0  
+        boundaryConditions.addDirichlet(2, 0.0);  // Lato inferiore: Dirichlet u = 0
+        
+        // Test Neumann: flusso normale specificato sul lato superiore
+        boundaryConditions.addNeumann(3, Function<2>([](Point<2> p) { 
+            return sin(EIGEN_PI * p[0]);  // Flusso sinusoidale lungo x
+        }));
 
         cout << "Condizioni al contorno configurate:" << endl;
         cout << "  Physical tag 0 (lato sinistro): Dirichlet u = 0" << endl;
         cout << "  Physical tag 1 (lato destro): Dirichlet u = 0" << endl;
         cout << "  Physical tag 2 (lato inferiore): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 3 (lato superiore): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 3 (lato superiore): NEUMANN du/dn = sin(π*x)" << endl;
 
         // 3. Parse della mesh
         Grid2D grid;

@@ -51,11 +51,11 @@ void Fem2D::assemble() {
     triplets.reserve(9 * mesh.getNumElements()); // Stima: 9 entries per triangolo
     
     // Regola di quadratura per triangoli
-    orderTwoQuadrature quadrature = orderTwoQuadrature();
-
+    BarycentricQuadRule quad = quadTriOrder2();
+    
     // Loop sui triangoli - CUORE DELL'ASSEMBLAGGIO
     for (unsigned int e = 0; e < mesh.getNumElements(); ++e) {
-        assembleElement(e, quadrature, triplets);
+        assembleElement(e, quad, triplets);
     }
     
     // Assemblaggio finale della matrice sparsa
@@ -69,7 +69,7 @@ void Fem2D::assemble() {
 }
 
 // Assemblaggio di un singolo elemento (triangolo)
-void Fem2D::assembleElement(int elemIndex, orderTwoQuadrature& quadrature, 
+void Fem2D::assembleElement(int elemIndex, BarycentricQuadRule& quad, 
                            std::vector<Triplet>& triplets) {
     
     const Cell<2>& triangle = mesh.getCell(elemIndex);
@@ -84,54 +84,26 @@ void Fem2D::assembleElement(int elemIndex, orderTwoQuadrature& quadrature,
     // Calcola matrici locali 3x3 usando la quadratura esistente
     Matrix3d diffusionLocal, transportLocal, reactionLocal;
     Vector3d forcingLocal;
-
-    diffusionLocal.setZero(); transportLocal.setZero(); 
-    reactionLocal.setZero(); forcingLocal.setZero();
     
-    //TODO
     // Converte transport_term in std::function per compatibilità
     auto transportFunc = [this](const Point<2>& p) -> Point<2> {
         double val = transport_term(p);
         return Point<2>(val, 0.0); // Assume trasporto solo in direzione x
     };
-
-    std::vector<Point<2>> grad_phi;
-    std::vector<Point<2>> quadrature_points;
-    std::vector<std::vector<double>> phi_vector;
-    std::vector<double> weights;
-
+    
     // Calcola le matrici locali usando la quadratura
-    quadrature.getQuadratureData(
+    quad.localMatricesP1(
         triangle,
-        grad_phi,
-        quadrature_points,
-        phi_vector,
-        weights
+        diffusion_term,    // Function<2>
+        reaction_term,     // Function<2>  
+        transportFunc,     // std::function<Point<2>(Point<2>)>
+        forcing_term,      // Function<2>
+        diffusionLocal,    // Output: matrice 3x3
+        transportLocal,    // Output: matrice 3x3  
+        reactionLocal,     // Output: matrice 3x3
+        forcingLocal       // Output: vettore 3x1
     );
-    for (int q = 0; q < quadrature_points.size(); ++q) {
-        const Point<2>& p = quadrature_points[q];
-        double weight = weights[q];
-        double diff_loc = diffusion_term(p);
-        double react_loc = reaction_term(p);
-        Point<2> b = transportFunc(p);
-        std::vector<double> phi = phi_vector[q];
-        for(int i=0;i<3;++i){
-            double phi_i = phi[i];
-            //LHS
-            for(int j=0;j<3;++j){
-                double phi_j = phi[j];
-                double gradDot = (grad_phi[j][0]*grad_phi[i][0] + grad_phi[j][1]*grad_phi[i][1]);
-                double bDot = (b[0]*grad_phi[j][0] + b[1]*grad_phi[j][1]);
-                diffusionLocal(i,j) += diff_loc * gradDot * weight;
-                transportLocal(i,j) += bDot * phi_i * weight; // check sign via weak form
-                reactionLocal(i,j) += react_loc * phi_i * phi_j * weight;
-            }
-            
-            // RHS
-            forcingLocal[i] += forcing_term(p)*phi_i*weight;
-        }
-    }
-
+    
     // Matrice locale totale: A_local = K + M + C
     Matrix3d A_local = diffusionLocal + transportLocal + reactionLocal;
     

@@ -132,5 +132,51 @@ inline double cellArea(const Cell<2>& cell) {
     return 0.5 * std::abs(detT);
 }
 
+// ============= GEOMETRIA PER BOUNDARY CELLS (EDGE) =============
+
+inline Point<2> mapToGlobalEdge(const BoundaryCell<1>& edge, double xi) {
+    // Mappa da coordinata locale xi ∈ [-1, 1] a coordinate globali
+    // xi = -1 -> nodo 0, xi = +1 -> nodo 1
+    const Point<2>& p1 = edge[0];
+    const Point<2>& p2 = edge[1];
+    
+    double t = (xi + 1.0) / 2.0;  // trasforma da [-1,1] a [0,1]
+    double x = (1.0 - t) * p1[0] + t * p2[0];
+    double y = (1.0 - t) * p1[1] + t * p2[1];
+    
+    return Point<2>(x, y);
+}
+
+inline Point<2> edgeNormal(const BoundaryCell<1>& edge) {
+    // Calcola il vettore normale unitario al segmento (outward normal)
+    const Point<2>& p1 = edge[0];
+    const Point<2>& p2 = edge[1];
+    
+    // Vettore tangente
+    double dx = p2[0] - p1[0];
+    double dy = p2[1] - p1[1];
+    
+    // Vettore normale (ruotato di 90° in senso orario: (dx,dy) -> (dy,-dx))
+    // Questo dà la normale esterna per mesh con orientazione antioraria
+    double nx = dy;
+    double ny = -dx;
+    
+    // Normalizza
+    double length = sqrt(nx*nx + ny*ny);
+    if (length < 1e-14) {
+        std::cerr << "Edge degenere in edgeNormal\n";
+        exit(-1);
+    }
+    
+    return Point<2>(nx/length, ny/length);
+}
+
+inline void getShapeFunctions1D(double xi, std::vector<double>& phi) {
+    // Shape functions lineari 1D in [-1, 1]
+    phi.resize(2);
+    phi[0] = (1.0 - xi) / 2.0;  // shape function per nodo 0
+    phi[1] = (1.0 + xi) / 2.0;  // shape function per nodo 1
+}
+
 
 #endif

@@ -1,4 +1,5 @@
 #include "../include/boundary_conditions.hpp"
+#include "../include/quadrature.hpp"
 #include <iostream>
 
 // Costruttore con lista di condizioni
@@ -81,24 +82,43 @@ void BoundaryConditions::applyDirichlet(const BoundaryCondition& bc, const Grid2
 
 void BoundaryConditions::applyNeumann(const BoundaryCondition& bc, const Grid2D& mesh, 
                                      Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs) {
-    auto boundaryNodes = mesh.getBoundaryNodesByTag(bc.physicalTag);
+    // Ottieni gli edge di bordo con il tag fisico specifico
+    auto boundaryEdges = mesh.getBoundaryEdgesByTag(bc.physicalTag);
     std::cout << "  Applicando condizione di Neumann su tag " << bc.physicalTag 
-              << " (" << boundaryNodes.size() << " nodi)" << std::endl;
+              << " (" << boundaryEdges.size() << " edge)" << std::endl;
     
-    for (int nodeIndex : boundaryNodes) {
-        const Point<2>& nodePoint = mesh.getNode(nodeIndex);
-        double neumannValue = bc.boundaryFunction.value(nodePoint);
+    // Inizializza la quadratura 1D
+    GaussLegendre1D quadrature;
+    
+    // Itera su tutti gli edge di bordo con questo tag
+    for (const auto& edge : boundaryEdges) {
+        // Calcola i contributi ai nodi dell'edge usando la quadratura
+        std::vector<double> contributions;
+        quadrature.integrateShapeFunctions(edge, bc.boundaryFunction, contributions);
         
-        // TODO: Implementare correttamente le condizioni di Neumann
-        // Richiedono integrazione sui boundary elements e calcolo delle derivate normali
-        std::cout << "    Neumann BC at node " << nodeIndex 
-                 << " with flux " << neumannValue << " (placeholder - non implementato)" << std::endl;
+        // Aggiungi i contributi al vettore RHS
+        const auto& nodeIndices = edge.getNodeIndexes();
+        for (size_t i = 0; i < nodeIndices.size(); ++i) {
+            int globalNodeIndex = nodeIndices[i];
+            rhs[globalNodeIndex] += contributions[i];
+        }
         
-        // Per ora non modifichiamo la matrice A per le condizioni di Neumann
-        // L'implementazione completa richiederebbe:
-        // 1. Identificazione degli elementi di bordo
-        // 2. Calcolo delle derivate normali
-        // 3. Integrazione sui bordi
-        // 4. Aggiunta del contributo al RHS
+        std::cout << "    Edge con nodi [" << nodeIndices[0] << ", " << nodeIndices[1] 
+                 << "] - contributi: [" << contributions[0] << ", " << contributions[1] << "]" << std::endl;
     }
 }
+
+// TODO: Implementare metodi per 1D e 3D
+// Per 1D: applica condizioni di Neumann direttamente ai punti di bordo (già implementato in Fem1D)
+// void applyNeumann1D(const BoundaryCondition& bc, const Grid1D& mesh, 
+//                     Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs);
+
+// TODO: Per 3D: applica condizioni di Neumann integrando sulle facce di bordo
+// void applyNeumann3D(const BoundaryCondition& bc, const Grid3D& mesh, 
+//                     Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs) {
+//     // 1. Ottenere le facce di bordo con getBoundaryFacesByTag(bc.physicalTag)
+//     // 2. Usare quadratura 2D per integrare ∫ g(x)·φᵢ(x) dS su ogni faccia
+//     // 3. Assemblare i contributi nel RHS come fatto per il 2D
+//     // Richiede: GaussLegendre2D quadrature, BoundaryCell<2> per facce, 
+//     //          mapToGlobalFace(), getShapeFunctions2D(), faceArea()
+// }

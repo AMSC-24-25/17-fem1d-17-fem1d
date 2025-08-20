@@ -65,7 +65,7 @@ public:
     void outputVtk(const std::string& filename) const;
 private:
     // Metodi helper per assemblaggio
-    void assembleElement(int elemIndex, orderTwoQuadrature& quad, 
+    void assembleElement(int elemIndex, BarycentricQuadRule& quad, 
                         std::vector<Triplet>& triplets);
         
     void applyDirichletBC();
