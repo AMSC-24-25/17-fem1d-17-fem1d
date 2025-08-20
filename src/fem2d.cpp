@@ -103,10 +103,9 @@ void Fem<dim>::assembleElement(int elemIndex, QuadratureRule<dim>& quad,
                 
                 // Diffusion contribution matrix: ∫ ∇φᵢ · ∇φⱼ dx
                 // Transport contribution term ∫ (b·∇φᵢ) φⱼ dx
-                for (int d = 0; d < dim; ++d) {
-                    diff_local(i,j) += w * diff_val * grad_phi[i][d] * grad_phi[j][d];
-                    transport_local(i,j) += w * transport_term.value(p)[d] * grad_phi[i][d] * phi[q][j];
-                }
+                // Note: product of 2 Points is their scalar product
+                diff_local(i,j) += w * diff_val * (grad_phi[i] * grad_phi[j]);
+                transport_local(i,j) += w * (transport_term.value(p) * grad_phi[i]) * phi[q][j];
 
                 // Reaction contribution matrix: ∫ φᵢ φⱼ dx
                 react_local(i,j) += w * react_val * phi[q][i] * phi[q][j];

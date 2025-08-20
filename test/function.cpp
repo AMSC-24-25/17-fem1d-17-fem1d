@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include "function.hpp"
-#include "vector.hpp"
 
 class functionTest : public ::testing::Test {
 };
@@ -65,14 +64,8 @@ TEST_F(functionTest, Operators_Sum_Product_Functions_And_Scalars) {
 }
 
 TEST_F(functionTest, dot_product) {
-    FunctionVector<2> v1({
-        Function<2,1>([](Point<2> p) {return p[0];}), 
-        Function<2,1>([](Point<2> p) {return p[1];})
-    });
-    FunctionVector<2> v2({
-        Function<2,1>([](Point<2> p) {return p[0];}), 
-        Function<2,1>([](Point<2> p) {return 2 * p[1];})
-    });
+    Function<2,2> v1([](Point<2> p) { return Point<2>{p[0], p[1]}; });
+    Function<2,2> v2([](Point<2> p) { return Point<2>{p[0], 2 * p[1]}; });
     
     Point<2> p1(std::vector<double>{1.0, 2.0});
     Point<2> p2(std::vector<double>{2.0, 2.0});

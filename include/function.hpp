@@ -6,10 +6,6 @@
 #include <vector>
 #include "point.hpp"
 
-// Forward declaration to break include cycle
-template <unsigned int dim>
-class FunctionVector;
-
 template <unsigned int dim, unsigned int returnDim>
 class Function
 {
@@ -33,7 +29,7 @@ public:
     explicit Function(fun f) : function(f) {}
 
     Function<dim, returnDim> operator+(const Function<dim, returnDim> &f) const;
-    Function<dim, returnDim> operator*(const Function<dim, returnDim> &f) const;
+    Function<dim, 1> operator*(const Function<dim, returnDim> &f) const;
     Function<dim, returnDim> operator+(double k) const;
     Function<dim, returnDim> operator*(double k) const;
     Function<dim, returnDim> &operator+=(const Function<dim, returnDim> &f);
@@ -126,7 +122,7 @@ public:
         return out;
     }
 
-    FunctionVector<dim> getGrad() const;
+    Function<dim, dim> getGrad() const;
 };
 
 

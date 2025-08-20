@@ -2,7 +2,6 @@
 #ifndef FUNCTION_TPP
 #define FUNCTION_TPP
 
-#include "vector.hpp"
 #include <stdexcept>
 
 template <unsigned int dim>
@@ -182,15 +181,16 @@ Function<dim, 1> Function<dim, 1>::operator*(double k) const
 }
 
 template <unsigned int dim>
-FunctionVector<dim> Function<dim, 1>::getGrad() const
+Function<dim, dim> Function<dim, 1>::getGrad() const
 {
-    std::vector<Function<dim, 1>> comps;
-    comps.reserve(gradient.size());
-    for (const auto &g : gradient)
+    const Function<dim, 1> &thisFun = *this;
+    
+    typename Function<dim, dim>::fun gradLambda = [thisFun](const Point<dim> &p) -> Point<dim>
     {
-        comps.emplace_back(Function<dim, 1>(g));
-    }
-    return FunctionVector<dim>(std::move(comps));
+        return thisFun.getGradValues(p);
+    };
+
+    return Function<dim, dim>(gradLambda);
 }
 
 //----------------general------------
@@ -211,18 +211,18 @@ Function<dim, returnDim> Function<dim, returnDim>::operator+(const Function<dim,
 }
 
 template <unsigned int dim, unsigned int returnDim>
-Function<dim, returnDim> Function<dim, returnDim>::operator*(const Function<dim, returnDim> &f) const
+Function<dim, 1> Function<dim, returnDim>::operator*(const Function<dim, returnDim> &f) const
 {
-    using fun = std::function<Point<returnDim>(const Point<dim> &)>;
+    using fun = std::function<Point<1>(const Point<dim> &)>;
 
     const Function<dim, returnDim> &thisFun = *this;
 
-    fun resultFunction = [thisFun, f](const Point<dim> &p) -> Point<returnDim>
+    fun resultFunction = [thisFun, f](const Point<dim> &p) -> Point<1>
     {
         return thisFun.value(p) * f.value(p);
     };
 
-    return Function<dim, returnDim>(resultFunction);
+    return Function<dim, 1>(resultFunction);
 }
 
 template <unsigned int dim, unsigned int returnDim>
