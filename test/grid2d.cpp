@@ -3,15 +3,20 @@
 #include <cmath>
 #include <vector>
 
-class Grid2DTest : public ::testing::Test {
+class GridTest : public ::testing::Test {
 };
 
-TEST_F(Grid2DTest, Parse_test) {
+TEST_F(GridTest, Parse_2D_test) {
     Grid2D grid;
     grid.parseFromMsh("../mesh/test_grid2d.msh");
     return GTEST_SUCCEED(); 
 }
-TEST_F(Grid2DTest, Parse_reprint_test) {
+TEST_F(GridTest, Parse_3D_test) {
+    Grid3D grid;
+    grid.parseFromMsh("../mesh/test_grid3d.msh");
+    return GTEST_SUCCEED(); 
+}
+TEST_F(GridTest, Parse_and_output_2d_test) {
     Grid2D grid;
     grid.parseFromMsh("../mesh/test_grid2d.msh");
 
