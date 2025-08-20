@@ -10,21 +10,25 @@ template <unsigned int dim, unsigned int returnDim>
 class Function;
 
 template <unsigned int dim>
-class Vector {
+class FunctionVector {
 
 private:
     // gradiente: vettore di funzioni scalari (returnDim=1)
     std::vector<Function<dim, 1>> data;
 
 public:
-    explicit Vector(std::vector<Function<dim, 1>> vec) : data(std::move(vec)) {}
+    explicit FunctionVector(std::vector<Function<dim, 1>> vec) : data(std::move(vec)) {}
 
     size_t size() const { return data.size(); }
 
-    const Function<dim, 1>& operator[](size_t i) const { return data[i]; }
-    Function<dim, 1>& operator[](size_t i) { return data[i]; }
+    const Function<dim, 1>& operator[](size_t i) const { 
+        return data[i]; 
+    }
+    Function<dim, 1>& operator[](size_t i) { 
+        return data[i]; 
+    }
 
-    Vector<dim> operator+(const Vector<dim>& v) const {
+    FunctionVector<dim> operator+(const FunctionVector<dim>& v) const {
         if (data.size() != v.data.size()) {
             throw std::invalid_argument("Vectors must be of the same size");
         }
@@ -33,10 +37,10 @@ public:
         for (size_t i = 0; i < data.size(); ++i) {
             result.push_back(data[i] + v.data[i]);
         }
-        return Vector<dim>(std::move(result));
+        return FunctionVector<dim>(std::move(result));
     }
 
-    Vector<dim> operator-(const Vector<dim>& v) const {
+    FunctionVector<dim> operator-(const FunctionVector<dim>& v) const {
         if (data.size() != v.data.size()) {
             throw std::invalid_argument("Vectors must be of the same size");
         }
@@ -45,7 +49,7 @@ public:
         for (size_t i = 0; i < data.size(); ++i) {
             result.push_back(data[i] + (v.data[i] * -1.0));
         }
-        return Vector<dim>(std::move(result));
+        return FunctionVector<dim>(std::move(result));
     }
 };
 

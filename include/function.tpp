@@ -182,7 +182,7 @@ Function<dim, 1> Function<dim, 1>::operator*(double k) const
 }
 
 template <unsigned int dim>
-Vector<dim> Function<dim, 1>::getGrad() const
+FunctionVector<dim> Function<dim, 1>::getGrad() const
 {
     std::vector<Function<dim, 1>> comps;
     comps.reserve(gradient.size());
@@ -190,7 +190,7 @@ Vector<dim> Function<dim, 1>::getGrad() const
     {
         comps.emplace_back(Function<dim, 1>(g));
     }
-    return Vector<dim>(std::move(comps));
+    return FunctionVector<dim>(std::move(comps));
 }
 
 //----------------general------------
