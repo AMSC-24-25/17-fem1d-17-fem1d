@@ -184,3 +184,58 @@ void Fem2D::solve(std::ofstream& output) {
     std::cout << "Solution computed and written to output file" << std::endl;
     std::cout << "Solution norm: " << solution.norm() << std::endl;
 }
+
+void Fem2D::outputVtk(const std::string& filename) const {
+    if (filename.size() < 4 || filename.substr(filename.size() - 4) != ".vtu") {
+        std::cerr << "Error: outputVtk filename must end with '.vtu'\n";
+        exit(-1);
+    }
+
+    std::ofstream vtuFile(filename, std::ios::out);
+    if (!vtuFile.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        exit(-1);
+    }
+
+    vtuFile << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
+    vtuFile << "<UnstructuredGrid>\n";
+
+    // Nodes
+    vtuFile << "<Piece NumberOfPoints=\"" << mesh.getNumNodes() << "\" NumberOfCells=\"" << mesh.getNumElements() << "\">\n";
+    vtuFile << "<Points>\n<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
+    for (const Point<2>& node : mesh.getUniqueNodes()) {
+        vtuFile << node.x() << " " << node.y() << " 0.0\n"; // Z coordinate required 
+    }
+    vtuFile << "</DataArray>\n</Points>\n";
+
+    // Solution output as PointData
+    vtuFile << "<PointData Scalars=\"solution\">\n";
+    vtuFile << "<DataArray type=\"Float64\" Name=\"solution\" format=\"ascii\">\n";
+    for (unsigned int i = 0; i < mesh.getNumNodes(); ++i) {
+        vtuFile << solution(i) << "\n";
+    }
+    vtuFile << "</DataArray>\n</PointData>\n";
+
+    // Cells
+    vtuFile << "<Cells>\n<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
+    for (const Cell<2>& cell : mesh.getCells()) {
+        for (unsigned int i = 0; i < cell.getN(); ++i) {
+            vtuFile << cell.getNodeIndex(i) << " ";
+        }
+        vtuFile << "\n";
+    }
+    vtuFile << "</DataArray>\n<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
+    unsigned int offset = 0;
+    for (const Cell<2>& cell : mesh.getCells()) {
+        offset += cell.getN();
+        vtuFile << offset << "\n";
+    }
+    vtuFile << "</DataArray>\n<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
+    for (unsigned int i = 0; i < mesh.getNumElements(); ++i) {
+        vtuFile << "5\n"; // VTK_TRIANGLE
+    }
+    vtuFile << "</DataArray>\n</Cells>\n";
+
+    vtuFile << "</Piece>\n</UnstructuredGrid>\n</VTKFile>\n";
+    vtuFile.close();
+}

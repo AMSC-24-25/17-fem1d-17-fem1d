@@ -42,12 +42,18 @@ public:
         }
         return cells[i];
     }
+    const CellVector& getCells() const {
+        return cells;
+    }
     const Point<2>& getNode(unsigned int i) const {
         if (i >= unique_nodes.size()) {
             std::cerr << "Index out of bounds in Grid2D::getNode\n";
             exit(-1);
         }
         return unique_nodes[i];
+    }
+    const NodeVector& getUniqueNodes() const {
+        return unique_nodes;
     }
 
     void parseFromMsh(const std::string& filename);

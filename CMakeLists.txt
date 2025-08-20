@@ -28,6 +28,18 @@ target_link_libraries(fem1d_lib Eigen3::Eigen)
 add_executable(17_fem1d_17_fem1d src/main.cpp)
 target_link_libraries(17_fem1d_17_fem1d fem1d_lib)
 
+# ---- Output preparation ----
+add_custom_target(create_output_dir ALL
+    COMMAND ${CMAKE_COMMAND} -E make_directory output
+) 
+add_custom_target(empty_output_dir ALL 
+        COMMAND ${CMAKE_COMMAND} -E remove
+        "output/*.pvtu"
+        "output/*.vtu"
+        COMMENT "Removing all .pvtu and .vtu files from the build directory" 
+) 
+add_dependencies(17_fem1d_17_fem1d create_output_dir empty_output_dir)
+
 # -------testing----
 
 # Test - Auto-include all test files

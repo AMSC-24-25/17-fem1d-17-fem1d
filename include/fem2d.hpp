@@ -62,6 +62,7 @@ public:
     // Getter per la soluzione
     const VectorXd& getSolution() const { return solution; }
 
+    void outputVtk(const std::string& filename) const;
 private:
     // Metodi helper per assemblaggio
     void assembleElement(int elemIndex, orderTwoQuadrature& quad, 

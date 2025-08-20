@@ -116,6 +116,8 @@ int main(int argc, char *argv[])
         fem2d.assemble();
         fem2d.solve(fsol);
         cout << "2D solution saved to sol2d.csv" << endl;
+        fem2d.outputVtk("output/sol2d.vtu");
+        cout << "2D solution saved to ./output/output_sol2d.vtu" << endl;
         fsol.close();
     }
     else {
