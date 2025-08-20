@@ -29,6 +29,9 @@ class Grid{
 public:
     Grid(CellVector cells, NodeVector unique_nodes) : cells(cells), unique_nodes(unique_nodes)
     {}
+    Grid(CellVector cells, NodeVector unique_nodes, BoundaryCellVector boundary_cells) 
+    : cells(cells), unique_nodes(unique_nodes), boundary_cells(boundary_cells)
+    {}
 
     Grid() : cells(), unique_nodes() {}
 
@@ -136,7 +139,7 @@ public:
 
     // Physical tags utility methods
     IndexVector getPhysicalTags() const {
-        std::set<int> uniqueTags;
+        std::set<unsigned int> uniqueTags;
 
         for (const BoundaryCell<dim-1>& boundaryCell : boundary_cells) {
             uniqueTags.insert(boundaryCell.getBoundaryId());

@@ -23,6 +23,7 @@ void gauss_legendre_quadrature(int nQuadraturePoints, std::vector<double>& quad_
         throw std::runtime_error("nQuadraturePoints must be 1, 2, 3, or 4 for hardcoded quadrature.");
     }
 }
+
 void Fem1D::assemble() {
     std::vector<Triplet> triplets;
     triplets.reserve(3 * mesh.getN() - 2);
