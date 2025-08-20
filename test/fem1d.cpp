@@ -3,7 +3,6 @@
 #include <cmath>
 #include <vector>
 
-
 class FEM1DTest : public ::testing::Test {
 protected:
     // Helper function to compute L2 error
@@ -20,6 +19,6 @@ protected:
 };
 
 TEST_F(FEM1DTest, Test_test) {
-    return GTEST_SUCCEED(); 
+    GTEST_SUCCEED(); 
 }
 

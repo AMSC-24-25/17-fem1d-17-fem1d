@@ -258,7 +258,7 @@ Function<dim, returnDim> Function<dim, returnDim>::operator*(double k) const
     return Function<dim, returnDim>(resultFunction);
 }
 
-// In-place additions
+// In-place additions for general template
 template <unsigned int dim, unsigned int returnDim>
 Function<dim, returnDim> &Function<dim, returnDim>::operator+=(const Function<dim, returnDim> &f)
 {
@@ -268,6 +268,21 @@ Function<dim, returnDim> &Function<dim, returnDim>::operator+=(const Function<di
 
 template <unsigned int dim, unsigned int returnDim>
 Function<dim, returnDim> &Function<dim, returnDim>::operator+=(double k)
+{
+    *this = (*this + k);
+    return *this;
+}
+
+// In-place additions for Function<dim, 1> specialization
+template <unsigned int dim>
+Function<dim, 1> &Function<dim, 1>::operator+=(const Function<dim, 1> &f)
+{
+    *this = (*this + f);
+    return *this;
+}
+
+template <unsigned int dim>
+Function<dim, 1> &Function<dim, 1>::operator+=(double k)
 {
     *this = (*this + k);
     return *this;

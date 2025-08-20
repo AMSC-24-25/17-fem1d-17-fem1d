@@ -6,11 +6,16 @@
 #include <vector>
 #include <numeric>
 #include <array>
+
 TEST(QuadratureTest, OrderTwo_WeightsAndLinearExactness) {
     // Triangolo unitario: (0,0), (1,0), (0,1) -> area = 1/2
-    Cell<2> tri(std::vector<Point<2>>{ Point<2>(0.0, 0.0), Point<2>(1.0, 0.0), Point<2>(0.0, 1.0) }, std::vector<unsigned int>{0u,1u,2u});
+    Cell<2> tri(std::vector<Point<2>>{ 
+        Point<2>(std::vector<double>{0.0, 0.0}), 
+        Point<2>(std::vector<double>{1.0, 0.0}), 
+        Point<2>(std::vector<double>{0.0, 1.0}) 
+    }, std::vector<unsigned int>{0u,1u,2u});
 
-    orderTwoQuadrature quad;
+    OrderTwoQuadrature quad;
     std::vector<Point<2>> grad_phi;
     std::vector<Point<2>> qp;
     std::vector<std::vector<double>> phi;
@@ -36,7 +41,11 @@ TEST(QuadratureTest, OrderTwo_WeightsAndLinearExactness) {
 
 TEST(QuadratureTest, FourPoints_WeightsAndLinearExactness) {
     // Triangolo unitario: (0,0), (1,0), (0,1) -> area = 1/2
-    Cell<2> tri(std::vector<Point<2>>{ Point<2>(0.0, 0.0), Point<2>(1.0, 0.0), Point<2>(0.0, 1.0) }, std::vector<unsigned int>{0u,1u,2u});
+    Cell<2> tri(std::vector<Point<2>>{ 
+        Point<2>(std::vector<double>{0.0, 0.0}), 
+        Point<2>(std::vector<double>{1.0, 0.0}), 
+        Point<2>(std::vector<double>{0.0, 1.0}) 
+    }, std::vector<unsigned int>{0u,1u,2u});
 
     FourPointsQuadrature quad;
     std::vector<Point<2>> grad_phi;

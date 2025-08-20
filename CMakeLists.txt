@@ -42,12 +42,11 @@ add_dependencies(17_fem1d_17_fem1d create_output_dir empty_output_dir)
 
 # -------testing----
 
-# # Test - Auto-include all test files
-# file(GLOB TEST_SRC_FILES test/*.cpp)
-# add_executable(17_fem1d_17_fem1d_test ${TEST_SRC_FILES})
-# # Collegamento alla libreria invece di includere i file .cpp direttamente
-# target_link_libraries(17_fem1d_17_fem1d_test fem1d_lib gtest_main)
+# Test - Auto-include all test files
+file(GLOB TEST_SRC_FILES test/*.cpp)
+add_executable(17_fem1d_17_fem1d_test ${TEST_SRC_FILES})
+# Collegamento alla libreria invece di includere i file .cpp direttamente
+target_link_libraries(17_fem1d_17_fem1d_test fem1d_lib gtest_main)
 
-# include(GoogleTest)
-
-# gtest_discover_tests(17_fem1d_17_fem1d_test)
+include(GoogleTest)
+gtest_discover_tests(17_fem1d_17_fem1d_test)
