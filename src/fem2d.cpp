@@ -51,11 +51,11 @@ void Fem2D::assemble() {
     triplets.reserve(9 * mesh.getNumElements()); // Stima: 9 entries per triangolo
     
     // Regola di quadratura per triangoli
-    BarycentricQuadRule quad = quadTriOrder2();
+    orderTwoQuadrature quadrature;
     
     // Loop sui triangoli - CUORE DELL'ASSEMBLAGGIO
     for (unsigned int e = 0; e < mesh.getNumElements(); ++e) {
-        assembleElement(e, quad, triplets);
+        assembleElement(e, quadrature, triplets);
     }
     
     // Assemblaggio finale della matrice sparsa
@@ -82,46 +82,61 @@ void Fem2D::assembleElement(int elemIndex, BarycentricQuadRule& quad,
     }
     
     // Calcola matrici locali 3x3 usando la quadratura esistente
-    Matrix3d diffusionLocal, transportLocal, reactionLocal;
-    Vector3d forcingLocal;
     
-    // Converte transport_term in std::function per compatibilità
-    auto transportFunc = [this](const Point<2>& p) -> Point<2> {
-        double val = transport_term(p);
-        return Point<2>(val, 0.0); // Assume trasporto solo in direzione x
-    };
+    // Variabili per i dati di quadratura
+    std::vector<Point<2>> grad_phi;
+    std::vector<Point<2>> quadrature_points;
+    std::vector<std::vector<double>> phi;
+    std::vector<double> weights;
     
-    // Calcola le matrici locali usando la quadratura
-    quad.localMatricesP1(
-        triangle,
-        diffusion_term,    // Function<2>
-        reaction_term,     // Function<2>  
-        transportFunc,     // std::function<Point<2>(Point<2>)>
-        forcing_term,      // Function<2>
-        diffusionLocal,    // Output: matrice 3x3
-        transportLocal,    // Output: matrice 3x3  
-        reactionLocal,     // Output: matrice 3x3
-        forcingLocal       // Output: vettore 3x1
-    );
+    // Ottieni dati di quadratura
+    quad.getQuadratureData(triangle, grad_phi, quadrature_points, phi, weights);
     
-    // Matrice locale totale: A_local = K + M + C
-    Matrix3d A_local = diffusionLocal + transportLocal + reactionLocal;
+    // Matrici locali 3x3 per triangolo P1
+    Matrix3d K_local = Matrix3d::Zero(); // Diffusione
+    Matrix3d M_local = Matrix3d::Zero(); // Massa/Reazione
+    Vector3d f_local = Vector3d::Zero(); // Termine forzante
+    
+    // Loop sui punti di quadratura
+    for (size_t q = 0; q < quadrature_points.size(); ++q) {
+        const Point<2>& p = quadrature_points[q];
+        double w = weights[q];
+        
+        // Valutazioni delle funzioni nel punto di quadratura
+        double diff_val = diffusion_term.value(p);
+        double react_val = reaction_term.value(p);
+        double forc_val = forcing_term.value(p);
+        
+        // Contributi alle matrici locali
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                // Matrice di rigidezza: ∫ ∇φᵢ · ∇φⱼ dx
+                K_local(i,j) += w * diff_val * (grad_phi[i][0] * grad_phi[j][0] + 
+                                              grad_phi[i][1] * grad_phi[j][1]);
+                // Matrice di massa: ∫ φᵢ φⱼ dx  
+                M_local(i,j) += w * react_val * phi[q][i] * phi[q][j];
+            }
+            // Termine forzante: ∫ f φᵢ dx
+            f_local(i) += w * forc_val * phi[q][i];
+        }
+    }
     
     // Assemblaggio nella matrice globale
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            int globalI = mesh.getCell(elemIndex).getNodeIndex(i);
-            int globalJ = mesh.getCell(elemIndex).getNodeIndex(j);
+            int globalI = triangle.getNodeIndex(i);
+            int globalJ = triangle.getNodeIndex(j);
 
             // Aggiungi alla matrice globale solo se non zero
-            if (std::abs(A_local(i,j)) > 1e-14) {
-                triplets.push_back(Triplet(globalI, globalJ, A_local(i,j)));
+            double value = K_local(i,j) + M_local(i,j);
+            if (std::abs(value) > 1e-14) {
+                triplets.push_back(Triplet(globalI, globalJ, value));
             }
         }
         
         // Assemblaggio del termine noto (RHS)
-        int globalI = mesh.getCell(elemIndex).getNodeIndex(i);
-        rhs[globalI] += forcingLocal[i];
+        int globalI = triangle.getNodeIndex(i);
+        rhs[globalI] += f_local(i);
     }
 }
 

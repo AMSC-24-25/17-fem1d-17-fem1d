@@ -33,7 +33,7 @@ struct Point{
         return coords[0];
     }
 
-    double distance(Point p){
+    double distance(Point p) const {
         double sum = 0.0;
         for (unsigned int i = 0; i < dim; ++i) {
             double diff = coords[i] - p.coords[i];
