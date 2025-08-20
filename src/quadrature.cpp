@@ -1,6 +1,6 @@
 #include "quadrature.hpp"
 
-void orderTwoQuadrature::getQuadratureData(
+void OrderTwoQuadrature::getQuadratureData(
     const Cell<2>& cell,
     std::vector<Point<2>>& grad_phi,
     std::vector<Point<2>>& quadrature_points,

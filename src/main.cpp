@@ -112,16 +112,17 @@ int main(int argc, char *argv[])
         grid.parseFromMsh(argv[2]);
         
         // 4. Crea e risolvi il problema FEM con BoundaryConditions
-        Fem2D fem2d(grid, forcing, diffusion, transport, reaction, boundary_conditions);
+        Fem<2> fem2d(grid, forcing, diffusion, transport, reaction, boundary_conditions);
         
         cout << "=== Risoluzione problema FEM 2D ===" << endl;
-        std::ofstream fsol("../sol2d.csv");
+        std::string csvFilePath = "../sol2d.csv";
+        std::string vtuFilePath = "output/sol2d.vtu";
         fem2d.assemble();
-        fem2d.solve(fsol);
-        cout << "2D solution saved to sol2d.csv" << endl;
-        fem2d.outputVtk("output/sol2d.vtu");
-        cout << "2D solution saved to ./output/output_sol2d.vtu" << endl;
-        fsol.close();
+        fem2d.solve();
+        fem2d.outputCsv(csvFilePath);
+        cout << "2D solution saved to " << csvFilePath << endl;
+        fem2d.outputVtu(vtuFilePath);
+        cout << "2D solution saved to " << vtuFilePath << endl;
     }
     else {
         cout << "First argument must be '1d' or '2d'" << endl;

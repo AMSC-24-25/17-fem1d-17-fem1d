@@ -38,9 +38,9 @@ public:
 };
 
 
-class orderTwoQuadrature : public BarycentricQuadRule {
+class OrderTwoQuadrature : public BarycentricQuadRule {
     public:
-    orderTwoQuadrature() {
+    OrderTwoQuadrature() {
         barycPoints = {
             {2/3.0, 1/6.0, 1/6.0},
             {1/6.0, 2/3.0, 1/6.0},

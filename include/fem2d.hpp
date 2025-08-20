@@ -21,15 +21,16 @@ typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SparseMat;
 typedef Eigen::Triplet<double> Triplet;
 
 // Struttura per boundary conditions moderne
-class Fem2D {
+template<unsigned int dim>
+class Fem {
 private:
-    Grid2D mesh;
-    Function<2, 1> forcing_term;
-    Function<2, 1> reaction_term;
-    Function<2, 1> diffusion_term;
-    Function<2, 1> transport_term;
+    Grid<dim> mesh;
+    Function<dim, 1> forcing_term;
+    Function<dim, 1> reaction_term;
+    Function<dim, 1> diffusion_term;
+    Function<dim, 1> transport_term;
 
-    BoundaryConditions<2, 1> boundaryConditions;
+    BoundaryConditions<dim, 1> boundaryConditions;
 
     SparseMat A;
     VectorXd rhs;
@@ -37,21 +38,24 @@ private:
 
 public:
     // Costruttore moderno con BoundaryConditions
-    Fem2D(Grid2D grid, Function<2, 1> forcing, Function<2, 1> diffusion, 
-          Function<2, 1> transport, Function<2, 1> reaction,
-          const BoundaryConditions<2, 1>& boundaryConditions);
+    Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
+        Function<dim, 1> transport, Function<dim, 1> reaction,
+        const BoundaryConditions<dim, 1>& boundaryConditions);
 
     // Assemblaggio matrici
     void assemble();
     
     // Risoluzione sistema
-    void solve(std::ofstream& output);
+    void solve();
     
     // Getter per la soluzione
     const VectorXd& getSolution() const { return solution; }
 
-    void outputVtk(const std::string& filename) const;
+    void outputVtu(const std::string& filename) const;
+    void outputCsv(const std::string& filename) const;
 private:
+    OrderTwoQuadrature getQuadratureRule() const;
+
     // Metodi helper per assemblaggio
     void assembleElement(int elemIndex, BarycentricQuadRule& quad, 
                         std::vector<Triplet>& triplets);

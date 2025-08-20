@@ -1,9 +1,12 @@
 #include "fem2d.hpp"
 
+template class Fem<2>;
+
 // Costruttore moderno con BoundaryConditions
-Fem2D::Fem2D(Grid2D grid, Function<2, 1> forcing, Function<2, 1> diffusion, 
-             Function<2, 1> transport, Function<2, 1> reaction,
-             const BoundaryConditions<2, 1>& boundaryConditions) :
+template<unsigned int dim>
+Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
+             Function<dim, 1> transport, Function<dim, 1> reaction,
+             const BoundaryConditions<dim, 1>& boundaryConditions) :
     mesh(grid), forcing_term(forcing), diffusion_term(diffusion), 
     transport_term(transport), reaction_term(reaction),
     boundaryConditions(boundaryConditions)
@@ -17,30 +20,36 @@ Fem2D::Fem2D(Grid2D grid, Function<2, 1> forcing, Function<2, 1> diffusion,
     solution.setZero();
 }
 
+template<>
+OrderTwoQuadrature Fem<2>::getQuadratureRule() const {
+    return OrderTwoQuadrature();
+}
 
-// Assemblaggio principale
-void Fem2D::assemble() {
-    std::cout << "### ASSEMBLE 2D ###" << std::endl;
-    
+// Main assembly
+template<unsigned int dim>
+void Fem<dim>::assemble() {
+    std::cout << "### ASSEMBLE " << dim << "D ###" << std::endl;
+
     // Inizializzazione
     int numNodes = mesh.getNumNodes();
     rhs.setZero();
     
     std::vector<Triplet> triplets;
-    triplets.reserve(9 * mesh.getNumElements()); // Stima: 9 entries per triangolo
+    unsigned int expNonZero = (dim==1) ? 3 : (dim==2) ? 9 : 25; // Estimate non-zero entries per element
+    triplets.reserve(expNonZero * mesh.getNumElements());
+
+    // Obtain quadrature rule from specialised method
+    OrderTwoQuadrature quadrature = getQuadratureRule();
     
-    // Regola di quadratura per triangoli
-    orderTwoQuadrature quadrature;
-    
-    // Loop sui triangoli - CUORE DELL'ASSEMBLAGGIO
+    // Loop on elements - assemble local matrix for each. Appends non-zero values to triplets
     for (unsigned int e = 0; e < mesh.getNumElements(); ++e) {
         assembleElement(e, quadrature, triplets);
     }
     
-    // Assemblaggio finale della matrice sparsa
+    // Global sparse matrix assembly
     A.setFromTriplets(triplets.begin(), triplets.end());
-    
-    // Applica condizioni al contorno
+
+    // Apply boundary conditions
     boundaryConditions.apply(mesh, A, rhs);
     
     std::cout << "Matrix assembled: " << A.rows() << "x" << A.cols() 
@@ -48,81 +57,86 @@ void Fem2D::assemble() {
 }
 
 // Assemblaggio di un singolo elemento (triangolo)
-void Fem2D::assembleElement(int elemIndex, BarycentricQuadRule& quad, 
+template<unsigned int dim>
+void Fem<dim>::assembleElement(int elemIndex, BarycentricQuadRule& quad, 
                            std::vector<Triplet>& triplets) {
+
+    const Cell<dim>& cell = mesh.getCell(elemIndex);
+
+    // // Verifica che sia effettivamente un triangolo
+    // if (cell.getN() != 3) {
+    //     std::cerr << "ERROR: Element " << elemIndex << " is not a triangle (has " 
+    //               << cell.getN() << " nodes)" << std::endl;
+    //     return; // Skip this element
+    // }
     
-    const Cell<2>& triangle = mesh.getCell(elemIndex);
-    
-    // Verifica che sia effettivamente un triangolo
-    if (triangle.getN() != 3) {
-        std::cerr << "ERROR: Element " << elemIndex << " is not a triangle (has " 
-                  << triangle.getN() << " nodes)" << std::endl;
-        return; // Skip this element
-    }
-    
-    // Calcola matrici locali 3x3 usando la quadratura esistente
-    
-    // Variabili per i dati di quadratura
-    std::vector<Point<2>> grad_phi;
-    std::vector<Point<2>> quadrature_points;
+    unsigned int matSize = (dim == 2) ? 3 : 5;
+
+    // Variables for quadrature data
+    std::vector<Point<dim>> grad_phi;
+    std::vector<Point<dim>> quadrature_points;
     std::vector<std::vector<double>> phi;
     std::vector<double> weights;
     
-    // Ottieni dati di quadratura
-    quad.getQuadratureData(triangle, grad_phi, quadrature_points, phi, weights);
-    
-    // Matrici locali 3x3 per triangolo P1
-    Matrix3d K_local = Matrix3d::Zero(); // Diffusione
-    Matrix3d M_local = Matrix3d::Zero(); // Massa/Reazione
-    Vector3d f_local = Vector3d::Zero(); // Termine forzante
-    
-    // Loop sui punti di quadratura
+    // Get quadrature data
+    quad.getQuadratureData(cell, grad_phi, quadrature_points, phi, weights);
+
+    // Local matrices for element
+    MatrixXd diff_local = MatrixXd::Zero(matSize, matSize); // Diffusione
+    MatrixXd react_local = MatrixXd::Zero(matSize, matSize); // Massa/Reazione
+    VectorXd forc_local = VectorXd::Zero(matSize); // Termine forzante
+
+    // Loop on quadrature points
     for (size_t q = 0; q < quadrature_points.size(); ++q) {
-        const Point<2>& p = quadrature_points[q];
+        const Point<dim>& p = quadrature_points[q];
         double w = weights[q];
         
-        // Valutazioni delle funzioni nel punto di quadratura
+        // Evaluate parameters on quadrature point
         double diff_val = diffusion_term.value(p);
         double react_val = reaction_term.value(p);
         double forc_val = forcing_term.value(p);
-        
-        // Contributi alle matrici locali
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 3; ++j) {
-                // Matrice di rigidezza: ∫ ∇φᵢ · ∇φⱼ dx
-                K_local(i,j) += w * diff_val * (grad_phi[i][0] * grad_phi[j][0] + 
+
+        // Contributions to local matrices
+        for (int i = 0; i < matSize; ++i) {
+            for (int j = 0; j < matSize; ++j) {
+                // Diffusion contribution matrix: ∫ ∇φᵢ · ∇φⱼ dx
+                diff_local(i,j) += w * diff_val * (grad_phi[i][0] * grad_phi[j][0] + 
                                               grad_phi[i][1] * grad_phi[j][1]);
-                // Matrice di massa: ∫ φᵢ φⱼ dx  
-                M_local(i,j) += w * react_val * phi[q][i] * phi[q][j];
+                
+                //TODO: Transport term ∫ (b·∇φᵢ) φⱼ dx
+                
+                // Reaction contribution matrix: ∫ φᵢ φⱼ dx
+                react_local(i,j) += w * react_val * phi[q][i] * phi[q][j];
             }
-            // Termine forzante: ∫ f φᵢ dx
-            f_local(i) += w * forc_val * phi[q][i];
+            // Forcing term: ∫ f φᵢ dx
+            forc_local(i) += w * forc_val * phi[q][i];
         }
     }
     
-    // Assemblaggio nella matrice globale
-    for (int i = 0; i < 3; ++i) {
-        for (int j = 0; j < 3; ++j) {
-            int globalI = triangle.getNodeIndex(i);
-            int globalJ = triangle.getNodeIndex(j);
+    // Assembly in global matrix
+    for (int i = 0; i < matSize; ++i) {
+        for (int j = 0; j < matSize; ++j) {
+            int globalI = cell.getNodeIndex(i);
+            int globalJ = cell.getNodeIndex(j);
 
             // Aggiungi alla matrice globale solo se non zero
-            double value = K_local(i,j) + M_local(i,j);
+            double value = diff_local(i,j) + react_local(i,j);
             if (std::abs(value) > 1e-14) {
                 triplets.push_back(Triplet(globalI, globalJ, value));
             }
         }
-        
-        // Assemblaggio del termine noto (RHS)
-        int globalI = triangle.getNodeIndex(i);
-        rhs[globalI] += f_local(i);
+
+        // Assembly of RHS
+        int globalI = cell.getNodeIndex(i);
+        rhs[globalI] += forc_local(i);
     }
 }
 
 // Risoluzione del sistema lineare
-void Fem2D::solve(std::ofstream& output) {
-    std::cout << "### SOLVE 2D ###" << std::endl;
-    
+template<unsigned int dim>
+void Fem<dim>::solve() {
+    std::cout << "### SOLVE " << dim << "D ###" << std::endl;
+
     // Risolvi il sistema Ax = b usando SparseLU
     Eigen::SparseLU<SparseMat> solver;
     solver.analyzePattern(A);
@@ -139,21 +153,37 @@ void Fem2D::solve(std::ofstream& output) {
         std::cerr << "Solving failed!" << std::endl;
         return;
     }
-    
-    // Scrivi soluzione su file (formato per visualizzazione)
-    output << "# x y u" << std::endl;
-    for (unsigned int i = 0; i < mesh.getNumNodes(); ++i) {
-        const Point<2>& node = mesh.getNode(i);
-        output << node[0] << " " << node[1] << " " << solution(i) << std::endl;
+}
+
+template<unsigned int dim>
+void Fem<dim>::outputCsv(const std::string& filename) const {
+    if (filename.size() < 4 || filename.substr(filename.size() - 4) != ".csv") {
+        std::cerr << "Error: outputCsv filename must end with '.csv'\n";
+        exit(-1);
     }
-    
+    std::ofstream csvFile(filename, std::ios::out);
+    if (!csvFile.is_open()) {
+        std::cerr << "Error opening file: " << filename << std::endl;
+        return;
+    }
+
+    csvFile << "# x " << (dim >= 2 ? "y " : "") << (dim == 3 ? "z " : "") << "u" << std::endl;
+    for (unsigned int i = 0; i < mesh.getNumNodes(); ++i) {
+        const Point<dim>& node = mesh.getNode(i);
+        for (unsigned int j = 0; j < dim; ++j) {
+            csvFile << node[j] << " ";
+        }
+        csvFile << solution(i) << std::endl;
+    }
+
     std::cout << "Solution computed and written to output file" << std::endl;
     std::cout << "Solution norm: " << solution.norm() << std::endl;
 }
 
-void Fem2D::outputVtk(const std::string& filename) const {
+template<unsigned int dim>
+void Fem<dim>::outputVtu(const std::string& filename) const {
     if (filename.size() < 4 || filename.substr(filename.size() - 4) != ".vtu") {
-        std::cerr << "Error: outputVtk filename must end with '.vtu'\n";
+        std::cerr << "Error: outputVtu filename must end with '.vtu'\n";
         exit(-1);
     }
 
@@ -169,8 +199,10 @@ void Fem2D::outputVtk(const std::string& filename) const {
     // Nodes
     vtuFile << "<Piece NumberOfPoints=\"" << mesh.getNumNodes() << "\" NumberOfCells=\"" << mesh.getNumElements() << "\">\n";
     vtuFile << "<Points>\n<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
-    for (const Point<2>& node : mesh.getUniqueNodes()) {
-        vtuFile << node.x() << " " << node.y() << " 0.0\n"; // Z coordinate required 
+    for (const Point<dim>& node : mesh.getUniqueNodes()) {
+        for (unsigned int i = 0; i < 3; ++i) {
+            vtuFile << (i<dim ? node[i] : 0.0) << " ";
+        }
     }
     vtuFile << "</DataArray>\n</Points>\n";
 
@@ -184,7 +216,7 @@ void Fem2D::outputVtk(const std::string& filename) const {
 
     // Cells
     vtuFile << "<Cells>\n<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
-    for (const Cell<2>& cell : mesh.getCells()) {
+    for (const Cell<dim>& cell : mesh.getCells()) {
         for (unsigned int i = 0; i < cell.getN(); ++i) {
             vtuFile << cell.getNodeIndex(i) << " ";
         }
@@ -192,13 +224,16 @@ void Fem2D::outputVtk(const std::string& filename) const {
     }
     vtuFile << "</DataArray>\n<DataArray type=\"Int32\" Name=\"offsets\" format=\"ascii\">\n";
     unsigned int offset = 0;
-    for (const Cell<2>& cell : mesh.getCells()) {
+    for (const Cell<dim>& cell : mesh.getCells()) {
         offset += cell.getN();
         vtuFile << offset << "\n";
     }
     vtuFile << "</DataArray>\n<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
+    unsigned int vtkType = (dim == 1) ? 3 : // 3=line
+                           (dim == 2) ? 5 : // 5=triangle
+                                        10; // 10=tetrahedron
     for (unsigned int i = 0; i < mesh.getNumElements(); ++i) {
-        vtuFile << "5\n"; // VTK_TRIANGLE
+        vtuFile << vtkType << "\n";
     }
     vtuFile << "</DataArray>\n</Cells>\n";
 
