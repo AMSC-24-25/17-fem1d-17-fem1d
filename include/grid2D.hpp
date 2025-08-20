@@ -112,9 +112,9 @@ public:
 
     std::vector<BoundaryCell<1>> getBoundaryEdgesByTag(int physicalTag) const {
         std::vector<BoundaryCell<1>> boundaryEdges;
-        
-        for (const auto& boundaryCell : boundary_cells) {
-            if (boundaryCell.getPhysicalTag() == physicalTag) {
+
+        for (const BoundaryCell<1>& boundaryCell : boundary_cells) {
+            if (boundaryCell.getBoundaryId() == physicalTag) {
                 boundaryEdges.push_back(boundaryCell);
             }
         }

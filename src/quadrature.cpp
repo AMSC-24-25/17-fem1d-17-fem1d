@@ -102,8 +102,9 @@ void GaussLegendre1D::getQuadratureData(const BoundaryCell<1>& edge,
     }
 }
 
+//TODO non so se csia giusto Function <2,1>
 double GaussLegendre1D::integrate(const BoundaryCell<1>& edge, 
-                                 const Function<2>& func) const {
+                                 const Function<2,1>& func) const {
     std::vector<Point<2>> quadrature_points;
     std::vector<std::vector<double>> phi;
     std::vector<double> weights;
@@ -119,8 +120,11 @@ double GaussLegendre1D::integrate(const BoundaryCell<1>& edge,
     return integral;
 }
 
+
+//TODO non so se csia giusto Function <2,1>
+
 void GaussLegendre1D::integrateShapeFunctions(const BoundaryCell<1>& edge,
-                                             const Function<2>& neumannFunc,
+                                             const Function<2, 1>& neumannFunc,
                                              std::vector<double>& contributions) const {
     std::vector<Point<2>> quadrature_points;
     std::vector<std::vector<double>> phi;

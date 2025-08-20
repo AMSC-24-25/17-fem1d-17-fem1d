@@ -105,11 +105,11 @@ public:
     
     // Integra una funzione lungo un segmento di bordo
     double integrate(const BoundaryCell<1>& edge, 
-                    const Function<2>& func) const;
+                    const Function<2,1>& func) const;
     
     // Integra le shape functions lungo un segmento per Neumann BC
     void integrateShapeFunctions(const BoundaryCell<1>& edge,
-                                const Function<2>& neumannFunc,
+                                const Function<2,1>& neumannFunc,
                                 std::vector<double>& contributions) const;
 };
 

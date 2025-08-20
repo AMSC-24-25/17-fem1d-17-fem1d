@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         
         
         // Test Neumann: flusso normale specificato sul lato superiore
-        boundaryConditions.addNeumann(3, Function<2,1>([](Point<2> p) { 
+        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { 
             return sin(EIGEN_PI * p[0]);  // Flusso sinusoidale lungo x
         }));
         // Configurazione con mix di Dirichlet e Neumann
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
         boundary_conditions.addDirichlet(1, Point<1>(0.0));
         boundary_conditions.addDirichlet(2, Point<1>(0.0));
         boundary_conditions.addDirichlet(3, Point<1>(0.0));
-        
+
         cout << "Condizioni al contorno configurate:" << endl;
         cout << "  Physical tag 0 (lato sinistro): Dirichlet u = 0" << endl;
         cout << "  Physical tag 1 (lato destro): Dirichlet u = 0" << endl;

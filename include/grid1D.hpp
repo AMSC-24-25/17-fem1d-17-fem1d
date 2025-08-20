@@ -28,10 +28,6 @@ class Grid1D{
         return end;
     }
 
-    const double getStart() const{
-        return start;
-    }
-
     double operator()(int k) const{
         if(k > N){
             std::cerr << "k > N passed to Grid\n";
