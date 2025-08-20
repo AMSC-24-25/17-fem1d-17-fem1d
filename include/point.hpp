@@ -9,8 +9,19 @@
 using CoordinateVector = std::vector<double>;
 
 template<unsigned int dim>
-struct Point{
-    CoordinateVector coords;
+class Point{
+
+protected: CoordinateVector coords;
+
+public:
+
+    static Point<dim> zero() {
+        return Point<dim>(std::vector<double>(dim,0.0));
+    }
+    static Point<dim> one() {
+        return Point<dim>(std::vector<double>(dim,1.0));
+    }
+
 
     Point(CoordinateVector coords_) : coords(coords_) 
     {}
@@ -50,6 +61,14 @@ struct Point{
         return coords[i];
     }
 
+    double operator *(Point<dim> p) const {
+        double result = 0.0;
+        for (unsigned int i = 0; i < dim; ++i) {
+            result += coords[i] * p.coords[i];
+        }
+        return result;
+    }
+
     double x() const {
         static_assert(dim >= 1, "Point is not 1D");
         return coords[0];
@@ -64,6 +83,29 @@ struct Point{
         static_assert(dim >= 3, "Point is not 3D");
         return coords[2];
     }
+
 };
+
+// template<unsigned int dim>
+//  class one : public Point<dim> {
+// public:
+//     one() : Point<dim>() {
+//         for (unsigned int i = 0; i < dim; ++i) {
+//             this->coords.push_back(1.0);
+//         }
+//     }
+// };
+
+
+
+// template<unsigned int dim>
+//  class zero : public Point<dim> {
+// public:
+//     zero() : Point<dim>() {
+//         for (unsigned int i = 0; i < dim; ++i) {
+//             this->coords.push_back(0.0);
+//         }
+//     }
+// };
 
 #endif

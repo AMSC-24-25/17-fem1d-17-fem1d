@@ -6,7 +6,7 @@
 #include <iostream>
 #include <vector>
 
-using FunctionVector = std::vector<Function<1>>;
+using FunctionVector = std::vector<Function<1,1>>;
 
 class Grid1D{
     private:
@@ -26,6 +26,10 @@ class Grid1D{
     }
     const double getEnd() const {
         return end;
+    }
+
+    const double getStart() const{
+        return start;
     }
 
     double operator()(int k) const{

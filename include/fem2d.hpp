@@ -3,7 +3,6 @@
 
 #include "function.hpp"
 #include "grid2D.hpp"
-#include "boundary_cond.hpp"
 #include "boundary_conditions.hpp"
 #include "quadrature.hpp"
 
@@ -25,34 +24,23 @@ typedef Eigen::Triplet<double> Triplet;
 class Fem2D {
 private:
     Grid2D mesh;
-    Function<2> forcing_term;
-    Function<2> reaction_term;
-    Function<2> diffusion_term;
-    Function<2> transport_term;
-    
-    // Condizioni al contorno (legacy per compatibilità)
-    bool isNeumann1, isNeumann2;
-    Function<2> boundary1, boundary2;
-    
-    // Boundary conditions moderne
-    BoundaryConditions boundaryConditions;
-    
+    Function<2, 1> forcing_term;
+    Function<2, 1> reaction_term;
+    Function<2, 1> diffusion_term;
+    Function<2, 1> transport_term;
+
+    BoundaryConditions<2, 1> boundaryConditions;
+
     SparseMat A;
     VectorXd rhs;
     VectorXd solution;
 
 public:
     // Costruttore moderno con BoundaryConditions
-    Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion, 
-          Function<2> transport, Function<2> reaction,
-          const BoundaryConditions& boundaryConditions);
-    
-    // Costruttore legacy (per compatibilità)
-    Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion, 
-          Function<2> transport, Function<2> reaction,
-          bool isNeumann1, bool isNeumann2, 
-          Function<2> boundary1, Function<2> boundary2);
-    
+    Fem2D(Grid2D grid, Function<2, 1> forcing, Function<2, 1> diffusion, 
+          Function<2, 1> transport, Function<2, 1> reaction,
+          const BoundaryConditions<2, 1>& boundaryConditions);
+
     // Assemblaggio matrici
     void assemble();
     

@@ -3,7 +3,7 @@
 
 #include "function.hpp"
 #include "grid1D.hpp"
-#include "boundary_cond.hpp"
+#include "boundary_conditions.hpp"
 #include "thomas.hpp"
 
 #include <fstream>
@@ -22,20 +22,24 @@ class Fem1D {
 
     private:
     Grid1D mesh;
-    Function<1> forcing_term;
-    Function<1> reaction_term;
-    Function<1> diffusion_term;
-    Function<1> transport_term;
+    Function<1, 1> forcing_term;
+    Function<1, 1> reaction_term;
+    Function<1, 1> diffusion_term;
+    Function<1, 1> transport_term;
 
-    std::vector<BoundaryCond> boundary_conds;
+    //TODO
+    //porta qui le boundary e passale
+    BoundaryConditions<1, 1> boundaryConditions;
+
 
     SparseMat A;
     VectorXd rhs;
     VectorXd sol;
 
     public:
-    Fem1D(Grid1D mesh, Function<1> forcing_term, Function<1> diffusion_term, Function<1> transport_term, Function<1> reaction_term, 
-        bool isNeuman1, bool isNeuman2, Function<1> value1, Function<1> value2):
+    Fem1D(Grid1D mesh, Function<1, 1> forcing_term, Function<1, 1> diffusion_term, 
+            Function<1, 1> transport_term, Function<1, 1> reaction_term, 
+            BoundaryConditions<1, 1> boundaryConditions):
         mesh(mesh),
         forcing_term(forcing_term),
         diffusion_term(diffusion_term),
@@ -43,13 +47,10 @@ class Fem1D {
         reaction_term(reaction_term),
         A(mesh.getN(), mesh.getN()),
         rhs(mesh.getN()),
-        sol(mesh.getN()) {
-            BoundaryCond boundary1(isNeuman1, value1);
-            BoundaryCond boundary2(isNeuman2, value2);
-            boundary_conds.push_back(boundary1);
-            boundary_conds.push_back(boundary2); 
-        };
-    
+        sol(mesh.getN()),
+        boundaryConditions(boundaryConditions)
+    {};
+
     void assemble();
     void solve();
     void solve(std::ofstream &fout);

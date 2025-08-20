@@ -82,22 +82,32 @@ void Fem1D::assemble() {
     }
     A.setFromTriplets(triplets.begin(), triplets.end());
 
-    // Dirichlet/Neumann boundary handling (unchanged)
-    if (!boundary_conds[0].isNeumann()) {
-        A.coeffRef(0,0) = 1;
-        A.coeffRef(0,1) = 0;
-        rhs[0] = boundary_conds[0].getBoundary()(mesh(0));
-    } else {
-        rhs[0] -= boundary_conds[0].getBoundary()(mesh(0)) * 0.5;
-    }
-    int n = A.rows()-1;
-    if (!boundary_conds[1].isNeumann()) {
-        A.coeffRef(n,n-1) = 0;
-        A.coeffRef(n,n) = 1;
-        rhs[n] = boundary_conds[1].getBoundary()(mesh.getEnd());
-    } else {
-        rhs[n] += boundary_conds[1].getBoundary()(mesh.getEnd()) * 0.5;
-    }
+
+    //TODO
+    // da spostare fuori
+    //TODO
+    //capire se si può fare diverso da Point<1>(0.0)
+    std::vector<BoundaryCondition<1,1>> boundary_conditions = {BoundaryCondition<1,1>(0, BCType::DIRICHLET, Function<1,1>([](Point<1> p) { return Point<1>(0.0); })),
+                                                                  BoundaryCondition<1,1>(1, BCType::NEUMANN, Function<1,1>([](Point<1> p) { return Point<1>(0.0); }))};
+    BoundaryConditions<1,1> boundary_conds(boundary_conditions);
+    boundary_conds.apply(mesh, A, rhs);
+
+    // // Dirichlet/Neumann boundary handling (unchanged)
+    // if (!boundary_conds[0].isNeumann()) {
+    //     A.coeffRef(0,0) = 1;
+    //     A.coeffRef(0,1) = 0;
+    //     rhs[0] = boundary_conds[0].getBoundary()(mesh(0));
+    // } else {
+    //     rhs[0] -= boundary_conds[0].getBoundary()(mesh(0)) * 0.5;
+    // }
+    // int n = A.rows()-1;
+    // if (!boundary_conds[1].isNeumann()) {
+    //     A.coeffRef(n,n-1) = 0;
+    //     A.coeffRef(n,n) = 1;
+    //     rhs[n] = boundary_conds[1].getBoundary()(mesh.getEnd());
+    // } else {
+    //     rhs[n] += boundary_conds[1].getBoundary()(mesh.getEnd()) * 0.5;
+    // }
 
     std::cout << "Vector RHS:\n" << rhs << std::endl;
     std::cout << "Matrix A (LHS):\n" << A << std::endl;

@@ -34,35 +34,32 @@ int main(int argc, char *argv[])
         
         Grid1D grid(0, atof(argv[2]), atoi(argv[3]));
 
-        Function<1> forcing(
+        Function<1,1> forcing(
             [](Point<1> p) -> double { //value
                 // return sin(2*PI*x);
                 return -1;
             }
         );
 
-        Function<1> diffusion_term = OneFunction<1>();
-        Function<1> transport_term = Function<1>(
+        Function<1,1> diffusion_term = OneFunction<1,1>();
+        Function<1,1> transport_term = Function<1,1>(
             [](Point<1> p) -> double {
                 return 0;
             }
         );
-        Function<1> reaction_term = Function<1>(
+        Function<1,1> reaction_term = Function<1,1>(
             [](Point<1> p) -> double {
                 return 0;
             }
         );
-        
-        bool isNeumann1 = false;
-        Function<1> boundary1 = ZeroFunction<1>();
-        bool isNeumann2 = true;
-        Function<1> boundary2 = ZeroFunction<1>();
+    
 
-        Fem1D fem(
-            grid, forcing, diffusion_term, transport_term, reaction_term,
-            isNeumann1, isNeumann2, boundary1, boundary2
-        );
-        
+        BoundaryConditions<1,1> boundary_conditions;
+        boundary_conditions.addDirichlet(0, Point<1>(0.0));
+        boundary_conditions.addDirichlet(1, Point<1>(0.0));
+
+        Fem1D fem(grid, forcing, diffusion_term, transport_term, reaction_term, boundary_conditions);
+
         const char* solPath = "../sol.csv";
         std::ofstream fsol(solPath);
         cout << "### ASSEMBLE ###" << endl;
@@ -82,26 +79,28 @@ int main(int argc, char *argv[])
         cout << "=== Configurazione problema 2D ===" << endl;
         
         // 1. Definizione delle funzioni del problema
-        Function<2> forcing([](Point<2> p) { 
+        Function<2,1> forcing([](Point<2> p) { 
             return 2 * (p[0] + p[1]) - 2 * (p[0] * p[0] + p[1] * p[1]);
         });
-        Function<2> diffusion([](Point<2> p) { return 1.0; });
-        Function<2> reaction([](Point<2> p) { return 0.0; });
-        Function<2> transport([](Point<2> p) { return 0.0; });
+        Function<2,1> diffusion([](Point<2> p) { return 1.0; });
+        Function<2,1> reaction([](Point<2> p) { return 0.0; });
+        Function<2,1> transport([](Point<2> p) { return 0.0; });
         
         // 2. Configurazione delle condizioni al contorno PRIMA del parsing
-        BoundaryConditions boundaryConditions;
+        BoundaryConditions<2,1> boundary_conditions;
         
-        // Configurazione con mix di Dirichlet e Neumann per testare
-        boundaryConditions.addDirichlet(0, 0.0);  // Lato sinistro: Dirichlet u = 0
-        boundaryConditions.addDirichlet(1, 0.0);  // Lato destro: Dirichlet u = 0  
-        boundaryConditions.addDirichlet(2, 0.0);  // Lato inferiore: Dirichlet u = 0
+        
         
         // Test Neumann: flusso normale specificato sul lato superiore
-        boundaryConditions.addNeumann(3, Function<2>([](Point<2> p) { 
+        boundaryConditions.addNeumann(3, Function<2,1>([](Point<2> p) { 
             return sin(EIGEN_PI * p[0]);  // Flusso sinusoidale lungo x
         }));
-
+        // Configurazione con mix di Dirichlet e Neumann
+        boundary_conditions.addDirichlet(0, Point<1>(0.0));
+        boundary_conditions.addDirichlet(1, Point<1>(0.0));
+        boundary_conditions.addDirichlet(2, Point<1>(0.0));
+        boundary_conditions.addDirichlet(3, Point<1>(0.0));
+        
         cout << "Condizioni al contorno configurate:" << endl;
         cout << "  Physical tag 0 (lato sinistro): Dirichlet u = 0" << endl;
         cout << "  Physical tag 1 (lato destro): Dirichlet u = 0" << endl;
@@ -113,7 +112,7 @@ int main(int argc, char *argv[])
         grid.parseFromMsh(argv[2]);
         
         // 4. Crea e risolvi il problema FEM con BoundaryConditions
-        Fem2D fem2d(grid, forcing, diffusion, transport, reaction, boundaryConditions);
+        Fem2D fem2d(grid, forcing, diffusion, transport, reaction, boundary_conditions);
         
         cout << "=== Risoluzione problema FEM 2D ===" << endl;
         std::ofstream fsol("../sol2d.csv");

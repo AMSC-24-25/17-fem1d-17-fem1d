@@ -1,15 +1,12 @@
-#include "../include/fem2d.hpp"
+#include "fem2d.hpp"
 
 // Costruttore moderno con BoundaryConditions
-Fem2D::Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion, 
-             Function<2> transport, Function<2> reaction,
-             const BoundaryConditions& boundaryConditions) :
+Fem2D::Fem2D(Grid2D grid, Function<2, 1> forcing, Function<2, 1> diffusion, 
+             Function<2, 1> transport, Function<2, 1> reaction,
+             const BoundaryConditions<2, 1>& boundaryConditions) :
     mesh(grid), forcing_term(forcing), diffusion_term(diffusion), 
     transport_term(transport), reaction_term(reaction),
-    boundaryConditions(boundaryConditions),
-    isNeumann1(false), isNeumann2(false), 
-    boundary1([](Point<2> p) { return 0.0; }), 
-    boundary2([](Point<2> p) { return 0.0; })
+    boundaryConditions(boundaryConditions)
 {
     // Inizializza matrici
     int numNodes = mesh.getNumNodes();
@@ -20,24 +17,6 @@ Fem2D::Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion,
     solution.setZero();
 }
 
-// Costruttore legacy (per compatibilità)
-Fem2D::Fem2D(Grid2D grid, Function<2> forcing, Function<2> diffusion, 
-             Function<2> transport, Function<2> reaction,
-             bool isNeumann1, bool isNeumann2, 
-             Function<2> boundary1, Function<2> boundary2) :
-    mesh(grid), forcing_term(forcing), diffusion_term(diffusion), 
-    transport_term(transport), reaction_term(reaction),
-    isNeumann1(isNeumann1), isNeumann2(isNeumann2), 
-    boundary1(boundary1), boundary2(boundary2)
-{
-    // Inizializza matrici
-    int numNodes = mesh.getNumNodes();
-    A.resize(numNodes, numNodes);
-    rhs.resize(numNodes);
-    solution.resize(numNodes);
-    rhs.setZero();
-    solution.setZero();
-}
 
 // Assemblaggio principale
 void Fem2D::assemble() {

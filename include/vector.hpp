@@ -5,60 +5,48 @@
 #include <stdexcept>
 #include <utility>
 
-// Forward declaration to avoid circular include
-template <unsigned int dim>
+// forward declaration con due parametri
+template <unsigned int dim, unsigned int returnDim>
 class Function;
 
 template <unsigned int dim>
 class Vector {
 
-    private:
-    std::vector<Function<dim>> vector;
+private:
+    // gradiente: vettore di funzioni scalari (returnDim=1)
+    std::vector<Function<dim, 1>> data;
 
-    public:
-    Vector(std::vector<Function<dim>> vec) : vector(std::move(vec)) {};
+public:
+    explicit Vector(std::vector<Function<dim, 1>> vec) : data(std::move(vec)) {}
 
-    size_t size() const { return vector.size(); }
+    size_t size() const { return data.size(); }
 
-    Vector<dim> operator +(const Vector<dim>& v) const {
-        std::vector<Function<dim>> result;
-        if (vector.size() != v.vector.size()) {
+    const Function<dim, 1>& operator[](size_t i) const { return data[i]; }
+    Function<dim, 1>& operator[](size_t i) { return data[i]; }
+
+    Vector<dim> operator+(const Vector<dim>& v) const {
+        if (data.size() != v.data.size()) {
             throw std::invalid_argument("Vectors must be of the same size");
         }
-
-        for (size_t i = 0; i < vector.size(); ++i) {
-            result.push_back(vector[i] + v.vector[i]);
+        std::vector<Function<dim, 1>> result;
+        result.reserve(data.size());
+        for (size_t i = 0; i < data.size(); ++i) {
+            result.push_back(data[i] + v.data[i]);
         }
-        return Vector<dim>(result);
+        return Vector<dim>(std::move(result));
     }
 
-    Vector<dim> operator -(const Vector<dim>& v) const {
-        std::vector<Function<dim>> result;
-        if (vector.size() != v.vector.size()) {
+    Vector<dim> operator-(const Vector<dim>& v) const {
+        if (data.size() != v.data.size()) {
             throw std::invalid_argument("Vectors must be of the same size");
         }
-        for (size_t i = 0; i < vector.size(); ++i) {
-            // If Function::operator- is not defined, emulate as a + (b * -1)
-            result.push_back(vector[i] + (v.vector[i] * (-1.0)));
+        std::vector<Function<dim, 1>> result;
+        result.reserve(data.size());
+        for (size_t i = 0; i < data.size(); ++i) {
+            result.push_back(data[i] + (v.data[i] * -1.0));
         }
-        return Vector<dim>(result);
+        return Vector<dim>(std::move(result));
     }
-
-    Function<dim> operator *(const Vector<dim>& v) const {
-        Function<dim> result([](Point<dim> p) { return 0.0; });
-        for (size_t i = 0; i < vector.size(); ++i) {
-            result += vector[i] * v.vector[i];
-        }
-        return result;
-    }
-
-    Function<dim> operator [](int index) const {
-        if (index >= vector.size()) {
-            throw std::out_of_range("Index out of range");
-        }
-        return vector[index];
-    }
-
 };
 
 #endif
