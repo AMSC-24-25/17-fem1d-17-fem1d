@@ -8,6 +8,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <memory>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <Eigen/IterativeLinearSolvers>
@@ -54,7 +55,7 @@ public:
     void outputVtu(const std::string& filename) const;
     void outputCsv(const std::string& filename) const;
 private:
-    OrderTwoQuadrature getQuadratureRule() const;
+    std::unique_ptr<BarycentricQuadRule> getQuadratureRule() const;
 
     // Metodi helper per assemblaggio
     void assembleElement(int elemIndex, BarycentricQuadRule& quad, 

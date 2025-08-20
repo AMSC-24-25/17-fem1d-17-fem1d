@@ -21,8 +21,8 @@ Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusi
 }
 
 template<>
-OrderTwoQuadrature Fem<2>::getQuadratureRule() const {
-    return OrderTwoQuadrature();
+std::unique_ptr<BarycentricQuadRule> Fem<2>::getQuadratureRule() const {
+    return std::make_unique<OrderTwoQuadrature>();
 }
 
 // Main assembly
@@ -39,11 +39,11 @@ void Fem<dim>::assemble() {
     triplets.reserve(expNonZero * mesh.getNumElements());
 
     // Obtain quadrature rule from specialised method
-    OrderTwoQuadrature quadrature = getQuadratureRule();
-    
+    std::unique_ptr<BarycentricQuadRule> quadrature = getQuadratureRule();
+
     // Loop on elements - assemble local matrix for each. Appends non-zero values to triplets
     for (unsigned int e = 0; e < mesh.getNumElements(); ++e) {
-        assembleElement(e, quadrature, triplets);
+        assembleElement(e, *quadrature, triplets);
     }
     
     // Global sparse matrix assembly
