@@ -62,8 +62,8 @@ TEST_F(functionTest, Operators_Sum_Product_Functions_And_Scalars) {
 }
 
 TEST_F(functionTest, dot_product) {
-    Vector<2> v1({Function<2>([](Point<2> p) {return p[0];}), Function<2>([](Point<2> p) {return p[1];})});
-    Vector<2> v2({Function<2>([](Point<2> p) {return p[0];}), Function<2>([](Point<2> p) {return 2 * p[1];})});
+    FunctionVector<2> v1({Function<2>([](Point<2> p) {return p[0];}), Function<2>([](Point<2> p) {return p[1];})});
+    FunctionVector<2> v2({Function<2>([](Point<2> p) {return p[0];}), Function<2>([](Point<2> p) {return 2 * p[1];})});
     std::cout << (v1 * v2)(Point<2>(1.0, 2.0)) << std::endl;
     std::cout << (v1 * v2)(Point<2>(2.0, 2.0)) << std::endl;
     std::cout << (v1 * v2)(Point<2>(2.0, 3.0)) << std::endl;

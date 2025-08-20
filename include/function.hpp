@@ -8,7 +8,7 @@
 
 // Forward declaration to break include cycle
 template <unsigned int dim>
-class Vector;
+class FunctionVector;
 
 template <unsigned int dim, unsigned int returnDim>
 class Function
@@ -98,13 +98,10 @@ public:
     Function<dim, 1> &operator+=(const Function<dim, 1> &f);
     Function<dim, 1> &operator+=(double k);
 
-    //TODO probabimente da cambiare in double
     double value(Point<dim> p) const {
         return function(p);
     }
 
-
-        //TODO probabimente da cambiare in double
     double operator()(Point<dim> p) const {
         return function(p);
     }
@@ -129,7 +126,7 @@ public:
         return out;
     }
 
-    Vector<dim> getGrad() const;
+    FunctionVector<dim> getGrad() const;
 };
 
 
