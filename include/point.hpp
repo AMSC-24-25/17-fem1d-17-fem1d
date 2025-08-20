@@ -28,6 +28,11 @@ struct Point{
         static_assert(dim == 3, "Passing 3 coordinates is only valid for 3D points");
     }
 
+    operator double() const {
+        static_assert(dim == 1, "Automatic cast to double is only valid for Point<1>");
+        return coords[0];
+    }
+
     double distance(Point p){
         double sum = 0.0;
         for (unsigned int i = 0; i < dim; ++i) {

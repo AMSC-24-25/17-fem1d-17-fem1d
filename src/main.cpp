@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
 
         // cout << "Solution:\n" << fem.getSolution() << endl;
 
-        // system("python scripts/plot_sol.py");
+        // system("python ../scripts/plot_sol.py");
     }
     else if (argv[1][0] == '2') {
         // 2D case - Definizione del problema PRIMA del parsing
