@@ -55,13 +55,11 @@ public:
     void outputVtu(const std::string& filename) const;
     void outputCsv(const std::string& filename) const;
 private:
-    std::unique_ptr<BarycentricQuadRule> getQuadratureRule() const;
+    std::unique_ptr<QuadratureRule<dim>> getQuadratureRule() const;
 
     // Metodi helper per assemblaggio
-    void assembleElement(int elemIndex, BarycentricQuadRule& quad, 
+    void assembleElement(int elemIndex, QuadratureRule<dim>& quad, 
                         std::vector<Triplet>& triplets);
-        
-    void applyDirichletBC();
 };
 
 #endif // FEM2D_HPP

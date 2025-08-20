@@ -21,7 +21,7 @@ Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusi
 }
 
 template<>
-std::unique_ptr<BarycentricQuadRule> Fem<2>::getQuadratureRule() const {
+std::unique_ptr<QuadratureRule<2>> Fem<2>::getQuadratureRule() const {
     return std::make_unique<OrderTwoQuadrature>();
 }
 
@@ -39,7 +39,7 @@ void Fem<dim>::assemble() {
     triplets.reserve(expNonZero * mesh.getNumElements());
 
     // Obtain quadrature rule from specialised method
-    std::unique_ptr<BarycentricQuadRule> quadrature = getQuadratureRule();
+    std::unique_ptr<QuadratureRule<dim>> quadrature = getQuadratureRule();
 
     // Loop on elements - assemble local matrix for each. Appends non-zero values to triplets
     for (unsigned int e = 0; e < mesh.getNumElements(); ++e) {
@@ -58,7 +58,7 @@ void Fem<dim>::assemble() {
 
 // Assemblaggio di un singolo elemento (triangolo)
 template<unsigned int dim>
-void Fem<dim>::assembleElement(int elemIndex, BarycentricQuadRule& quad, 
+void Fem<dim>::assembleElement(int elemIndex, QuadratureRule<dim>& quad, 
                            std::vector<Triplet>& triplets) {
 
     const Cell<dim>& cell = mesh.getCell(elemIndex);

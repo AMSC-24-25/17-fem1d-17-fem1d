@@ -14,31 +14,31 @@ using Eigen::Matrix3d;
 using Eigen::Vector3d; 
 using Eigen::Vector2d;
 
-class BarycentricQuadRule {
+template<unsigned int dim>
+class QuadratureRule {
 
 protected:
     std::vector<std::vector<double>> barycPoints; // barycentric pts
     std::vector<double> w;                 // weights summing to 1
-    BarycentricQuadRule() = default;              // impedisce istanziazione diretta
+    QuadratureRule() = default;              // impedisce istanziazione diretta
 
 
 public:
-    virtual ~BarycentricQuadRule() = default;
+    virtual ~QuadratureRule() = default;
 
     // Assemble local matrices for variable coefficients
     virtual void getQuadratureData(
-        const Cell<2>& cell,
-        std::vector<Point<2>>& grad_phi,
-        std::vector<Point<2>>& quadrature_points,
+        const Cell<dim>& cell,
+        std::vector<Point<dim>>& grad_phi,
+        std::vector<Point<dim>>& quadrature_points,
         std::vector<std::vector<double>>& phi,
         std::vector<double>& weight
     ) = 0;
 
-
 };
 
 
-class OrderTwoQuadrature : public BarycentricQuadRule {
+class OrderTwoQuadrature : public QuadratureRule<2> {
     public:
     OrderTwoQuadrature() {
         barycPoints = {
@@ -60,7 +60,7 @@ class OrderTwoQuadrature : public BarycentricQuadRule {
 };
 
 
-class FourPointsQuadrature : public BarycentricQuadRule {
+class FourPointsQuadrature : public QuadratureRule<2> {
 public:
     FourPointsQuadrature() {
         // punti in baricentriche (λ1, λ2, λ3)
