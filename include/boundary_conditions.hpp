@@ -111,15 +111,15 @@ public:
     }
 
     // Applicazione delle condizioni al contorno
-    inline void apply(const Grid1D& mesh, SparseMat& A, VectorXd& rhs);
+    inline void apply(const Grid<1>& mesh, SparseMat& A, VectorXd& rhs);
 
 private:
     std::vector<BoundaryCondition<1, 1>> conditions;
 
     // Metodi helper per applicazione
-    inline void applyDirichlet(const BoundaryCondition<1, 1>& bc, const Grid1D& mesh, 
+    inline void applyDirichlet(const BoundaryCondition<1, 1>& bc, const Grid<1>& mesh,
                        SparseMat& A, VectorXd& rhs);
-    inline void applyNeumann(const BoundaryCondition<1, 1>& bc, const Grid1D& mesh, 
+    inline void applyNeumann(const BoundaryCondition<1, 1>& bc, const Grid<1>& mesh,
                      SparseMat& A, VectorXd& rhs);
 };
 

@@ -1,5 +1,6 @@
 #include "quadrature.hpp"
 
+template class QuadratureRule<1>;
 template class QuadratureRule<2>;
 template class QuadratureRule<3>;
 

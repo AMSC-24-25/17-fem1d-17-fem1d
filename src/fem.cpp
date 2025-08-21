@@ -1,6 +1,8 @@
 #include "fem.hpp"
 
+template class Fem<1>;
 template class Fem<2>;
+template class Fem<3>;
 
 // Costruttore moderno con BoundaryConditions
 template<unsigned int dim>
@@ -54,7 +56,6 @@ template<unsigned int dim>
 void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
 
     const Cell<dim>& cell = mesh.getCell(elemIndex);
-
     // // Verifica che sia effettivamente un triangolo
     // if (cell.getN() != 3) {
     //     std::cerr << "ERROR: Element " << elemIndex << " is not a triangle (has " 
@@ -71,6 +72,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
     std::vector<double> weights;
     
     // Get quadrature data
+
     quadrature.getQuadratureData(cell, grad_phi, quadrature_points, phi, weights);
 
     // Local matrices for element
@@ -133,20 +135,41 @@ void Fem<dim>::solve() {
     std::cout << "### SOLVE " << dim << "D ###" << std::endl;
 
     // Risolvi il sistema Ax = b usando SparseLU
-    Eigen::SparseLU<SparseMat> solver;
-    solver.analyzePattern(A);
-    solver.factorize(A);
-    
-    if (solver.info() != Eigen::Success) {
-        std::cerr << "Factorization failed!" << std::endl;
-        return;
+    if(A.nonZeros() < 1e4) {
+        Eigen::SparseLU<SparseMat> solver;
+        solver.analyzePattern(A);
+        solver.factorize(A);
+
+        if (solver.info() != Eigen::Success) {
+            std::cerr << "Factorization failed!" << std::endl;
+            return;
+        }
+        solution = solver.solve(rhs);
+        if (solver.info() != Eigen::Success) {
+            std::cerr << "Solving failed!" << std::endl;
+            return;
+        }
     }
-    
-    solution = solver.solve(rhs);
-    
-    if (solver.info() != Eigen::Success) {
-        std::cerr << "Solving failed!" << std::endl;
-        return;
+    else{
+        // Lighter iterative solver (BiCGSTAB)
+        Eigen::BiCGSTAB<SparseMat, Eigen::IncompleteLUT<double>> solver;
+        solver.setMaxIterations(1000);
+        solver.setTolerance(1e-8);
+        solver.compute(A);
+
+        std::cout << "Finished setup for solve. Using BiCGSTAB." << std::endl;
+
+        solution = solver.solve(rhs);
+        if (solver.info() != Eigen::Success) {
+            std::cerr << "Solving failed! Error is: " << solver.info() << std::endl;
+            std::cerr << "Solver error at last iteration (" << solver.iterations() << "): " << solver.error() << std::endl;
+            return;
+        }
+        else{
+            std::cout << "Solving succeeded!" << std::endl;
+            std::cout << "Solver iterations: " << solver.iterations() << std::endl;
+            std::cout << "Solver error: " << solver.error() << std::endl;
+        }
     }
 }
 
