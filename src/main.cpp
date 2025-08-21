@@ -62,12 +62,8 @@ int main(int argc, char *argv[])
 
         const char* solPath = "../sol.csv";
         std::ofstream fsol(solPath);
-        cout << "### ASSEMBLE ###" << endl;
         fem.assemble();
-        cout << "### SOLVE    ###" << endl;
         fem.solve(fsol);
-        cout << "### DONE     ###" << endl;
-        cout << "Solution graph saved in " << solPath << endl;
         fsol.close();
 
         // cout << "Solution:\n" << fem.getSolution() << endl;
@@ -75,54 +71,58 @@ int main(int argc, char *argv[])
         // system("python ../scripts/plot_sol.py");
     }
     else if (argv[1][0] == '2') {
-        // 2D case - Definizione del problema PRIMA del parsing
-        cout << "=== Configurazione problema 2D ===" << endl;
-        
-        // 1. Definizione delle funzioni del problema
+        // 2D case
         Function<2,1> forcing([](Point<2> p) { 
-            return 2 * (p[0] + p[1]) - 2 * (p[0] * p[0] + p[1] * p[1]);
+            return 2.0*(p[0] + p[1]) - 2.0*(p[0]*p[0] + p[1]*p[1]);
         });
-        Function<2,1> diffusion([](Point<2> p) { return 1.0; });
-        Function<2,1> reaction([](Point<2> p) { return 0.0; });
-        Function<2,2> transport([](Point<2> p) { return Point<2>(0.0, 0.0); });
+        
+        Function<2,1> diffusion([](Point<2> p) { 
+            return 1.0;
+        });
+        
+        Function<2,1> reaction([](Point<2> p) { 
+            return 0.0;
+        });
+        
+        Function<2,2> transport([](Point<2> p) { 
+            return Point<2>(0.0, 0.0);
+        });
 
-        // 2. Configurazione delle condizioni al contorno PRIMA del parsing
         BoundaryConditions<2,1> boundary_conditions;
-        
-        
-        
-        // Test Neumann: flusso normale specificato sul lato superiore
-        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { 
-            return sin(EIGEN_PI * p[0]);  // Flusso sinusoidale lungo x
-        }));
-        // Configurazione con mix di Dirichlet e Neumann
         boundary_conditions.addDirichlet(0, Point<1>(0.0));
         boundary_conditions.addDirichlet(1, Point<1>(0.0));
         boundary_conditions.addDirichlet(2, Point<1>(0.0));
-        // boundary_conditions.addDirichlet(3, Point<1>(0.0));
+        boundary_conditions.addDirichlet(3, Point<1>(0.0));
 
-        cout << "Condizioni al contorno configurate:" << endl;
-        cout << "  Physical tag 0 (lato sinistro): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 1 (lato destro): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 2 (lato inferiore): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 3 (lato superiore): NEUMANN du/dn = sin(π*x)" << endl;
+        // Test delle funzioni in alcuni punti
+        Point<2> test_points[3] = {Point<2>(0.5, 0.5), Point<2>(0.2, 0.8), Point<2>(0.7, 0.3)};
+        cout << "=== MAIN.CPP FUNCTION VALUES ===" << endl;
+        for(int i = 0; i < 3; i++) {
+            Point<2> p = test_points[i];
+            cout << "Point (" << p[0] << ", " << p[1] << "):" << endl;
+            cout << "  forcing = " << forcing.value(p) << endl;
+            cout << "  diffusion = " << diffusion.value(p) << endl;
+            cout << "  reaction = " << reaction.value(p) << endl;
+            cout << "  transport = (" << transport.value(p)[0] << ", " << transport.value(p)[1] << ")" << endl;
+        }
+        cout << "Boundary conditions:" << endl;
+        cout << "  Tag 1: Dirichlet u = 0.0" << endl;
+        cout << "  Tag 2: Dirichlet u = 0.0" << endl;
+        cout << "  Tag 3: Dirichlet u = 0.0" << endl;
+        cout << "  Tag 4: Dirichlet u = 0.0" << endl;
 
-        // 3. Parse della mesh
         Grid2D grid;
         grid.parseFromMsh(argv[2]);
         
-        // 4. Crea e risolvi il problema FEM con BoundaryConditions
         Fem<2> fem2d(grid, forcing, diffusion, transport, reaction, boundary_conditions);
         
-        cout << "=== Risoluzione problema FEM 2D ===" << endl;
-        std::string csvFilePath = "../sol2d.csv";
-        std::string vtuFilePath = "output/sol2d.vtu";
         fem2d.assemble();
         fem2d.solve();
+        
+        std::string csvFilePath = "../sol2d.csv";
+        std::string vtuFilePath = "../sol2d.vtu";
         fem2d.outputCsv(csvFilePath);
-        cout << "2D solution saved to " << csvFilePath << endl;
         fem2d.outputVtu(vtuFilePath);
-        cout << "2D solution saved to " << vtuFilePath << endl;
     }
     else {
         cout << "First argument must be '1d' or '2d'" << endl;

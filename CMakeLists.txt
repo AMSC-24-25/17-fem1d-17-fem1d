@@ -3,7 +3,6 @@ project(17_fem1d_17_fem1d)
 
 set(CMAKE_CXX_STANDARD 20)
 
-
 # ---- GoogleTest-----
 add_subdirectory(googletest)
 enable_testing()
@@ -12,6 +11,7 @@ enable_testing()
 # --------include ---------
 
 include_directories(include)
+include_directories(include/external)  # For toml.hpp and exprtk.hpp
 
 set(CMAKE_PREFIX_PATH "/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/eigen/3.3.9/share/eigen3/cmake/")
 find_package(Eigen3 3.3 REQUIRED)
@@ -27,6 +27,14 @@ target_link_libraries(fem1d_lib Eigen3::Eigen)
 # Eseguibile principale
 add_executable(17_fem1d_17_fem1d src/main.cpp)
 target_link_libraries(17_fem1d_17_fem1d fem1d_lib)
+
+# Nuovo eseguibile con configurazione TOML
+add_executable(TomlMain src/TomlMain.cpp src/config.cpp)
+target_link_libraries(TomlMain fem1d_lib)
+
+# Test ultra-semplice per debug
+add_executable(UltraSimpleTest src/UltraSimpleTest.cpp)
+target_link_libraries(UltraSimpleTest fem1d_lib)
 
 # ---- Output preparation ----
 add_custom_target(create_output_dir ALL

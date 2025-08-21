@@ -1,0 +1,22 @@
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
+output_file = "output/test_simple"
+
+[equation]
+# Problema semplice
+diffusion_coefficient = 1.0
+transport_coefficient = 0.0
+reaction_coefficient = 0.0
+forcing_function = "1.0"
+
+# Solo una condizione al contorno
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "0.0"
+
+[solver]
+tolerance = 1e-6
+max_iterations = 100
+method = "direct"

@@ -1,0 +1,37 @@
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
+output_file = "output/nonlinear_coefficients"
+
+[equation]
+# Problema con coefficienti che dipendono dalla posizione in modo non lineare
+diffusion_function = "1.0/(1.0 + (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5))"
+transport_function = "x*y*(2-x)*(2-y)"
+reaction_function = "exp(-x*x - y*y)"
+forcing_function = "x*y*(1-x)*(1-y)*sin(pi*x)*sin(pi*y)"
+
+# Boundary conditions con dipendenze non lineari
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "x*x*(1-x)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 1
+function = "y*y*y"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "y*(1-y)*sin(pi*x)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 3
+function = "x*(1-x)*cos(pi*y)"
+
+[solver]
+tolerance = 1e-14
+max_iterations = 3000
+method = "direct"

@@ -1,0 +1,28 @@
+[problem]
+dimension = 1
+mesh_file = "mesh/line.msh"
+output_file = "output/solution_1d"
+
+[equation]
+# Equazione 1D: -d/dx(D * du/dx) + b * du/dx + sigma*u = f
+diffusion_coefficient = 1.0
+transport_coefficient = 0.2
+reaction_coefficient = 0.0
+forcing_function = "sin(pi*x)"
+
+# u(0) = 0 (Dirichlet al punto sinistro)
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "0.0"
+
+# du/dn(1) = 1 (Neumann al punto destro)
+[[boundary_conditions]]
+type = "neumann"
+tag = 1
+function = "1.0"
+
+[solver]
+tolerance = 1e-10
+max_iterations = 500
+method = "direct"
