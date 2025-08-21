@@ -70,7 +70,7 @@ void Fem<dim>::assembleElement(int elemIndex, QuadratureRule<dim>& quad,
     //     return; // Skip this element
     // }
     
-    unsigned int matSize = (dim == 2) ? 3 : 5;
+    unsigned int matSize = dim+1;
 
     // Variables for quadrature data
     std::vector<Point<dim>> grad_phi;
@@ -94,6 +94,7 @@ void Fem<dim>::assembleElement(int elemIndex, QuadratureRule<dim>& quad,
         
         // Evaluate parameters on quadrature point
         double diff_val = diffusion_term.value(p);
+        Point<dim> transport_val = transport_term.value(p);
         double react_val = reaction_term.value(p);
         double forc_val = forcing_term.value(p);
 
@@ -105,7 +106,7 @@ void Fem<dim>::assembleElement(int elemIndex, QuadratureRule<dim>& quad,
                 // Transport contribution term ∫ (b·∇φᵢ) φⱼ dx
                 // Note: product of 2 Points is their scalar product
                 diff_local(i,j) += w * diff_val * (grad_phi[i] * grad_phi[j]);
-                transport_local(i,j) += w * (transport_term.value(p) * grad_phi[i]) * phi[q][j];
+                transport_local(i,j) += w * (transport_val * grad_phi[i]) * phi[q][j];
 
                 // Reaction contribution matrix: ∫ φᵢ φⱼ dx
                 react_local(i,j) += w * react_val * phi[q][i] * phi[q][j];

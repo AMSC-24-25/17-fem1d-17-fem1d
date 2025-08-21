@@ -97,12 +97,12 @@ public:
         return boundaryNodes;
     }
 
-    IndexVector getBoundaryNodesByTag(int physicalTag) const {
+    IndexVector getBoundaryNodesByTag(int boundaryId) const {
         IndexVector boundaryNodes;
         std::set<unsigned int> uniqueNodes; // Use set to avoid duplicates
 
         for (const BoundaryCell<dim-1>& boundaryCell : boundary_cells) {
-            if (boundaryCell.getBoundaryId() == physicalTag) {
+            if (boundaryCell.getBoundaryId() == boundaryId) {
                 const IndexVector& nodeIndices = boundaryCell.getNodeIndexes();
                 uniqueNodes.insert(nodeIndices.begin(), nodeIndices.end());
             }
@@ -113,11 +113,11 @@ public:
         return boundaryNodes;
     }
 
-    std::vector<BoundaryCell<1>> getBoundaryEdgesByTag(int physicalTag) const {
+    std::vector<BoundaryCell<1>> getBoundaryEdgesByTag(int boundaryId) const {
         std::vector<BoundaryCell<1>> boundaryEdges;
 
         for (const BoundaryCell<1>& boundaryCell : boundary_cells) {
-            if (boundaryCell.getBoundaryId() == physicalTag) {
+            if (boundaryCell.getBoundaryId() == boundaryId) {
                 boundaryEdges.push_back(boundaryCell);
             }
         }

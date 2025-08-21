@@ -21,36 +21,12 @@ BoundaryConditions<dim, returnDim>::BoundaryConditions(
     : conditions(conditions) {}
 
 // -----------------------------------------------------------------------------
-// Methods to add boundary conditions
-// -----------------------------------------------------------------------------
-
-template <unsigned int dim, unsigned int returnDim>
-void BoundaryConditions<dim, returnDim>::addDirichlet(int physicalTag, Function<dim, returnDim> func) {
-    conditions.emplace_back(physicalTag, BCType::DIRICHLET, func);
-}
-
-template <unsigned int dim, unsigned int returnDim>
-void BoundaryConditions<dim, returnDim>::addDirichlet(int physicalTag, Point<returnDim> value) {
-    conditions.emplace_back(physicalTag, BCType::DIRICHLET, value);
-}
-
-template <unsigned int dim, unsigned int returnDim>
-void BoundaryConditions<dim, returnDim>::addNeumann(int physicalTag, Function<dim, returnDim> func) {
-    conditions.emplace_back(physicalTag, BCType::NEUMANN, func);
-}
-
-template <unsigned int dim, unsigned int returnDim>
-void BoundaryConditions<dim, returnDim>::addNeumann(int physicalTag, Point<returnDim> value) {
-    conditions.emplace_back(physicalTag, BCType::NEUMANN, value);
-}
-
-// -----------------------------------------------------------------------------
 // Apply boundary conditions (main method)
 // -----------------------------------------------------------------------------
 
 template <unsigned int dim, unsigned int returnDim>
-void BoundaryConditions<dim, returnDim>::apply(const Grid2D& mesh, 
-    Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs) {
+void BoundaryConditions<dim, returnDim>::apply(const Grid<dim>& mesh, 
+    SparseMat& A, VectorXd& rhs) {
     
     if (conditions.empty()) {
         std::cout << "Nessuna condizione al contorno da applicare" << std::endl;
@@ -79,47 +55,39 @@ void BoundaryConditions<dim, returnDim>::apply(const Grid2D& mesh,
 
 template <unsigned int dim, unsigned int returnDim>
 void BoundaryConditions<dim, returnDim>::applyDirichlet(
-    const BoundaryCondition<dim, returnDim>& bc, const Grid2D& mesh, 
-    Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs) {
+    const BoundaryCondition<dim, returnDim>& bc, const Grid<dim>& mesh, 
+    SparseMat& A, VectorXd& rhs) {
     
-    auto boundaryNodes = mesh.getBoundaryNodesByTag(bc.getPhysicalTag());
-    std::cout << "  Applicando condizione di Dirichlet su tag " << bc.getPhysicalTag() 
+    IndexVector boundaryNodes = mesh.getBoundaryNodesByTag(bc.getBoundaryId());
+    std::cout << "  Applicando condizione di Dirichlet su tag " << bc.getBoundaryId() 
               << " (" << boundaryNodes.size() << " nodi)" << std::endl;
     
-    for (int nodeIndex : boundaryNodes) {
-        // Ottieni le coordinate del nodo
-        const Point<2>& nodePoint = mesh.getNode(nodeIndex);
+    for (unsigned int nodeIndex : boundaryNodes) {
+        const Point<dim>& nodePoint = mesh.getNode(nodeIndex);
         
-        // Valuta la funzione di Dirichlet nel punto
-        double dirichletValue = bc.getBoundaryFunction().value(nodePoint);
-
-        // Applica condizione di Dirichlet: u[nodeIndex] = dirichletValue
-        
-        // Azzeramento della riga
+        // Set row to zero
         for (int k = 0; k < A.outerSize(); ++k) {
-            for (Eigen::SparseMatrix<double, Eigen::RowMajor>::InnerIterator it(A, k); it; ++it) {
-                if (it.row() == nodeIndex) {
+            for (SparseMat::InnerIterator it(A, k); it; ++it) {
+                if (it.row() == nodeIndex)
                     it.valueRef() = 0.0;
-                }
             }
         }
         
-        // Imposta 1 sulla diagonale
+        // Set 1 on diagonal
         A.coeffRef(nodeIndex, nodeIndex) = 1.0;
-        
-        // Imposta il valore calcolato nel RHS
-        rhs[nodeIndex] = dirichletValue;
+        // Set dirichlet value in rhs
+        rhs[nodeIndex] = bc.getBoundaryFunction().value(nodePoint);
     }
 }
 
 template <unsigned int dim, unsigned int returnDim>
 void BoundaryConditions<dim, returnDim>::applyNeumann(
-    const BoundaryCondition<dim, returnDim>& bc, const Grid2D& mesh, 
-    Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs) {
+    const BoundaryCondition<dim, returnDim>& bc, const Grid<dim>& mesh, 
+    SparseMat& A, VectorXd& rhs) {
     
     // Ottieni gli edge di bordo con il tag fisico specifico
-    auto boundaryEdges = mesh.getBoundaryEdgesByTag(bc.getPhysicalTag());
-    std::cout << "  Applicando condizione di Neumann su tag " << bc.getPhysicalTag()
+    auto boundaryEdges = mesh.getBoundaryEdgesByTag(bc.getBoundaryId());
+    std::cout << "  Applicando condizione di Neumann su tag " << bc.getBoundaryId()
               << " (" << boundaryEdges.size() << " edge)" << std::endl;
     
     // Inizializza la quadratura 1D
@@ -148,31 +116,11 @@ void BoundaryConditions<dim, returnDim>::applyNeumann(
 // =============================================================================
 
 // -----------------------------------------------------------------------------
-// Methods to add boundary conditions (1D)
-// -----------------------------------------------------------------------------
-
-inline void BoundaryConditions<1,1>::addDirichlet(int physicalTag, Function<1,1> func) {
-    conditions.emplace_back(physicalTag, BCType::DIRICHLET, func);
-}
-
-inline void BoundaryConditions<1,1>::addDirichlet(int physicalTag, Point<1> value) {
-    conditions.emplace_back(physicalTag, BCType::DIRICHLET, value);
-}
-
-inline void BoundaryConditions<1,1>::addNeumann(int physicalTag, Function<1,1> func) {
-    conditions.emplace_back(physicalTag, BCType::NEUMANN, func);
-}
-
-inline void BoundaryConditions<1,1>::addNeumann(int physicalTag, Point<1> value) {
-    conditions.emplace_back(physicalTag, BCType::NEUMANN, value);
-}
-
-// -----------------------------------------------------------------------------
 // Apply boundary conditions (1D main method)
 // -----------------------------------------------------------------------------
 
 inline void BoundaryConditions<1,1>::apply(const Grid1D& mesh,
-    Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs) {
+    SparseMat& A, VectorXd& rhs) {
     
     if (conditions.empty()) {
         std::cout << "Nessuna condizione al contorno 1D" << std::endl;
@@ -198,11 +146,11 @@ inline void BoundaryConditions<1,1>::apply(const Grid1D& mesh,
 
 inline void BoundaryConditions<1, 1>::applyDirichlet(
     const BoundaryCondition<1, 1>& bc, const Grid1D& mesh, 
-    Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs) {
+    SparseMat& A, VectorXd& rhs) {
     
-    std::cout << "  Applicando condizione di Dirichlet 1D su tag " << bc.getPhysicalTag() << std::endl;
+    std::cout << "  Applicando condizione di Dirichlet 1D su tag " << bc.getBoundaryId() << std::endl;
     
-    if (bc.getPhysicalTag() == 0) {
+    if (bc.getBoundaryId() == 0) {
         // Boundary condition at the left endpoint (x = 0)
         int startIndex = mesh.getStart();
         A.coeffRef(startIndex, startIndex) = 1.0;
@@ -211,7 +159,7 @@ inline void BoundaryConditions<1, 1>::applyDirichlet(
         }
         rhs[startIndex] = bc.getBoundaryFunction().value(Point<1>(mesh.getStart()));
         
-    } else if (bc.getPhysicalTag() == 1) {
+    } else if (bc.getBoundaryId() == 1) {
         // Boundary condition at the right endpoint (x = L)
         int endIndex = mesh.getEnd();
         A.coeffRef(endIndex, endIndex) = 1.0;
@@ -222,24 +170,24 @@ inline void BoundaryConditions<1, 1>::applyDirichlet(
         
     } else {
         std::cerr << "ERRORE: Tag fisico non valido per condizione di Dirichlet 1D: " 
-                  << bc.getPhysicalTag() << " (attesi: 0 o 1)" << std::endl;
+                  << bc.getBoundaryId() << " (attesi: 0 o 1)" << std::endl;
     }
 }
 
 inline void BoundaryConditions<1,1>::applyNeumann(
     const BoundaryCondition<1, 1>& bc, const Grid1D& mesh, 
-    Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs) {
+    SparseMat& A, VectorXd& rhs) {
     
-    std::cout << "  Applicando condizione di Neumann 1D su tag " << bc.getPhysicalTag() << std::endl;
+    std::cout << "  Applicando condizione di Neumann 1D su tag " << bc.getBoundaryId() << std::endl;
     
-    if (bc.getPhysicalTag() == 0) {
+    if (bc.getBoundaryId() == 0) {
         // Neumann condition at the left endpoint (x = 0)
         // ∂u/∂n = -∂u/∂x at x = 0 (outward normal points left)
         int startIndex = mesh.getStart();
         double neumannValue = bc.getBoundaryFunction().value(Point<1>(mesh.getStart()));
         rhs[startIndex] -= neumannValue * 0.5; // Factor 0.5 comes from FEM integration
         
-    } else if (bc.getPhysicalTag() == 1) {
+    } else if (bc.getBoundaryId() == 1) {
         // Neumann condition at the right endpoint (x = L)
         // ∂u/∂n = ∂u/∂x at x = L (outward normal points right)
         int endIndex = mesh.getEnd();
@@ -248,7 +196,7 @@ inline void BoundaryConditions<1,1>::applyNeumann(
         
     } else {
         std::cerr << "ERRORE: Tag fisico non valido per condizione di Neumann 1D: " 
-                  << bc.getPhysicalTag() << " (attesi: 0 o 1)" << std::endl;
+                  << bc.getBoundaryId() << " (attesi: 0 o 1)" << std::endl;
     }
 }
 
@@ -273,8 +221,8 @@ inline void BoundaryConditions<1,1>::applyNeumann(
  * Il pattern sarà simile al 2D:
  * 
  * void applyNeumann3D(const BoundaryCondition<3,1>& bc, const Grid3D& mesh, 
- *                     Eigen::SparseMatrix<double, Eigen::RowMajor>& A, Eigen::VectorXd& rhs) {
- *     auto boundaryFaces = mesh.getBoundaryFacesByTag(bc.getPhysicalTag());
+ *                     SparseMat& A, VectorXd& rhs) {
+ *     auto boundaryFaces = mesh.getBoundaryFacesByTag(bc.getBoundaryId());
  *     GaussLegendre2D quadrature;
  *     
  *     for (const auto& face : boundaryFaces) {
