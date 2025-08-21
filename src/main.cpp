@@ -18,10 +18,11 @@ int main(int argc, char *argv[])
 {
     cout << "-------------17-FEM1D PROJECT-----------" << endl;
     if(argc < 3){
-        cout << "Usage: " << argv[0] << " [1d L N] or [2d mesh.msh]" << endl;
+        cout << "Usage: " << argv[0] << " [1d L N] or [2d mesh.msh] or [3d mesh.msh]" << endl;
         cout << "Examples:" << endl;
         cout << "  " << argv[0] << " 1d 5 20" << endl;
         cout << "  " << argv[0] << " 2d square.msh" << endl;
+        cout << "  " << argv[0] << " 3d cube.msh" << endl;
         return -1;
     }
 
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
         cout << "  Tag 3: Dirichlet u = 0.0" << endl;
         cout << "  Tag 4: Dirichlet u = 0.0" << endl;
 
-        Grid2D grid;
+        Grid<2> grid;
         grid.parseFromMsh(argv[2]);
         
         // 4. Crea e risolvi il problema FEM con BoundaryConditions
@@ -125,8 +126,52 @@ int main(int argc, char *argv[])
         fem.outputCsv(csvFilePath);
         fem.outputVtu(vtuFilePath);
     }
+    else if (argv[1][0] == '3'){
+        // 3D case - Definizione del problema PRIMA del parsing
+        cout << "=== Configurazione problema 3D ===" << endl;
+        
+        // 1. Definizione delle funzioni del problema
+        Function<3,1> forcing([](Point<3> p) { 
+            return 2 * (p[0] + p[1] + p[2]) - 2 * (p[0] * p[0] + p[1] * p[1] + p[2] * p[2]);
+        });
+        Function<3,1> diffusion([](Point<3> p) { return 1.0; });
+        Function<3,1> reaction([](Point<3> p) { return 0.0; });
+        Function<3,3> transport([](Point<3> p) { return Point<3>(0.0, 0.0, 0.0); });
+
+        // 2. Configurazione delle condizioni al contorno PRIMA del parsing
+        BoundaryConditions<3,1> boundary_conditions;
+        
+        // Configurazione con mix di Dirichlet e Neumann
+        boundary_conditions.addDirichlet(0, 0.0);
+        boundary_conditions.addDirichlet(1, 0.0);
+        boundary_conditions.addDirichlet(2, 0.0);
+        boundary_conditions.addDirichlet(3, 0.0);
+
+        cout << "Condizioni al contorno configurate:" << endl;
+        cout << "  Physical tag 0 (lato sinistro): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 1 (lato destro): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 2 (lato inferiore): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 3 (lato superiore): Dirichlet u = 0" << endl;
+
+        // 3. Parse della mesh
+        Grid<3> grid;
+        grid.parseFromMsh(argv[2]);
+        
+        // 4. Crea e risolvi il problema FEM con BoundaryConditions
+        Fem<3> fem3d(grid, forcing, diffusion, transport, reaction, boundary_conditions);
+
+        cout << "=== Risoluzione problema FEM 3D ===" << endl;
+        std::string csvFilePath = "../sol3d.csv";
+        std::string vtuFilePath = "output/sol3d.vtu";
+        fem3d.assemble();
+        fem3d.solve();
+        fem3d.outputCsv(csvFilePath);
+        cout << "3D solution saved to " << csvFilePath << endl;
+        fem3d.outputVtu(vtuFilePath);
+        cout << "3D solution saved to " << vtuFilePath << endl;
+    }
     else {
-        cout << "First argument must be '1d' or '2d'" << endl;
+        cout << "First argument must be '1d' or '2d' or '3d'" << endl;
         return -1;
     }
 
