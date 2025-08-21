@@ -101,10 +101,10 @@ Point<3> Cell<3>::barycentricGradient(int i) const {
 
 template<>
 double Cell<1>::measure() const {
-    if (getN() != 2) {
-        std::cerr << "Cell<1> must be a line\n";
-        exit(-1);
-    }
+    // if (getN() != 2) {
+    //     std::cerr << "Cell<1> must be a line\n";
+    //     exit(-1);
+    // }
     const Cell<1>& cell = *this;
     const Point<1>& A = cell[0];
     const Point<1>& B = cell[1];

@@ -1,6 +1,7 @@
 #include "fem.hpp"
 
 template class Fem<2>;
+template class Fem<1>;
 
 // Costruttore moderno con BoundaryConditions
 template<unsigned int dim>
@@ -54,7 +55,6 @@ template<unsigned int dim>
 void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
 
     const Cell<dim>& cell = mesh.getCell(elemIndex);
-
     // // Verifica che sia effettivamente un triangolo
     // if (cell.getN() != 3) {
     //     std::cerr << "ERROR: Element " << elemIndex << " is not a triangle (has " 
@@ -71,6 +71,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
     std::vector<double> weights;
     
     // Get quadrature data
+
     quadrature.getQuadratureData(cell, grad_phi, quadrature_points, phi, weights);
 
     // Local matrices for element

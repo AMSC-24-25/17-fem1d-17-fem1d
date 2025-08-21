@@ -42,29 +42,27 @@ int main(int argc, char *argv[])
         );
 
         Function<1,1> diffusion_term = OneFunction<1,1>();
-        Function<1,1> transport_term = Function<1,1>(
-            [](Point<1> p) -> double {
-                return 0;
-            }
-        );
-        Function<1,1> reaction_term = Function<1,1>(
-            [](Point<1> p) -> double {
-                return 0;
-            }
-        );
+        Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 0; });
+        Function<1,1> reaction_term = Function<1,1>([](Point<1> p) -> double {return 0; });
     
 
         BoundaryConditions<1,1> boundary_conditions;
         boundary_conditions.addDirichlet(0, Point<1>(0.0));
         boundary_conditions.addDirichlet(1, Point<1>(0.0));
 
-        Fem1D fem(grid, forcing, diffusion_term, transport_term, reaction_term, boundary_conditions);
+        OrderTwoQuadrature<1> quadrature;
+        Fem<1> fem(grid, forcing, diffusion_term, transport_term, reaction_term, boundary_conditions, quadrature);
 
-        const char* solPath = "../sol.csv";
-        std::ofstream fsol(solPath);
+        // const char* solPath = "../sol.csv";
+        // std::ofstream fsol(solPath);
         fem.assemble();
-        fem.solve(fsol);
-        fsol.close();
+        fem.solve();
+        //fsol.close();
+
+        std::string csvFilePath = "../sol1d.csv";
+        std::string vtuFilePath = "../sol1d.vtu";
+        fem.outputCsv(csvFilePath);
+        fem.outputVtu(vtuFilePath);
 
         // cout << "Solution:\n" << fem.getSolution() << endl;
 
@@ -117,15 +115,15 @@ int main(int argc, char *argv[])
         grid.parseFromMsh(argv[2]);
         
         // 4. Crea e risolvi il problema FEM con BoundaryConditions
-        Fem<2> fem2d(grid, forcing, diffusion, transport, reaction, boundary_conditions, quadrature);
-        
-        fem2d.assemble();
-        fem2d.solve();
-        
+        Fem<2> fem(grid, forcing, diffusion, transport, reaction, boundary_conditions, quadrature);
+
+        fem.assemble();
+        fem.solve();
+
         std::string csvFilePath = "../sol2d.csv";
         std::string vtuFilePath = "../sol2d.vtu";
-        fem2d.outputCsv(csvFilePath);
-        fem2d.outputVtu(vtuFilePath);
+        fem.outputCsv(csvFilePath);
+        fem.outputVtu(vtuFilePath);
     }
     else {
         cout << "First argument must be '1d' or '2d'" << endl;

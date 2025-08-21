@@ -119,7 +119,7 @@ void BoundaryConditions<dim, returnDim>::applyNeumann(
 // Apply boundary conditions (1D main method)
 // -----------------------------------------------------------------------------
 
-inline void BoundaryConditions<1,1>::apply(const Grid1D& mesh,
+inline void BoundaryConditions<1,1>::apply(const Grid<1>& mesh,
     SparseMat& A, VectorXd& rhs) {
     
     if (conditions.empty()) {
@@ -145,28 +145,29 @@ inline void BoundaryConditions<1,1>::apply(const Grid1D& mesh,
 // -----------------------------------------------------------------------------
 
 inline void BoundaryConditions<1, 1>::applyDirichlet(
-    const BoundaryCondition<1, 1>& bc, const Grid1D& mesh, 
+    const BoundaryCondition<1, 1>& bc, const Grid<1>& mesh, 
     SparseMat& A, VectorXd& rhs) {
     
     std::cout << "  Applicando condizione di Dirichlet 1D su tag " << bc.getBoundaryId() << std::endl;
-    
+
+    int startIndex = 0;
+    int endIndex = mesh.getNumElements();
+
     if (bc.getBoundaryId() == 0) {
         // Boundary condition at the left endpoint (x = 0)
-        int startIndex = mesh.getStart();
         A.coeffRef(startIndex, startIndex) = 1.0;
         if (startIndex + 1 < A.cols()) {
             A.coeffRef(startIndex, startIndex + 1) = 0.0;
         }
-        rhs[startIndex] = bc.getBoundaryFunction().value(Point<1>(mesh.getStart()));
+        rhs[startIndex] = bc.getBoundaryFunction().value(mesh.getNode(startIndex));
         
     } else if (bc.getBoundaryId() == 1) {
         // Boundary condition at the right endpoint (x = L)
-        int endIndex = mesh.getEnd();
         A.coeffRef(endIndex, endIndex) = 1.0;
         if (endIndex - 1 >= 0) {
             A.coeffRef(endIndex, endIndex - 1) = 0.0;
         }
-        rhs[endIndex] = bc.getBoundaryFunction().value(Point<1>(mesh.getEnd()));
+        rhs[endIndex] = bc.getBoundaryFunction().value(mesh.getNode(endIndex));
         
     } else {
         std::cerr << "ERRORE: Tag fisico non valido per condizione di Dirichlet 1D: " 
@@ -175,25 +176,26 @@ inline void BoundaryConditions<1, 1>::applyDirichlet(
 }
 
 inline void BoundaryConditions<1,1>::applyNeumann(
-    const BoundaryCondition<1, 1>& bc, const Grid1D& mesh, 
+    const BoundaryCondition<1, 1>& bc, const Grid<1>& mesh, 
     SparseMat& A, VectorXd& rhs) {
     
     std::cout << "  Applicando condizione di Neumann 1D su tag " << bc.getBoundaryId() << std::endl;
     
+    int startIndex = 0;
+    int endIndex = mesh.getNumElements() - 1;
+    
     if (bc.getBoundaryId() == 0) {
         // Neumann condition at the left endpoint (x = 0)
         // ∂u/∂n = -∂u/∂x at x = 0 (outward normal points left)
-        int startIndex = mesh.getStart();
-        double neumannValue = bc.getBoundaryFunction().value(Point<1>(mesh.getStart()));
+        double neumannValue = bc.getBoundaryFunction().value(mesh.getNode(startIndex));
         rhs[startIndex] -= neumannValue * 0.5; // Factor 0.5 comes from FEM integration
         
     } else if (bc.getBoundaryId() == 1) {
         // Neumann condition at the right endpoint (x = L)
         // ∂u/∂n = ∂u/∂x at x = L (outward normal points right)
-        int endIndex = mesh.getEnd();
-        double neumannValue = bc.getBoundaryFunction().value(Point<1>(mesh.getEnd()));
-        rhs[endIndex] += neumannValue * 0.5; // Factor 0.5 comes from FEM integration
-        
+        double neumannValue = bc.getBoundaryFunction().value(mesh.getNode(endIndex));
+        rhs[endIndex - 1] += neumannValue * 0.5; // Factor 0.5 comes from FEM integration
+
     } else {
         std::cerr << "ERRORE: Tag fisico non valido per condizione di Neumann 1D: " 
                   << bc.getBoundaryId() << " (attesi: 0 o 1)" << std::endl;
