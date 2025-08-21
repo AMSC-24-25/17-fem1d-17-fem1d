@@ -30,16 +30,35 @@ void Fem<dim>::assemble() {
     // Inizializzazione
     int numNodes = mesh.getNumNodes();
     rhs.setZero();
-    
+     
+    unsigned int expNonZero = (dim==1) ? 3 : (dim==2) ? 9 : 16;
+    int numElements = mesh.getNumElements();
+    // Parallel: each thread has its own triplet vector
+#ifdef _OPENMP
+    int nthreads = omp_get_max_threads();
+    std::vector<std::vector<Triplet>> triplets_thread(nthreads);
+    #pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        std::vector<Triplet>& local_triplets = triplets_thread[tid];
+        local_triplets.reserve(expNonZero * (numElements / nthreads + 1));
+        #pragma omp for schedule(static)
+        for (int e = 0; e < numElements; ++e) {
+            assembleElement(e, local_triplets);
+        }
+    }
+    // Unisci tutti i triplet
     std::vector<Triplet> triplets;
-    unsigned int expNonZero = (dim==1) ? 3 : (dim==2) ? 9 : 25; // Estimate non-zero entries per element
-    triplets.reserve(expNonZero * mesh.getNumElements());
-
-
-    // Loop on elements - assemble local matrix for each. Appends non-zero values to triplets
-    for (unsigned int e = 0; e < mesh.getNumElements(); ++e) {
+    for (auto& v : triplets_thread) {
+        triplets.insert(triplets.end(), v.begin(), v.end());
+    }
+#else
+    std::vector<Triplet> triplets;
+    triplets.reserve(expNonZero * numElements);
+    for (int e = 0; e < numElements; ++e) {
         assembleElement(e, triplets);
     }
+#endif
     
     // Global sparse matrix assembly
     A.setFromTriplets(triplets.begin(), triplets.end());
@@ -54,15 +73,7 @@ void Fem<dim>::assemble() {
 // Assemblaggio di un singolo elemento (triangolo)
 template<unsigned int dim>
 void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
-
     const Cell<dim>& cell = mesh.getCell(elemIndex);
-    // // Verifica che sia effettivamente un triangolo
-    // if (cell.getN() != 3) {
-    //     std::cerr << "ERROR: Element " << elemIndex << " is not a triangle (has " 
-    //               << cell.getN() << " nodes)" << std::endl;
-    //     return; // Skip this element
-    // }
-    
     unsigned int matSize = dim+1;
 
     // Variables for quadrature data
@@ -72,7 +83,6 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
     std::vector<double> weights;
     
     // Get quadrature data
-
     quadrature.getQuadratureData(cell, grad_phi, quadrature_points, phi, weights);
 
     // Local matrices for element
@@ -82,6 +92,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
     VectorXd forc_local = VectorXd::Zero(matSize); // Termine forzante
 
     // Loop on quadrature points
+    #pragma omp parallel for reduction(+:diff_local, transport_local, react_local, forc_local)
     for (size_t q = 0; q < quadrature_points.size(); ++q) {
         const Point<dim>& p = quadrature_points[q];
         double w = weights[q];
@@ -122,7 +133,6 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
                 triplets.push_back(Triplet(globalI, globalJ, value));
             }
         }
-
         // Assembly of RHS
         int globalI = cell.getNodeIndex(i);
         rhs[globalI] += forc_local(i);
