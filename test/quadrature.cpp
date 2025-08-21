@@ -15,7 +15,7 @@ TEST(QuadratureTest, OrderTwo_WeightsAndLinearExactness) {
         Point<2>(std::vector<double>{0.0, 1.0}) 
     }, std::vector<unsigned int>{0u,1u,2u});
 
-    OrderTwoQuadrature quad;
+    OrderTwoQuadrature<2> quad;
     std::vector<Point<2>> grad_phi;
     std::vector<Point<2>> qp;
     std::vector<std::vector<double>> phi;
@@ -39,7 +39,7 @@ TEST(QuadratureTest, OrderTwo_WeightsAndLinearExactness) {
     EXPECT_NEAR(approx, 1.0 / 3.0, 1e-12);
 }
 
-TEST(QuadratureTest, FourPoints_WeightsAndLinearExactness) {
+TEST(QuadratureTest, OrderFour_WeightsAndLinearExactness) {
     // Triangolo unitario: (0,0), (1,0), (0,1) -> area = 1/2
     Cell<2> tri(std::vector<Point<2>>{ 
         Point<2>(std::vector<double>{0.0, 0.0}), 
@@ -47,7 +47,7 @@ TEST(QuadratureTest, FourPoints_WeightsAndLinearExactness) {
         Point<2>(std::vector<double>{0.0, 1.0}) 
     }, std::vector<unsigned int>{0u,1u,2u});
 
-    FourPointsQuadrature quad;
+    OrderFourQuadrature<2> quad;
     std::vector<Point<2>> grad_phi;
     std::vector<Point<2>> qp;
     std::vector<std::vector<double>> phi;

@@ -22,7 +22,7 @@ Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusi
 
 template<>
 std::unique_ptr<QuadratureRule<2>> Fem<2>::getQuadratureRule() const {
-    return std::make_unique<OrderTwoQuadrature>();
+    return std::make_unique<OrderTwoQuadrature<2>>();
 }
 
 // Main assembly

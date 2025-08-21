@@ -1,3 +1,13 @@
+/**
+ * @file quadrature.hpp
+ * @brief Quadrature rules for numerical integration over finite elements (1D, 2D, 3D).
+ *
+ * This header defines classes for quadrature rules on simplices (segments, triangles, tetrahedra)
+ * used in finite element methods. Quadrature rules are provided for:
+ *   - 1D segments (Gauss-Legendre)
+ *   - 2D triangles (order-2, order-4)
+ *   - 3D tetrahedra (order-2, order-4)
+ */
 #ifndef QUADRATURE
 #define QUADRATURE
 
@@ -22,66 +32,32 @@ protected:
     std::vector<double> w;                 // weights summing to 1
     QuadratureRule() = default;              // impedisce istanziazione diretta
 
-
 public:
     virtual ~QuadratureRule() = default;
 
     // Assemble local matrices for variable coefficients
-    virtual void getQuadratureData(
+    void getQuadratureData(
         const Cell<dim>& cell,
         std::vector<Point<dim>>& grad_phi,
         std::vector<Point<dim>>& quadrature_points,
         std::vector<std::vector<double>>& phi,
         std::vector<double>& weight
-    ) = 0;
-
+    );
 };
 
-
-class OrderTwoQuadrature : public QuadratureRule<2> {
-    public:
-    OrderTwoQuadrature() {
-        barycPoints = {
-            {2/3.0, 1/6.0, 1/6.0},
-            {1/6.0, 2/3.0, 1/6.0},
-            {1/6.0, 1/6.0, 2/3.0}
-        };
-        w = {1/3.0, 1/3.0, 1/3.0};
-    }
-
-    void getQuadratureData(
-        const Cell<2>& cell,
-        std::vector<Point<2>>& grad_phi,
-        std::vector<Point<2>>& quadrature_points,
-        std::vector<std::vector<double>>& phi,
-        std::vector<double>& weights
-    ) override;
-
-};
-
-
-class FourPointsQuadrature : public QuadratureRule<2> {
+template<unsigned int dim>
+class OrderTwoQuadrature : public QuadratureRule<dim> {
 public:
-    FourPointsQuadrature() {
-        // punti in baricentriche (λ1, λ2, λ3)
-        barycPoints = {
-            {1.0/3.0, 1.0/3.0, 1.0/3.0},   // baricentro
-            {1.0/5.0, 1.0/5.0, 3.0/5.0},
-            {1.0/5.0, 3.0/5.0, 1.0/5.0},
-            {3.0/5.0, 1.0/5.0, 1.0/5.0}
-        };
-        // pesi normalizzati a sommare 1 (non 1/2): moltiplicherai poi per area
-        w = { -27.0/48.0, 25.0/48.0, 25.0/48.0, 25.0/48.0 };
-    }
-
-    void getQuadratureData(
-        const Cell<2>& cell,
-        std::vector<Point<2>>& grad_phi,
-        std::vector<Point<2>>& quadrature_points,
-        std::vector<std::vector<double>>& phi,
-        std::vector<double>& weights
-    ) override;
+    OrderTwoQuadrature();
 };
+
+template<unsigned int dim>
+class OrderFourQuadrature : public QuadratureRule<dim> {
+public:
+    OrderFourQuadrature();
+};
+
+// ============= Boundary Quadrature ===================
 
 // Classe per quadratura 1D sui segmenti di bordo (Gauss-Legendre)
 class GaussLegendre1D {

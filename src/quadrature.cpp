@@ -1,52 +1,98 @@
 #include "quadrature.hpp"
 
-void OrderTwoQuadrature::getQuadratureData(
-    const Cell<2>& cell,
-    std::vector<Point<2>>& grad_phi,
-    std::vector<Point<2>>& quadrature_points,
-    std::vector<std::vector<double>>& phi,
-    std::vector<double>& weights
+template class QuadratureRule<2>;
+template class QuadratureRule<3>;
 
-
-){
-    // compute constant gradients of P1 basis functions on this cell
-    grad_phi.resize(3);
-    double area = cellArea(cell);
-    for(int i=0;i<3;++i) grad_phi[i] = barycentricGradient(cell,i);
-
-
-
-    // Compute the local matrices by iterating through the quadrature points
-    for(size_t q=0; q < barycPoints.size(); ++q){
-        Point<3> barycPoint = Point<3>(barycPoints[q]);
-        Point<2> p(
-            barycPoint[0]*cell[0][0] + barycPoint[1]*cell[1][0] + barycPoint[2]*cell[2][0],
-            barycPoint[0]*cell[0][1] + barycPoint[1]*cell[1][1] + barycPoint[2]*cell[2][1]
-        );
-        quadrature_points.push_back(p);
-        std::vector<double> phi_i;
-        phi_i.reserve(3);
-        for(int i=0;i<3;++i) phi_i.push_back(barycPoint[i]);
-        phi.push_back(phi_i);
-        weights.push_back( w[q]*area);
-    }
+template<>
+OrderTwoQuadrature<1>::OrderTwoQuadrature() {
+    // Two-point Gauss-Legendre quadrature for interval [-1,1]
+    barycPoints = {
+        {0.5 + 0.5 * (-1.0/std::sqrt(3.0)), 0.5 - 0.5 * (-1.0/std::sqrt(3.0))},
+        {0.5 + 0.5 * (1.0/std::sqrt(3.0)), 0.5 - 0.5 * (1.0/std::sqrt(3.0))}
+    };
+    w = {0.5, 0.5};
 }
 
+template<>
+OrderFourQuadrature<1>::OrderFourQuadrature() {
+    // Four-point Gauss-Legendre quadrature for interval [-1,1]
+    double sqrt_30 = std::sqrt(30.0);
+    double x1 = -std::sqrt((3.0 + 2.0 * sqrt_30 / 5.0) / 7.0);
+    double x2 = -std::sqrt((3.0 - 2.0 * sqrt_30 / 5.0) / 7.0);
+    double x3 = -x2;
+    double x4 = -x1;
 
+    double w1 = (18.0 - sqrt_30) / 36.0;
+    double w2 = (18.0 + sqrt_30) / 36.0;
+    double w3 = w2;
+    double w4 = w1;
 
-void FourPointsQuadrature::getQuadratureData(
-    const Cell<2>& cell,
-    std::vector<Point<2>>& grad_phi,
-    std::vector<Point<2>>& quadrature_points,
+    barycPoints = {
+        {0.5 + 0.5 * x1, 0.5 - 0.5 * x1},
+        {0.5 + 0.5 * x2, 0.5 - 0.5 * x2},
+        {0.5 + 0.5 * x3, 0.5 - 0.5 * x3},
+        {0.5 + 0.5 * x4, 0.5 - 0.5 * x4}
+    };
+    w = {w1, w2, w3, w4};
+}
+
+template<>
+OrderTwoQuadrature<3>::OrderTwoQuadrature() {
+    // Four-point quadrature rule for tetrahedron (degree 2 exact)
+    // Barycentric coordinates and weights:
+    barycPoints = {
+        {13.0/22.0, 3.0/22.0, 3.0/22.0, 3.0/22.0},
+        {3.0/22.0, 13.0/22.0, 3.0/22.0, 3.0/22.0},
+        {3.0/22.0, 3.0/22.0, 13.0/22.0, 3.0/22.0},
+        {3.0/22.0, 3.0/22.0, 3.0/22.0, 13.0/22.0}
+    };
+    // Weights sum to 1
+    w = {1.0/4.0, 1.0/4.0, 1.0/4.0, 1.0/4.0};
+}
+template<>
+OrderTwoQuadrature<2>::OrderTwoQuadrature() {
+    // Three-point quadrature rule for triangle (order 2)
+    barycPoints = {
+        {2/3.0, 1/6.0, 1/6.0},
+        {1/6.0, 2/3.0, 1/6.0},
+        {1/6.0, 1/6.0, 2/3.0}
+    };
+    // Weights sum to 1
+    w = {1/3.0, 1/3.0, 1/3.0};
+}
+
+template<>
+OrderFourQuadrature<2>::OrderFourQuadrature() {
+    // Six-point quadrature rule for triangle (degree 4 exact, symmetric)
+    barycPoints = {
+        {5.0/11.0, 5.0/11.0, 1.0/11.0},
+        {5.0/11.0, 1.0/11.0, 5.0/11.0},
+        {1.0/11.0, 5.0/11.0, 5.0/11.0},
+        {1.0/11.0, 1.0/11.0, 9.0/11.0},
+        {1.0/11.0, 9.0/11.0, 1.0/11.0},
+        {9.0/11.0, 1.0/11.0, 1.0/11.0}
+    };
+    // Weights sum to 1
+    w = {
+        2.0/9.0, 2.0/9.0, 2.0/9.0,
+        1.0/9.0, 1.0/9.0, 1.0/9.0
+    };
+}
+
+template<unsigned int dim>
+void QuadratureRule<dim>::getQuadratureData(
+    const Cell<dim>& cell,
+    std::vector<Point<dim>>& grad_phi,
+    std::vector<Point<dim>>& quadrature_points,
     std::vector<std::vector<double>>& phi,
     std::vector<double>& weights
 ){
-    // gradienti P1 costanti e area
-    grad_phi.resize(3);
-    double area = cellArea(cell);
-    for (int i = 0; i < 3; ++i) grad_phi[i] = barycentricGradient(cell, i);
+    // Compute constant gradients of P1 basis functions on this tetrahedral cell
+    grad_phi.resize(dim + 1);
+    double cellMeasure = cell.measure();
+    for(int i=0; i < dim+1; ++i) grad_phi[i] = cell.barycentricGradient(i);
 
-    // punti / pesi fisici e valori φ=λ nei punti
+    // Compute quadrature points, shape functions, and weights
     quadrature_points.clear();
     phi.clear();
     weights.clear();
@@ -54,17 +100,17 @@ void FourPointsQuadrature::getQuadratureData(
     phi.reserve(barycPoints.size());
     weights.reserve(barycPoints.size());
 
-    for (size_t q = 0; q < barycPoints.size(); ++q) {
-        // λ → x fisico
-        Point<3> l = Point<3>(barycPoints[q]);
-        Point<2> x(
-            l[0]*cell[0][0] + l[1]*cell[1][0] + l[2]*cell[2][0],
-            l[0]*cell[0][1] + l[1]*cell[1][1] + l[2]*cell[2][1]
-        );
-        quadrature_points.push_back(x);
+    for(size_t q=0; q < barycPoints.size(); ++q){
+        std::array<double, dim> pCoords;
+        for (size_t i = 0; i < dim; i++){
+           pCoords[i] = 0;
+           for (size_t j = 0; j < dim + 1; j++)
+               pCoords[i] += barycPoints[q][j] * cell[j][i];
+        }
 
-        phi.push_back({ l[0], l[1], l[2] });     // P1: φ_i = λ_i
-        weights.push_back(w[q] * area);          // peso fisico
+        quadrature_points.push_back(Point<dim>(pCoords));
+        phi.push_back(barycPoints[q]);
+        weights.push_back(w[q] * cellMeasure);
     }
 }
 

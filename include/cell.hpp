@@ -43,6 +43,10 @@ struct Cell {
         }
         return nodeIndices[i];
     }
+    
+    // Returns gradient of i-th barycentric shape function (constant on tetrahedra)
+    Point<dim> barycentricGradient(int i) const;
+    double measure() const;
 };
 
 template<unsigned int dim>
@@ -72,7 +76,7 @@ struct BoundaryCell : public Cell<dim+1> {
     }
 };
 
-// Calcola le coordinate baricentriche di p rispetto al triangolo cell (2D)
+// Returns barycentric coordinates of p with respect to triangle cell (2D)
 inline std::array<double, 3> barycentricCoordinates(const Cell<2>& cell, const Point<2>& p) {
     const Point<2>& A = cell[0];
     const Point<2>& B = cell[1];
@@ -91,45 +95,6 @@ inline std::array<double, 3> barycentricCoordinates(const Cell<2>& cell, const P
     double l2 = ((xC - x)*(yA - y) - (xA - x)*(yC - y)) / detT;
     double l3 = 1.0 - l1 - l2;
     return {l1, l2, l3};
-}
-
-// Restituisce il gradiente della shape function baricentrica i-esima (costante su triangolo)
-inline Point<2> barycentricGradient(const Cell<2>& cell, int i) {
-    const Point<2>& A = cell[0];
-    const Point<2>& B = cell[1];
-    const Point<2>& C = cell[2];
-    double xA = A[0], yA = A[1];
-    double xB = B[0], yB = B[1];
-    double xC = C[0], yC = C[1];
-    double detT = (xB - xA)*(yC - yA) - (xC - xA)*(yB - yA);
-    if (std::abs(detT) < 1e-14) {
-        std::cerr << "Triangolo degenere in barycentricGradient\n";
-        exit(-1);
-    }
-    // Gradiente di lambda_1
-    if (i == 0) {
-        return Point<2>(std::vector<double>{(yB - yC)/detT, (xC - xB)/detT});
-    }
-    // Gradiente di lambda_2
-    if (i == 1) {
-        return Point<2>(std::vector<double>{(yC - yA)/detT, (xA - xC)/detT});
-    }
-    // Gradiente di lambda_3
-    if (i == 2) {
-        return Point<2>(std::vector<double>{(yA - yB)/detT, (xB - xA)/detT});
-    }
-    std::cerr << "Indice shape function non valido in barycentricGradient\n";
-    exit(-1);
-}
-
-
-inline double cellArea(const Cell<2>& cell) {
-    const Point<2>& A = cell[0];
-    const Point<2>& B = cell[1];
-    const Point<2>& C = cell[2];
-
-    double detT = (B[0]-A[0])*(C[1]-A[1]) - (C[0]-A[0])*(B[1]-A[1]);
-    return 0.5 * std::abs(detT);
 }
 
 // ============= GEOMETRIA PER BOUNDARY CELLS (EDGE) =============

@@ -60,6 +60,20 @@ public:
         }
         return coords[i];
     }
+    Point<dim> operator-(Point<dim> other) const {
+        CoordinateVector result(dim);
+        for (unsigned int i = 0; i < dim; ++i) {
+            result[i] = coords[i] - other[i];
+        }
+        return Point<dim>(result);
+    }
+    Point<dim> operator+(Point<dim> other) const {
+        CoordinateVector result(dim);
+        for (unsigned int i = 0; i < dim; ++i) {
+            result[i] = coords[i] + other[i];
+        }
+        return Point<dim>(result);
+    }
 
     double operator *(Point<dim> p) const {
         double result = 0.0;
