@@ -1,7 +1,8 @@
 #include "fem.hpp"
 
-template class Fem<2>;
 template class Fem<1>;
+template class Fem<2>;
+template class Fem<3>;
 
 // Costruttore moderno con BoundaryConditions
 template<unsigned int dim>

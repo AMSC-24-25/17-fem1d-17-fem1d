@@ -1,6 +1,47 @@
-// #include "../include/boundary_conditions.hpp"
-// #include "../include/quadrature.hpp"
-// #include <iostream>
+#include "../include/boundary_conditions.hpp"
+#include "../include/quadrature.hpp"
+#include <iostream>
+
+template <>
+void BoundaryConditions<3, 1>::applyNeumann(
+    const BoundaryCondition<3, 1>& bc, const Grid<3>& mesh, 
+    SparseMat& A, VectorXd& rhs) {
+        
+    std::cerr << "Only defined for 2D" << std::endl;
+    exit(-1);
+}
+
+// template <unsigned int dim, unsigned int returnDim>
+template <>
+void BoundaryConditions<2, 1>::applyNeumann(
+    const BoundaryCondition<2, 1>& bc, const Grid<2>& mesh, 
+    SparseMat& A, VectorXd& rhs) {
+    
+    // Ottieni gli edge di bordo con il tag fisico specifico
+    auto boundaryEdges = mesh.getBoundaryEdgesByTag(bc.getBoundaryId());
+    std::cout << "  Applicando condizione di Neumann su tag " << bc.getBoundaryId()
+              << " (" << boundaryEdges.size() << " edge)" << std::endl;
+    
+    // Inizializza la quadratura 1D
+    GaussLegendre1D quadrature;
+    
+    // Itera su tutti gli edge di bordo con questo tag
+    for (const auto& edge : boundaryEdges) {
+        // Calcola i contributi ai nodi dell'edge usando la quadratura
+        std::vector<double> contributions;
+        quadrature.integrateShapeFunctions(edge, bc.getBoundaryFunction(), contributions);
+        
+        // Aggiungi i contributi al vettore RHS
+        const auto& nodeIndices = edge.getNodeIndexes();
+        for (size_t i = 0; i < nodeIndices.size(); ++i) {
+            int globalNodeIndex = nodeIndices[i];
+            rhs[globalNodeIndex] += contributions[i];
+        }
+        
+        std::cout << "    Edge con nodi [" << nodeIndices[0] << ", " << nodeIndices[1] 
+                 << "] - contributi: [" << contributions[0] << ", " << contributions[1] << "]" << std::endl;
+    }
+}
 
 // // Costruttore con lista di condizioni
 // BoundaryConditions::BoundaryConditions(const std::vector<BoundaryCondition>& conditions) 

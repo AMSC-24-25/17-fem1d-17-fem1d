@@ -80,37 +80,6 @@ void BoundaryConditions<dim, returnDim>::applyDirichlet(
     }
 }
 
-template <unsigned int dim, unsigned int returnDim>
-void BoundaryConditions<dim, returnDim>::applyNeumann(
-    const BoundaryCondition<dim, returnDim>& bc, const Grid<dim>& mesh, 
-    SparseMat& A, VectorXd& rhs) {
-    
-    // Ottieni gli edge di bordo con il tag fisico specifico
-    auto boundaryEdges = mesh.getBoundaryEdgesByTag(bc.getBoundaryId());
-    std::cout << "  Applicando condizione di Neumann su tag " << bc.getBoundaryId()
-              << " (" << boundaryEdges.size() << " edge)" << std::endl;
-    
-    // Inizializza la quadratura 1D
-    GaussLegendre1D quadrature;
-    
-    // Itera su tutti gli edge di bordo con questo tag
-    for (const auto& edge : boundaryEdges) {
-        // Calcola i contributi ai nodi dell'edge usando la quadratura
-        std::vector<double> contributions;
-        quadrature.integrateShapeFunctions(edge, bc.getBoundaryFunction(), contributions);
-        
-        // Aggiungi i contributi al vettore RHS
-        const auto& nodeIndices = edge.getNodeIndexes();
-        for (size_t i = 0; i < nodeIndices.size(); ++i) {
-            int globalNodeIndex = nodeIndices[i];
-            rhs[globalNodeIndex] += contributions[i];
-        }
-        
-        std::cout << "    Edge con nodi [" << nodeIndices[0] << ", " << nodeIndices[1] 
-                 << "] - contributi: [" << contributions[0] << ", " << contributions[1] << "]" << std::endl;
-    }
-}
-
 // =============================================================================
 // 1D SPECIALIZATION IMPLEMENTATION
 // =============================================================================
