@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
         fem.solve();
 
         std::string csvFilePath = "../sol2d.csv";
-        std::string vtuFilePath = "../sol2d.vtu";
+        std::string vtuFilePath = "output/sol2d.vtu";
         fem.outputCsv(csvFilePath);
         fem.outputVtu(vtuFilePath);
     }
