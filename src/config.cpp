@@ -59,6 +59,15 @@ Config Config::loadFromFile(const std::string& filename) {
                 config.boundary_conditions.push_back(bc);
             }
         }
+
+        if (data.contains("quadrature")) {
+            const auto& quad = toml::find(data, "quadrature");
+            std::string qtype = toml::find_or(quad, "type", std::string("order2"));
+            std::transform(qtype.begin(), qtype.end(), qtype.begin(), ::tolower);
+            config.quadrature.type = qtype;
+        } else {
+            config.quadrature.type = "order2"; // default
+        }
         
     } catch (const std::exception& e) {
         throw std::runtime_error("Error parsing TOML file '" + filename + "': " + e.what());
@@ -99,6 +108,10 @@ bool Config::validate() const {
     // Validate boundary conditions
     if (boundary_conditions.empty()) {
         std::cerr << "Warning: no boundary conditions specified" << std::endl;
+    }
+
+    if (!(quadrature.type == "order2" || quadrature.type == "order4")) {
+        throw std::runtime_error("quadrature.type must be 'order2' or 'order4'. Got: " + quadrature.type);
     }
     
     return true;
@@ -237,6 +250,29 @@ BoundaryConditions<dim,1> Config::createBoundaryConditions() const {
     }
     
     return bc;
+}
+
+template<>
+std::unique_ptr<QuadratureRule<1>> Config::createQuadrature<1>() const {
+    if (quadrature.type == "order4")
+        return std::make_unique<OrderFourQuadrature<1>>();
+    // default sicuro: order2
+    return std::make_unique<OrderTwoQuadrature<1>>();
+}
+
+template<>
+std::unique_ptr<QuadratureRule<2>> Config::createQuadrature<2>() const {
+    if (quadrature.type == "order4")
+        return std::make_unique<OrderFourQuadrature<2>>();
+    return std::make_unique<OrderTwoQuadrature<2>>();
+}
+
+template<>
+std::unique_ptr<QuadratureRule<3>> Config::createQuadrature<3>() const {
+    if (quadrature.type == "order4") {
+        throw std::runtime_error("OrderFourQuadrature<3> is not implemented.");
+    }
+    return std::make_unique<OrderTwoQuadrature<3>>();
 }
 
 // Explicit template instantiations

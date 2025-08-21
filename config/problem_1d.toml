@@ -3,6 +3,9 @@ dimension = 1
 mesh_file = "mesh/line.msh"
 output_file = "output/solution_1d"
 
+[quadrature]
+type = "order2"
+
 [equation]
 # Equazione 1D: -d/dx(D * du/dx) + b * du/dx + sigma*u = f
 diffusion_coefficient = 1.0

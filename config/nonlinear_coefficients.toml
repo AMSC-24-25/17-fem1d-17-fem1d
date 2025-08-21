@@ -3,6 +3,9 @@ dimension = 2
 mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
 output_file = "output/nonlinear_coefficients"
 
+[quadrature]
+type = "order2"
+
 [equation]
 # Problema con coefficienti che dipendono dalla posizione in modo non lineare
 diffusion_function = "1.0/(1.0 + (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5))"

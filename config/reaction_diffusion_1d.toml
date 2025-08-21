@@ -4,6 +4,9 @@ mesh_file = "uniform_grid"
 grid_size = 100
 output_file = "output/reaction_diffusion_1d"
 
+[quadrature]
+type = "order2"
+
 [equation]
 # Problema 1D di reazione-diffusione
 diffusion_function = "1.0 + 0.5*sin(pi*x)"

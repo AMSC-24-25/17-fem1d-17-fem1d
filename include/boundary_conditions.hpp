@@ -97,7 +97,7 @@ public:
 
     // Metodi per aggiungere condizioni
         
-    inline void BoundaryConditions<1,1>::addDirichlet(int boundaryId, Function<1,1> func) {
+    inline void addDirichlet(int boundaryId, Function<1,1> func) {
         conditions.emplace_back(boundaryId, BCType::DIRICHLET, func);
     }
     inline void addDirichlet(int boundaryId, Point<1> value) {

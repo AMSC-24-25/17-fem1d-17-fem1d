@@ -3,6 +3,9 @@ dimension = 2
 mesh_file = "mesh/mesh-square-5_gmsh22.msh"
 output_file = "output/transport_dominated"
 
+[quadrature]
+type = "order2"
+
 [equation]
 # Problema dominato dal trasporto: b >> D
 diffusion_coefficient = 0.01

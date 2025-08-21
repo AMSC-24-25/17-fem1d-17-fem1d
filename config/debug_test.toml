@@ -3,6 +3,9 @@ dimension = 2
 mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
 output_file = "output/debug_test"
 
+[quadrature]
+type = "order2"
+
 [equation]
 # Funzioni costanti semplici per debug
 diffusion_function = "1"

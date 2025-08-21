@@ -3,6 +3,9 @@ dimension = 2
 mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
 output_file = "output/advection_diffusion"
 
+[quadrature]
+type = "order2"
+
 [equation]
 # Equazione di advezione-diffusione con coefficienti variabili
 diffusion_function = "1.0 + 0.5*sin(pi*x)*cos(pi*y)"

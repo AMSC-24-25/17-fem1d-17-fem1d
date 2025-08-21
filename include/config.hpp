@@ -24,6 +24,11 @@ struct EquationConfig {
     std::string transport_function;
     std::string reaction_function;
     std::string forcing_function;
+    
+    // Scalar coefficients for backward compatibility
+    double diffusion_coefficient = 1.0;
+    double transport_coefficient = 0.0;
+    double reaction_coefficient = 0.0;
 };
 
 // Struttura per le condizioni al contorno
@@ -41,40 +46,48 @@ struct SolverConfig {
     std::string method;
 };
 
+struct QuadratureCfg {
+    std::string type = "order2";
+};
+
 // Struttura principale di configurazione
 struct Config {
     ProblemConfig problem;
     EquationConfig equation;
     std::vector<BCConfig> boundary_conditions;
     SolverConfig solver;
-    
-    // Metodo statico per caricare da file TOML
+    int quadrature_order = 2;
+    template<int dim>
+    static std::unique_ptr<QuadratureRule<dim>> make_quadrature(int order) {
+        if (order == 2) return std::make_unique<OrderTwoQuadrature<dim>>();
+        if (order == 4) {
+            if constexpr (dim == 3) {
+                throw std::runtime_error("OrderFourQuadrature<3> is not implemented.");
+            }
+            return std::make_unique<OrderFourQuadrature<dim>>();
+        }
+        throw std::runtime_error("Quadrature order not supported");
+    }
+    QuadratureCfg quadrature;
+
+    // Caricamento / validazione / stampa
     static Config loadFromFile(const std::string& filename);
-    
-    // Metodo per validare la configurazione
     bool validate() const;
-    
-    // Metodo per stampare la configurazione (debug)
     void print() const;
-    
-    // Factory methods for creating FEM objects
+
+    // Factory vari
     Grid1D createGrid1D() const;
     Grid2D createGrid2D() const;
-    
-    template<unsigned int dim>
-    Function<dim,1> createForcingFunction() const;
-    
-    template<unsigned int dim>
-    Function<dim,1> createDiffusionFunction() const;
-    
-    template<unsigned int dim>
-    Function<dim,1> createReactionFunction() const;
-    
+
+    template<unsigned int dim> Function<dim,1> createForcingFunction() const;
+    template<unsigned int dim> Function<dim,1> createDiffusionFunction() const;
+    template<unsigned int dim> Function<dim,1> createReactionFunction() const;
     Function<1,1> createTransportFunction1D() const;
     Function<2,2> createTransportFunction2D() const;
-    
+    template<unsigned int dim> BoundaryConditions<dim,1> createBoundaryConditions() const;
+
     template<unsigned int dim>
-    BoundaryConditions<dim,1> createBoundaryConditions() const;
+    std::unique_ptr<QuadratureRule<dim>> createQuadrature() const;
 };
 
 #endif // CONFIG_HPP

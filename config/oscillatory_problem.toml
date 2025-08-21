@@ -3,6 +3,9 @@ dimension = 2
 mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
 output_file = "output/oscillatory_problem"
 
+[quadrature]
+type = "order2"
+
 [equation]
 # Problema con comportamento oscillatorio
 diffusion_function = "1.0 + 0.5*sin(4*pi*x)*sin(4*pi*y)"

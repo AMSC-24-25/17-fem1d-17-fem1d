@@ -1,0 +1,28 @@
+# Simple 1D test case
+[problem]
+dimension = 1
+mesh_file = "mesh/default.msh"
+output_file = "output/simple_1d"
+grid_size = 100
+
+[equation]
+diffusion_coefficient = 1.0
+transport_coefficient = 0.0
+reaction_coefficient = 0.0
+# Now supports any mathematical expression!
+forcing_function = "x + sin(pi*x) + 2*x^2"
+
+[solver]
+tolerance = 1e-12
+max_iterations = 1000
+method = "direct"
+
+[[boundary_condition]]
+type = "dirichlet"
+tag = 0
+function = "0.0"
+
+[[boundary_condition]]
+type = "dirichlet"
+tag = 1
+function = "1.0 + x^2"

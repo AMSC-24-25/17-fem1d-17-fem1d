@@ -3,6 +3,9 @@ dimension = 2
 mesh_file = "mesh/mesh-square-5_gmsh22.msh"
 output_file = "output/solution_2d"
 
+[quadrature]
+type = "order2"
+
 [equation]
 # Coefficienti dell'equazione: -div(D*grad(u)) + b*grad(u) + sigma*u = f
 diffusion_coefficient = 1.0

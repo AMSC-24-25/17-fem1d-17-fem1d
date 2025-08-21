@@ -1,0 +1,41 @@
+# Test TOML file with complex mathematical expressions
+# Showcases the power of toml11 + exprtk integration
+
+[problem]
+dimension = 2
+mesh_file = "mesh/square.msh"
+output_file = "output/advanced_solution"
+grid_size = 150
+
+[equation]
+diffusion_coefficient = 1.0
+transport_coefficient = 0.5
+reaction_coefficient = 0.1
+# Complex mathematical expression using exprtk!
+forcing_function = "sin(pi*x) * cos(pi*y) + 2*x^2 - y^3 + exp(-x*y)"
+
+[solver]
+tolerance = 1e-14
+max_iterations = 2000
+method = "direct"
+
+# Advanced boundary conditions with complex expressions
+[[boundary_condition]]
+type = "dirichlet"
+tag = 1
+function = "x^2 + y^2"  # Parabolic boundary
+
+[[boundary_condition]]
+type = "neumann"
+tag = 2
+function = "sin(2*pi*x) + cos(pi*y/2)"  # Complex Neumann condition
+
+[[boundary_condition]]
+type = "dirichlet"
+tag = 3
+function = "exp(-((x-0.5)^2 + (y-0.5)^2)/0.1)"  # Gaussian-like condition
+
+[[boundary_condition]]
+type = "neumann"
+tag = 4
+function = "sqrt(x^2 + y^2) * log(1 + x + y)"  # Advanced mixed function
