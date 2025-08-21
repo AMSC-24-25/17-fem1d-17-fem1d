@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
         //fsol.close();
 
         std::string csvFilePath = "../sol1d.csv";
-        std::string vtuFilePath = "../sol1d.vtu";
+        std::string vtuFilePath = "output/sol1d.vtu";
         fem.outputCsv(csvFilePath);
         fem.outputVtu(vtuFilePath);
 

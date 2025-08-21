@@ -29,11 +29,11 @@ void BoundaryConditions<dim, returnDim>::apply(const Grid<dim>& mesh,
     SparseMat& A, VectorXd& rhs) {
     
     if (conditions.empty()) {
-        std::cout << "Nessuna condizione al contorno da applicare" << std::endl;
+        std::cout << "No boundary condition to apply" << std::endl;
         return;
     }
-    
-    std::cout << "Applicazione " << conditions.size() << " condizioni al contorno..." << std::endl;
+
+    std::cout << "Applying " << conditions.size() << " boundary conditions..." << std::endl;
 
     for (const BoundaryCondition<dim, returnDim>& condition : conditions) {
         switch (condition.getType()) {
@@ -45,8 +45,8 @@ void BoundaryConditions<dim, returnDim>::apply(const Grid<dim>& mesh,
                 break;
         }
     }
-    
-    std::cout << "Condizioni al contorno applicate con successo" << std::endl;
+
+    std::cout << "Boundary conditions applied successfully" << std::endl;
 }
 
 // -----------------------------------------------------------------------------
@@ -59,115 +59,23 @@ void BoundaryConditions<dim, returnDim>::applyDirichlet(
     SparseMat& A, VectorXd& rhs) {
     
     IndexVector boundaryNodes = mesh.getBoundaryNodesByTag(bc.getBoundaryId());
-    std::cout << "  Applicando condizione di Dirichlet su tag " << bc.getBoundaryId() 
-              << " (" << boundaryNodes.size() << " nodi)" << std::endl;
-    
+    std::cout << "  Applying Dirichlet condition on tag " << bc.getBoundaryId() 
+              << " (" << boundaryNodes.size() << " nodes)" << std::endl;
+
+    // This loop is embarassingly parallel: boundaryNodes does not contain duplicates
+    #pragma omp parallel for
     for (unsigned int nodeIndex : boundaryNodes) {
         const Point<dim>& nodePoint = mesh.getNode(nodeIndex);
         
-        // Set row to zero
-        for (int k = 0; k < A.outerSize(); ++k) {
-            for (SparseMat::InnerIterator it(A, k); it; ++it) {
-                if (it.row() == nodeIndex)
-                    it.valueRef() = 0.0;
-            }
+        // Set row to zero (only iterates over nonzero elements in the row)
+        for (SparseMat::InnerIterator it(A, nodeIndex); it; ++it) {
+            it.valueRef() = 0.0;
         }
         
         // Set 1 on diagonal
         A.coeffRef(nodeIndex, nodeIndex) = 1.0;
         // Set dirichlet value in rhs
         rhs[nodeIndex] = bc.getBoundaryFunction().value(nodePoint);
-    }
-}
-
-// =============================================================================
-// 1D SPECIALIZATION IMPLEMENTATION
-// =============================================================================
-
-// -----------------------------------------------------------------------------
-// Apply boundary conditions (1D main method)
-// -----------------------------------------------------------------------------
-
-inline void BoundaryConditions<1,1>::apply(const Grid<1>& mesh,
-    SparseMat& A, VectorXd& rhs) {
-    
-    if (conditions.empty()) {
-        std::cout << "Nessuna condizione al contorno 1D" << std::endl;
-        return;
-    }
-    
-    std::cout << "Applicazione " << conditions.size() << " condizioni al contorno 1D..." << std::endl;
-    
-    for (const auto& bc : conditions) {
-        if (bc.getType() == BCType::DIRICHLET) {
-            applyDirichlet(bc, mesh, A, rhs);
-        } else { // NEUMANN
-            applyNeumann(bc, mesh, A, rhs);
-        }
-    }
-    
-    std::cout << "Condizioni al contorno 1D applicate con successo" << std::endl;
-}
-
-// -----------------------------------------------------------------------------
-// Helper methods for applying specific boundary condition types (1D)
-// -----------------------------------------------------------------------------
-
-inline void BoundaryConditions<1, 1>::applyDirichlet(
-    const BoundaryCondition<1, 1>& bc, const Grid<1>& mesh, 
-    SparseMat& A, VectorXd& rhs) {
-    
-    std::cout << "  Applicando condizione di Dirichlet 1D su tag " << bc.getBoundaryId() << std::endl;
-
-    int startIndex = 0;
-    int endIndex = mesh.getNumElements();
-
-    if (bc.getBoundaryId() == 0) {
-        // Boundary condition at the left endpoint (x = 0)
-        A.coeffRef(startIndex, startIndex) = 1.0;
-        if (startIndex + 1 < A.cols()) {
-            A.coeffRef(startIndex, startIndex + 1) = 0.0;
-        }
-        rhs[startIndex] = bc.getBoundaryFunction().value(mesh.getNode(startIndex));
-        
-    } else if (bc.getBoundaryId() == 1) {
-        // Boundary condition at the right endpoint (x = L)
-        A.coeffRef(endIndex, endIndex) = 1.0;
-        if (endIndex - 1 >= 0) {
-            A.coeffRef(endIndex, endIndex - 1) = 0.0;
-        }
-        rhs[endIndex] = bc.getBoundaryFunction().value(mesh.getNode(endIndex));
-        
-    } else {
-        std::cerr << "ERRORE: Tag fisico non valido per condizione di Dirichlet 1D: " 
-                  << bc.getBoundaryId() << " (attesi: 0 o 1)" << std::endl;
-    }
-}
-
-inline void BoundaryConditions<1,1>::applyNeumann(
-    const BoundaryCondition<1, 1>& bc, const Grid<1>& mesh, 
-    SparseMat& A, VectorXd& rhs) {
-    
-    std::cout << "  Applicando condizione di Neumann 1D su tag " << bc.getBoundaryId() << std::endl;
-    
-    int startIndex = 0;
-    int endIndex = mesh.getNumElements() - 1;
-    
-    if (bc.getBoundaryId() == 0) {
-        // Neumann condition at the left endpoint (x = 0)
-        // ∂u/∂n = -∂u/∂x at x = 0 (outward normal points left)
-        double neumannValue = bc.getBoundaryFunction().value(mesh.getNode(startIndex));
-        rhs[startIndex] -= neumannValue * 0.5; // Factor 0.5 comes from FEM integration
-        
-    } else if (bc.getBoundaryId() == 1) {
-        // Neumann condition at the right endpoint (x = L)
-        // ∂u/∂n = ∂u/∂x at x = L (outward normal points right)
-        double neumannValue = bc.getBoundaryFunction().value(mesh.getNode(endIndex));
-        rhs[endIndex - 1] += neumannValue * 0.5; // Factor 0.5 comes from FEM integration
-
-    } else {
-        std::cerr << "ERRORE: Tag fisico non valido per condizione di Neumann 1D: " 
-                  << bc.getBoundaryId() << " (attesi: 0 o 1)" << std::endl;
     }
 }
 

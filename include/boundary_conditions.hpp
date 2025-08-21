@@ -83,47 +83,6 @@ private:
 };
 
 // =============================================================================
-// BOUNDARY CONDITIONS CLASS (SPECIALIZATION FOR 1D)
-// =============================================================================
-
-/// Specializzazione per problemi 1D
-template<>
-class BoundaryConditions<1, 1> {
-public:
-    // Costruttori
-    BoundaryConditions() = default;
-    BoundaryConditions(const std::vector<BoundaryCondition<1, 1>>& conditions) 
-        : conditions(conditions) {}
-
-    // Metodi per aggiungere condizioni
-        
-    inline void addDirichlet(int boundaryId, Function<1,1> func) {
-        conditions.emplace_back(boundaryId, BCType::DIRICHLET, func);
-    }
-    inline void addDirichlet(int boundaryId, Point<1> value) {
-        conditions.emplace_back(boundaryId, BCType::DIRICHLET, value);
-    }
-    inline void addNeumann(int boundaryId, Function<1,1> func) {
-        conditions.emplace_back(boundaryId, BCType::NEUMANN, func);
-    }
-    inline void addNeumann(int boundaryId, Point<1> value) {
-        conditions.emplace_back(boundaryId, BCType::NEUMANN, value);
-    }
-
-    // Applicazione delle condizioni al contorno
-    inline void apply(const Grid<1>& mesh, SparseMat& A, VectorXd& rhs);
-
-private:
-    std::vector<BoundaryCondition<1, 1>> conditions;
-
-    // Metodi helper per applicazione
-    inline void applyDirichlet(const BoundaryCondition<1, 1>& bc, const Grid<1>& mesh,
-                       SparseMat& A, VectorXd& rhs);
-    inline void applyNeumann(const BoundaryCondition<1, 1>& bc, const Grid<1>& mesh,
-                     SparseMat& A, VectorXd& rhs);
-};
-
-// =============================================================================
 // TEMPLATE IMPLEMENTATION
 // =============================================================================
 
