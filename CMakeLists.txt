@@ -32,10 +32,6 @@ target_link_libraries(17_fem1d_17_fem1d fem1d_lib)
 add_executable(TomlMain src/TomlMain.cpp src/config.cpp)
 target_link_libraries(TomlMain fem1d_lib)
 
-# Test ultra-semplice per debug
-add_executable(UltraSimpleTest src/UltraSimpleTest.cpp)
-target_link_libraries(UltraSimpleTest fem1d_lib)
-
 # ---- Output preparation ----
 add_custom_target(create_output_dir ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory output
