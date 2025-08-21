@@ -82,6 +82,13 @@ public:
         }
         return result;
     }
+    Point<dim> operator *(double scalar) const {
+        Point<dim> result(*this);
+        for (unsigned int i = 0; i < dim; ++i) {
+            result[i] *= scalar;
+        }
+        return result;
+    }
 
     double x() const {
         static_assert(dim >= 1, "Point is not 1D");
