@@ -1,5 +1,4 @@
 #include "config.hpp"
-#include "fem1d.hpp"
 #include "fem.hpp"
 #include <iostream>
 #include <filesystem>
@@ -22,8 +21,9 @@ int main(int argc, char* argv[]) {
             auto transport = config.createTransportFunction1D();
             auto reaction = config.createReactionFunction<1>();
             auto bc = config.createBoundaryConditions<1>();
-            
-            Fem1D fem(grid, forcing, diffusion, transport, reaction, bc);
+            auto quadrature = config.createQuadrature<1>();
+
+            Fem<1> fem(grid, forcing, diffusion, transport, reaction, bc, *quadrature);
             fem.solve();
             
             std::string filename = "../" + config.problem.output_file + ".csv";

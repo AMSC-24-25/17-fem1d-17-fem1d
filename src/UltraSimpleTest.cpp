@@ -1,5 +1,4 @@
 #include "config.hpp"
-#include "fem1d.hpp"
 #include "fem.hpp"
 #include <iostream>
 #include <filesystem>

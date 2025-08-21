@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include "fem1d.hpp"
 #include "fem.hpp"
 #include "grid.hpp"
 #include "boundary_conditions.hpp"
