@@ -140,22 +140,24 @@ int main(int argc, char *argv[])
         // 2. Configurazione delle condizioni al contorno PRIMA del parsing
         BoundaryConditions<3,1> boundary_conditions;
         
-        // Configurazione con mix di Dirichlet e Neumann
-        boundary_conditions.addDirichlet(0, 0.0);
-        boundary_conditions.addDirichlet(1, 0.0);
-        boundary_conditions.addDirichlet(2, 0.0);
-        boundary_conditions.addDirichlet(3, 0.0);
-        boundary_conditions.addDirichlet(4, 0.0);
-        boundary_conditions.addDirichlet(5, 0.0);
-        
-        cout << "Condizioni al contorno configurate:" << endl;
-        cout << "  Physical tag 0 (faccia posteriore): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 1 (faccia anteriore): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 2 (faccia sinistra): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 3 (faccia destra): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 4 (faccia inferiore): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 5 (faccia superiore): Dirichlet u = 0" << endl;
-        cout << "NOTA: Si considera \"anteriore\" come la faccia la cui normale è (1, 0, 0)." << endl;
+
+    // Configurazione: Dirichlet su tutte le facce tranne la superiore (tag 5), Neumann su tag 5
+    boundary_conditions.addDirichlet(0, 0.0);
+    boundary_conditions.addDirichlet(1, 0.0);
+    boundary_conditions.addDirichlet(2, 0.0);
+    boundary_conditions.addDirichlet(3, 0.0);
+    boundary_conditions.addDirichlet(4, 0.0);
+    // Neumann su faccia superiore (tag 5): flusso costante
+    boundary_conditions.addNeumann(5, Function<3,1>([](Point<3> p) { return 1.0; }));
+
+    cout << "Condizioni al contorno configurate:" << endl;
+    cout << "  Physical tag 0 (faccia posteriore): Dirichlet u = 0" << endl;
+    cout << "  Physical tag 1 (faccia anteriore): Dirichlet u = 0" << endl;
+    cout << "  Physical tag 2 (faccia sinistra): Dirichlet u = 0" << endl;
+    cout << "  Physical tag 3 (faccia destra): Dirichlet u = 0" << endl;
+    cout << "  Physical tag 4 (faccia inferiore): Dirichlet u = 0" << endl;
+    cout << "  Physical tag 5 (faccia superiore): Neumann g = 1.0" << endl;
+    cout << "NOTA: Si considera \"anteriore\" come la faccia la cui normale è (1, 0, 0)." << endl;
 
         // 3. Parse della mesh
         Grid<3> grid;

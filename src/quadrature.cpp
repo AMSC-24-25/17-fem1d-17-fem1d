@@ -191,3 +191,75 @@ void GaussLegendre1D::integrateShapeFunctions(const BoundaryCell<1>& edge,
         }
     }
 }
+
+// ============= IMPLEMENTAZIONE GaussLegendre2D =============
+
+void GaussLegendre2D::getQuadratureData(const BoundaryCell<2>& face,
+                                        std::vector<Point<3>>& quadrature_points,
+                                        std::vector<std::vector<double>>& phi,
+                                        std::vector<double>& weights) const {
+    // Area della faccia triangolare
+    double area = faceArea(face);
+    
+    // Inizializza i vettori di output
+    quadrature_points.clear();
+    phi.clear();
+    weights.clear();
+    quadrature_points.reserve(points.size());
+    phi.reserve(points.size());
+    weights.reserve(points.size());
+    
+    // Itera sui punti di quadratura
+    for (size_t q = 0; q < points.size(); ++q) {
+        // Punto di quadratura globale su faccia
+        Point<3> globalPoint = mapToGlobalFace(face, points[q][0], points[q][1]);
+        quadrature_points.push_back(globalPoint);
+        
+        // Shape functions nel punto di quadratura
+        std::vector<double> phi_q;
+        getShapeFunctions2D(points[q][0], points[q][1], phi_q);
+        phi.push_back(phi_q);
+        
+        // Peso fisico (peso * area della faccia)
+        weights.push_back(w[q] * area);
+    }
+}
+
+double GaussLegendre2D::integrate(const BoundaryCell<2>& face, 
+                                 const Function<3,1>& func) const {
+    std::vector<Point<3>> quadrature_points;
+    std::vector<std::vector<double>> phi;
+    std::vector<double> weights;
+    
+    getQuadratureData(face, quadrature_points, phi, weights);
+    
+    double integral = 0.0;
+    for (size_t q = 0; q < quadrature_points.size(); ++q) {
+        double funcValue = func.value(quadrature_points[q]);
+        integral += weights[q] * funcValue;
+    }
+    
+    return integral;
+}
+
+void GaussLegendre2D::integrateShapeFunctions(const BoundaryCell<2>& face,
+                                             const Function<3,1>& neumannFunc,
+                                             std::vector<double>& contributions) const {
+    std::vector<Point<3>> quadrature_points;
+    std::vector<std::vector<double>> phi;
+    std::vector<double> weights;
+    
+    getQuadratureData(face, quadrature_points, phi, weights);
+    
+    contributions.resize(3, 0.0);  // 3 nodi per faccia triangolare
+    
+    for (size_t q = 0; q < quadrature_points.size(); ++q) {
+        // Valore della funzione di Neumann nel punto
+        double neumannValue = neumannFunc.value(quadrature_points[q]);
+        
+        // Contributi ai nodi della faccia
+        for (int i = 0; i < 3; ++i) {
+            contributions[i] += weights[q] * neumannValue * phi[q][i];
+        }
+    }
+}

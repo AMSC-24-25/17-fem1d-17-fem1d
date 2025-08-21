@@ -125,6 +125,20 @@ public:
         return boundaryEdges;
     }
 
+    // Metodo per ottenere le facce di bordo per tag (solo per 3D)
+    std::vector<BoundaryCell<2>> getBoundaryFacesByTag(int boundaryId) const {
+        static_assert(dim == 3, "getBoundaryFacesByTag is only valid for 3D grids");
+        std::vector<BoundaryCell<2>> boundaryFaces;
+
+        for (const BoundaryCell<2>& boundaryCell : boundary_cells) {
+            if (boundaryCell.getBoundaryId() == boundaryId) {
+                boundaryFaces.push_back(boundaryCell);
+            }
+        }
+        
+        return boundaryFaces;
+    }
+
     bool isBoundaryNode(int nodeIndex) const {
         for (const BoundaryCell<dim-1>& boundaryCell : boundary_cells) {
             const IndexVector& nodeIndices = boundaryCell.getNodeIndexes();

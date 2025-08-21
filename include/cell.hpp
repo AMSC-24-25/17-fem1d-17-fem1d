@@ -137,5 +137,72 @@ inline void getShapeFunctions1D(double xi, std::vector<double>& phi) {
     phi[1] = (1.0 + xi) / 2.0;  // shape function per nodo 1
 }
 
+// ============= GEOMETRIA PER BOUNDARY CELLS (FACCE 3D) =============
+
+inline Point<3> mapToGlobalFace(const BoundaryCell<2>& face, double xi, double eta) {
+    // Mappa da coordinate locali (xi, eta) a coordinate globali per faccia triangolare
+    // Coordinata baricentrica: (1-xi-eta, xi, eta)
+    const Point<3>& p1 = face[0];
+    const Point<3>& p2 = face[1];
+    const Point<3>& p3 = face[2];
+    
+    double x = (1.0 - xi - eta) * p1[0] + xi * p2[0] + eta * p3[0];
+    double y = (1.0 - xi - eta) * p1[1] + xi * p2[1] + eta * p3[1];
+    double z = (1.0 - xi - eta) * p1[2] + xi * p2[2] + eta * p3[2];
+    
+    return Point<3>(x, y, z);
+}
+
+inline Point<3> faceNormal(const BoundaryCell<2>& face) {
+    // Calcola il vettore normale unitario alla faccia triangolare
+    const Point<3>& p1 = face[0];
+    const Point<3>& p2 = face[1];
+    const Point<3>& p3 = face[2];
+    
+    // Due vettori sui lati del triangolo
+    Point<3> v1(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
+    Point<3> v2(p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]);
+    
+    // Prodotto vettoriale v1 × v2
+    double nx = v1[1] * v2[2] - v1[2] * v2[1];
+    double ny = v1[2] * v2[0] - v1[0] * v2[2];
+    double nz = v1[0] * v2[1] - v1[1] * v2[0];
+    
+    // Normalizza
+    double length = sqrt(nx*nx + ny*ny + nz*nz);
+    if (length < 1e-14) {
+        std::cerr << "Faccia degenere in faceNormal\n";
+        exit(-1);
+    }
+    
+    return Point<3>(nx/length, ny/length, nz/length);
+}
+
+inline double faceArea(const BoundaryCell<2>& face) {
+    // Calcola l'area della faccia triangolare
+    const Point<3>& p1 = face[0];
+    const Point<3>& p2 = face[1];
+    const Point<3>& p3 = face[2];
+    
+    // Due vettori sui lati del triangolo
+    Point<3> v1(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
+    Point<3> v2(p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]);
+    
+    // Modulo del prodotto vettoriale / 2
+    double nx = v1[1] * v2[2] - v1[2] * v2[1];
+    double ny = v1[2] * v2[0] - v1[0] * v2[2];
+    double nz = v1[0] * v2[1] - v1[1] * v2[0];
+    
+    return 0.5 * sqrt(nx*nx + ny*ny + nz*nz);
+}
+
+inline void getShapeFunctions2D(double xi, double eta, std::vector<double>& phi) {
+    // Shape functions lineari 2D per triangolo in coordinate baricentriche
+    phi.resize(3);
+    phi[0] = 1.0 - xi - eta;  // shape function per nodo 0
+    phi[1] = xi;              // shape function per nodo 1
+    phi[2] = eta;             // shape function per nodo 2
+}
+
 
 #endif

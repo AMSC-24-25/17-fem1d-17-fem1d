@@ -89,4 +89,36 @@ public:
                                 std::vector<double>& contributions) const;
 };
 
+// Classe per quadratura 2D sui triangoli di bordo (per 3D)
+class GaussLegendre2D {
+private:
+    std::vector<std::vector<double>> points; // Punti di quadratura in coordinate baricentriche (xi, eta)
+    std::vector<double> w;                   // Pesi di quadratura
+    
+public:
+    // Costruttore per quadratura a 3 punti su triangolo (ordine 2)
+    GaussLegendre2D() {
+        // Punti di quadratura su triangolo di riferimento (ordine 2, esatto per polinomi di grado 2)
+        points = {{1.0/6.0, 1.0/6.0},    // punto 1: (1/6, 1/6) - coordinate baricentriche (2/3, 1/6, 1/6)
+                  {2.0/3.0, 1.0/6.0},    // punto 2: (2/3, 1/6) - coordinate baricentriche (1/6, 2/3, 1/6)
+                  {1.0/6.0, 2.0/3.0}};   // punto 3: (1/6, 2/3) - coordinate baricentriche (1/6, 1/6, 2/3)
+        w = {1.0/6.0, 1.0/6.0, 1.0/6.0}; // Pesi (sommano a 1/2, area del triangolo di riferimento)
+    }
+    
+    // Metodo principale per ottenere dati di quadratura su faccia
+    void getQuadratureData(const BoundaryCell<2>& face,
+                          std::vector<Point<3>>& quadrature_points,
+                          std::vector<std::vector<double>>& phi,
+                          std::vector<double>& weights) const;
+    
+    // Integra una funzione su una faccia triangolare
+    double integrate(const BoundaryCell<2>& face, 
+                    const Function<3,1>& func) const;
+    
+    // Integra le shape functions su una faccia per Neumann BC 3D
+    void integrateShapeFunctions(const BoundaryCell<2>& face,
+                                const Function<3,1>& neumannFunc,
+                                std::vector<double>& contributions) const;
+};
+
 #endif  // QUADRATURE
