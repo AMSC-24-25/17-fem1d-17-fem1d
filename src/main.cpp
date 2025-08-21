@@ -36,13 +36,14 @@ int main(int argc, char *argv[])
 
         Function<1,1> forcing(
             [](Point<1> p) -> double { //value
-                // return sin(2*PI*x);
+                // return sin(2*PI*p[0]);
                 return -1;
             }
         );
 
-        Function<1,1> diffusion_term = OneFunction<1,1>();
-        Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 0; });
+        // Function<1,1> diffusion_term = OneFunction<1,1>();
+        Function<1,1> diffusion_term = Function<1,1>([](Point<1> p) -> double { return 1; });
+        Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 3; });
         Function<1,1> reaction_term = Function<1,1>([](Point<1> p) -> double {return 0; });
     
 
@@ -53,18 +54,13 @@ int main(int argc, char *argv[])
         OrderTwoQuadrature<1> quadrature;
         Fem<1> fem(grid, forcing, diffusion_term, transport_term, reaction_term, boundary_conditions, quadrature);
 
-        // const char* solPath = "../sol.csv";
-        // std::ofstream fsol(solPath);
         fem.assemble();
         fem.solve();
-        //fsol.close();
 
         std::string csvFilePath = "../sol1d.csv";
         std::string vtuFilePath = "output/sol1d.vtu";
         fem.outputCsv(csvFilePath);
         fem.outputVtu(vtuFilePath);
-
-        // cout << "Solution:\n" << fem.getSolution() << endl;
 
         // system("python ../scripts/plot_sol.py");
     }
@@ -74,7 +70,6 @@ int main(int argc, char *argv[])
             return 2.0*(p[0] + p[1]) - 2.0*(p[0]*p[0] + p[1]*p[1]);
         });
         
-
         BoundaryConditions<2,1> boundary_conditions;
         Function<2,1> diffusion([](Point<2> p) { return 1.0; });
         Function<2,1> reaction([](Point<2> p) { return 0.0; });

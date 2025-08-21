@@ -57,9 +57,9 @@ Point<1> Cell<1>::barycentricGradient(int i) const {
     }
 
     if (i == 0)
-        return -1.0;
-    else if (i == 1) 
-        return 1.0;
+        return -1.0 / measure();
+    else if (i == 1)
+        return 1.0 / measure();
 
     std::cerr << "Indice shape function non valido in barycentricGradient\n";
     exit(-1);

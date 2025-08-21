@@ -6,22 +6,24 @@ template class QuadratureRule<3>;
 
 template<>
 OrderTwoQuadrature<1>::OrderTwoQuadrature() {
-    // Two-point Gauss-Legendre quadrature for interval [-1,1]
+    // Two-point Gauss-Legendre quadrature for interval [0,1]
+    double x1 = 0.5 - 0.5/std::sqrt(3.0);
+    double x2 = 0.5 + 0.5/std::sqrt(3.0);
     barycPoints = {
-        {0.5 + 0.5 * (-1.0/std::sqrt(3.0)), 0.5 - 0.5 * (-1.0/std::sqrt(3.0))},
-        {0.5 + 0.5 * (1.0/std::sqrt(3.0)), 0.5 - 0.5 * (1.0/std::sqrt(3.0))}
+        {x1, 1.0 - x1},
+        {x2, 1.0 - x2}
     };
     w = {0.5, 0.5};
 }
 
 template<>
 OrderFourQuadrature<1>::OrderFourQuadrature() {
-    // Four-point Gauss-Legendre quadrature for interval [-1,1]
+    // Four-point Gauss-Legendre quadrature for interval [0,1]
     double sqrt_30 = std::sqrt(30.0);
-    double x1 = -std::sqrt((3.0 + 2.0 * sqrt_30 / 5.0) / 7.0);
-    double x2 = -std::sqrt((3.0 - 2.0 * sqrt_30 / 5.0) / 7.0);
-    double x3 = -x2;
-    double x4 = -x1;
+    double x1 = 0.5 - 0.5 * std::sqrt((3.0 + 2.0 * sqrt_30 / 5.0) / 7.0);
+    double x2 = 0.5 - 0.5 * std::sqrt((3.0 - 2.0 * sqrt_30 / 5.0) / 7.0);
+    double x3 = 0.5 + 0.5 * std::sqrt((3.0 - 2.0 * sqrt_30 / 5.0) / 7.0);
+    double x4 = 0.5 + 0.5 * std::sqrt((3.0 + 2.0 * sqrt_30 / 5.0) / 7.0);
 
     double w1 = (18.0 - sqrt_30) / 36.0;
     double w2 = (18.0 + sqrt_30) / 36.0;
@@ -29,10 +31,10 @@ OrderFourQuadrature<1>::OrderFourQuadrature() {
     double w4 = w1;
 
     barycPoints = {
-        {0.5 + 0.5 * x1, 0.5 - 0.5 * x1},
-        {0.5 + 0.5 * x2, 0.5 - 0.5 * x2},
-        {0.5 + 0.5 * x3, 0.5 - 0.5 * x3},
-        {0.5 + 0.5 * x4, 0.5 - 0.5 * x4}
+        {x1, 1.0 - x1},
+        {x2, 1.0 - x2},
+        {x3, 1.0 - x3},
+        {x4, 1.0 - x4}
     };
     w = {w1, w2, w3, w4};
 }

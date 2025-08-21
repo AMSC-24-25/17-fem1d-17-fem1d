@@ -93,7 +93,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
 
     // Loop on quadrature points
     #pragma omp parallel for reduction(+:diff_local, transport_local, react_local, forc_local)
-    for (size_t q = 0; q < quadrature_points.size(); ++q) {
+    for (int q = 0; q < quadrature_points.size(); ++q) {
         const Point<dim>& p = quadrature_points[q];
         double w = weights[q];
         
@@ -123,18 +123,17 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
     
     // Assembly in global matrix
     for (int i = 0; i < matSize; ++i) {
+        int globalI = cell.getNodeIndex(i);
         for (int j = 0; j < matSize; ++j) {
-            int globalI = cell.getNodeIndex(i);
             int globalJ = cell.getNodeIndex(j);
 
             // Aggiungi alla matrice globale solo se non zero
-            double value = diff_local(i,j) + react_local(i,j);
+            double value = diff_local(i,j) + transport_local(i,j) + react_local(i,j);
             if (std::abs(value) > 1e-14) {
                 triplets.push_back(Triplet(globalI, globalJ, value));
             }
         }
         // Assembly of RHS
-        int globalI = cell.getNodeIndex(i);
         rhs[globalI] += forc_local(i);
     }
 }
