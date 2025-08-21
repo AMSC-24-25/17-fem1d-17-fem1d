@@ -161,9 +161,13 @@ int main(int argc, char *argv[])
         // 3. Parse della mesh
         Grid<3> grid;
         grid.parseFromMsh(argv[2]);
-        
+
+        cout << "Mesh parsed successfully:" << endl;
+        cout << "  Number of elements: " << grid.getNumElements() << endl;
+        cout << "  Number of nodes: " << grid.getNumNodes() << endl;
+
         // 4. Crea e risolvi il problema FEM con BoundaryConditions
-        Fem<3> fem3d(grid, forcing, diffusion, transport, reaction, boundary_conditions);
+        Fem<3> fem3d(grid, forcing, diffusion, transport, reaction, boundary_conditions, OrderTwoQuadrature<3>());
 
         cout << "=== Risoluzione problema FEM 3D ===" << endl;
         std::string csvFilePath = "../sol3d.csv";

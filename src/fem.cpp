@@ -135,20 +135,41 @@ void Fem<dim>::solve() {
     std::cout << "### SOLVE " << dim << "D ###" << std::endl;
 
     // Risolvi il sistema Ax = b usando SparseLU
-    Eigen::SparseLU<SparseMat> solver;
-    solver.analyzePattern(A);
-    solver.factorize(A);
-    
-    if (solver.info() != Eigen::Success) {
-        std::cerr << "Factorization failed!" << std::endl;
-        return;
+    if(A.nonZeros() < 1e4) {
+        Eigen::SparseLU<SparseMat> solver;
+        solver.analyzePattern(A);
+        solver.factorize(A);
+
+        if (solver.info() != Eigen::Success) {
+            std::cerr << "Factorization failed!" << std::endl;
+            return;
+        }
+        solution = solver.solve(rhs);
+        if (solver.info() != Eigen::Success) {
+            std::cerr << "Solving failed!" << std::endl;
+            return;
+        }
     }
-    
-    solution = solver.solve(rhs);
-    
-    if (solver.info() != Eigen::Success) {
-        std::cerr << "Solving failed!" << std::endl;
-        return;
+    else{
+        // Lighter iterative solver (BiCGSTAB)
+        Eigen::BiCGSTAB<SparseMat, Eigen::IncompleteLUT<double>> solver;
+        solver.setMaxIterations(1000);
+        solver.setTolerance(1e-8);
+        solver.compute(A);
+
+        std::cout << "Finished setup for solve. Using BiCGSTAB." << std::endl;
+
+        solution = solver.solve(rhs);
+        if (solver.info() != Eigen::Success) {
+            std::cerr << "Solving failed! Error is: " << solver.info() << std::endl;
+            std::cerr << "Solver error at last iteration (" << solver.iterations() << "): " << solver.error() << std::endl;
+            return;
+        }
+        else{
+            std::cout << "Solving succeeded!" << std::endl;
+            std::cout << "Solver iterations: " << solver.iterations() << std::endl;
+            std::cout << "Solver error: " << solver.error() << std::endl;
+        }
     }
 }
 
