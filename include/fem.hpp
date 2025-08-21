@@ -1,8 +1,8 @@
-#ifndef FEM2D_HPP
-#define FEM2D_HPP
+#ifndef FEM_HPP
+#define FEM_HPP
 
 #include "function.hpp"
-#include "grid2D.hpp"
+#include "grid.hpp"
 #include "boundary_conditions.hpp"
 #include "quadrature.hpp"
 

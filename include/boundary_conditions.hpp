@@ -4,7 +4,7 @@
 #include "function.hpp"
 #include "point.hpp"
 #include "grid1D.hpp"
-#include "grid2D.hpp"
+#include "grid.hpp"
 #include <Eigen/Sparse>
 #include <vector>
 

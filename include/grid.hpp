@@ -1,5 +1,5 @@
-#ifndef GRID
-#define GRID
+#ifndef GRID_HPP
+#define GRID_HPP
 
 #include "cell.hpp"
 #include "point.hpp"

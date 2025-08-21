@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "boundary_conditions.hpp"
 #include "grid1D.hpp"
-#include "grid2D.hpp"
+#include "grid.hpp"
 #include "function.hpp"
 #include "point.hpp"
 #include <Eigen/Dense>

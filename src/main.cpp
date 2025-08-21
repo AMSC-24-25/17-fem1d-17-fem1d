@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include "fem1d.hpp"
-#include "fem2d.hpp"
-#include "grid2D.hpp"
+#include "fem.hpp"
+#include "grid.hpp"
 #include "boundary_conditions.hpp"
 
 using std::cout;

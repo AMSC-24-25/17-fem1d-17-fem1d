@@ -2,7 +2,7 @@
 #define GRID_1D
 
 #include "function.hpp"
-#include "grid2D.hpp"
+#include "grid.hpp"
 #include "cell.hpp"
 
 #include <iostream>

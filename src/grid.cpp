@@ -1,4 +1,4 @@
-#include "grid2D.hpp"
+#include "grid.hpp"
 
 template void Grid<2>::parseFromMsh(const std::string&);
 template void Grid<3>::parseFromMsh(const std::string&);

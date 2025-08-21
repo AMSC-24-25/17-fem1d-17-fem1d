@@ -1,4 +1,4 @@
-#include "fem2d.hpp"
+#include "fem.hpp"
 
 template class Fem<2>;
 
