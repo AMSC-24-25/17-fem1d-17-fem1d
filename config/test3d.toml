@@ -1,0 +1,50 @@
+[problem]
+dimension = 3
+mesh_file = "../mesh/mesh-cube-5_gmsh22.msh"
+output_file = "output/test3d_test"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Problema di Poisson puro: -laplace(u) = f (no transport, no reaction)
+diffusion_coefficient = 1.0
+transport_coefficient = 0.0
+reaction_coefficient = 0.0
+forcing_function = "2*(x + y + z) - 2*(x^2 + y^2 + z^2)"
+
+# Condizioni di Dirichlet omogenee su tutti i bordi
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "0.0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "0.0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "0.0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3
+function = "0.0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 4
+function = "0.0"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 5
+function = "1.0"
+
+[solver]
+tolerance = 1e-14
+max_iterations = 2000
+method = "direct"

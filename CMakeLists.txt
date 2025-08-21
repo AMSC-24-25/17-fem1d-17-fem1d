@@ -19,9 +19,10 @@ include_directories(${mkEigenInc})
 
 # ----- Sources -----
 
-# Crea una libreria con i file sorgente comuni
-file(GLOB LIB_SRC_FILES src/*.cpp)
-add_library(fem1d_lib STATIC ${LIB_SRC_FILES})
+file(GLOB ALL_SRC_FILES src/*.cpp)
+list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*UltraSimpleTest.cpp$")
+list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*config_toml11.cpp$")
+add_library(fem1d_lib STATIC ${ALL_SRC_FILES})
 target_link_libraries(fem1d_lib Eigen3::Eigen)
 
 # Eseguibile principale

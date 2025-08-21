@@ -78,12 +78,15 @@ struct Config {
     // Factory vari
     Grid1D createGrid1D() const;
     Grid2D createGrid2D() const;
+    Grid3D createGrid3D() const;
 
     template<unsigned int dim> Function<dim,1> createForcingFunction() const;
     template<unsigned int dim> Function<dim,1> createDiffusionFunction() const;
     template<unsigned int dim> Function<dim,1> createReactionFunction() const;
     Function<1,1> createTransportFunction1D() const;
     Function<2,2> createTransportFunction2D() const;
+    Function<3,3> createTransportFunction3D() const;
+
     template<unsigned int dim> BoundaryConditions<dim,1> createBoundaryConditions() const;
 
     template<unsigned int dim>

@@ -207,6 +207,12 @@ Grid2D Config::createGrid2D() const {
     return grid;
 }
 
+Grid3D Config::createGrid3D() const {
+    Grid3D grid;
+    grid.parseFromMsh(problem.mesh_file);
+    return grid;
+}
+
 template<unsigned int dim>
 Function<dim,1> Config::createForcingFunction() const {
     return parseSimpleFunction<dim>(equation.forcing_function);
@@ -232,6 +238,15 @@ Function<2,2> Config::createTransportFunction2D() const {
     return Function<2,2>([scalarFunc](Point<2> p) { 
         double coeff = scalarFunc(p);
         return Point<2>(coeff, 0.0);  // transport in x direction
+    });
+}
+
+Function<3,3> Config::createTransportFunction3D() const {
+    // Parse as scalar and assume transport in x direction
+    auto scalarFunc = parseSimpleFunction<3>(equation.transport_function);
+    return Function<3,3>([scalarFunc](Point<3> p) { 
+        double coeff = scalarFunc(p);
+        return Point<3>(coeff, 0.0, 0.0);  // transport in x direction
     });
 }
 
@@ -278,9 +293,13 @@ std::unique_ptr<QuadratureRule<3>> Config::createQuadrature<3>() const {
 // Explicit template instantiations
 template Function<1,1> Config::createForcingFunction<1>() const;
 template Function<2,1> Config::createForcingFunction<2>() const;
+template Function<3,1> Config::createForcingFunction<3>() const;
 template Function<1,1> Config::createDiffusionFunction<1>() const;
 template Function<2,1> Config::createDiffusionFunction<2>() const;
+template Function<3,1> Config::createDiffusionFunction<3>() const;
 template Function<1,1> Config::createReactionFunction<1>() const;
 template Function<2,1> Config::createReactionFunction<2>() const;
+template Function<3,1> Config::createReactionFunction<3>() const;
 template BoundaryConditions<1,1> Config::createBoundaryConditions<1>() const;
 template BoundaryConditions<2,1> Config::createBoundaryConditions<2>() const;
+template BoundaryConditions<3,1> Config::createBoundaryConditions<3>() const;

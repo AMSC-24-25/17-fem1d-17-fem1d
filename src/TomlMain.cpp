@@ -72,6 +72,38 @@ int main(int argc, char* argv[]) {
             fem.outputVtu("../" + config.problem.output_file + ".vtu");
             fem.outputCsv("../" + config.problem.output_file + ".csv");
             
+        } else if (config.problem.dimension == 3) {
+            Grid3D grid = config.createGrid3D();
+            auto forcing = config.createForcingFunction<3>();
+            auto diffusion = config.createDiffusionFunction<3>();
+            auto transport = config.createTransportFunction3D();
+            auto reaction = config.createReactionFunction<3>();
+            auto bc = config.createBoundaryConditions<3>();
+            auto quadrature = config.createQuadrature<3>();
+
+            // Test delle funzioni in alcuni punti
+            Point<3> test_points[3] = {Point<3>(0.5, 0.5, 0.5), Point<3>(0.2, 0.8, 0.3), Point<3>(0.7, 0.3, 0.9)};
+            std::cout << "=== TOML FUNCTION VALUES ===" << std::endl;
+            for(int i = 0; i < 3; i++) {
+                Point<3> p = test_points[i];
+                std::cout << "Point (" << p[0] << ", " << p[1] << ", " << p[2] << "):" << std::endl;
+                std::cout << "  forcing = " << forcing.value(p) << std::endl;
+                std::cout << "  diffusion = " << diffusion.value(p) << std::endl;
+                std::cout << "  reaction = " << reaction.value(p) << std::endl;
+                std::cout << "  transport = (" << transport.value(p)[0] << ", " << transport.value(p)[1] << ", " << transport.value(p)[2] << ")" << std::endl;
+            }
+
+            // Print boundary conditions
+            for (const auto& boundary : config.boundary_conditions) {
+                std::cout << "  Tag " << boundary.tag << ": " << boundary.type << " = " << boundary.function << std::endl;
+            }
+
+            Fem<3> fem(grid, forcing, diffusion, transport, reaction, bc, *quadrature);
+            fem.assemble();
+            fem.solve();
+            fem.outputVtu("../" + config.problem.output_file + ".vtu");
+            fem.outputCsv("../" + config.problem.output_file + ".csv");
+
         } else {
             std::cerr << "Error: Unsupported dimension " << config.problem.dimension << std::endl;
             return 1;
