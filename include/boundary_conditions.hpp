@@ -96,17 +96,16 @@ public:
         : conditions(conditions) {}
 
     // Metodi per aggiungere condizioni
-        
-    inline void BoundaryConditions<1,1>::addDirichlet(int boundaryId, Function<1,1> func) {
+    inline void addDirichlet(int boundaryId, Function<1,1> func) {
         conditions.emplace_back(boundaryId, BCType::DIRICHLET, func);
     }
-    inline void BoundaryConditions<1,1>::addDirichlet(int boundaryId, Point<1> value) {
+    inline void addDirichlet(int boundaryId, Point<1> value) {
         conditions.emplace_back(boundaryId, BCType::DIRICHLET, value);
     }
-    inline void BoundaryConditions<1,1>::addNeumann(int boundaryId, Function<1,1> func) {
+    inline void addNeumann(int boundaryId, Function<1,1> func) {
         conditions.emplace_back(boundaryId, BCType::NEUMANN, func);
     }
-    inline void BoundaryConditions<1,1>::addNeumann(int boundaryId, Point<1> value) {
+    inline void addNeumann(int boundaryId, Point<1> value) {
         conditions.emplace_back(boundaryId, BCType::NEUMANN, value);
     }
 

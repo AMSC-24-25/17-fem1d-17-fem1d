@@ -1,6 +1,6 @@
 #include "config.hpp"
 #include "fem1d.hpp"
-#include "fem2d.hpp"
+#include "fem.hpp"
 #include <iostream>
 #include <filesystem>
 
@@ -36,10 +36,13 @@ int main(int argc, char* argv[]) {
         bc.addNeumann(3, Function<2,1>([](Point<2> p) { 
             return sin(EIGEN_PI * p[0]);
         }));
-        
+
+        OrderTwoQuadrature<2> quadrature;
         // Create and solve (EXACT sequence from working main)
         std::cout << "Creating Fem<2>..." << std::endl;
-        Fem<2> fem(grid, forcing, diffusion, transport, reaction, bc);
+
+
+        Fem<2> fem(grid, forcing, diffusion, transport, reaction, bc, quadrature);
         
         std::cout << "=== Starting assemble... ===" << std::endl;
         fem.assemble();

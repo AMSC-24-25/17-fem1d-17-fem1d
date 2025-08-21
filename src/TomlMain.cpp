@@ -1,6 +1,6 @@
 #include "config.hpp"
 #include "fem1d.hpp"
-#include "fem2d.hpp"
+#include "fem.hpp"
 #include <iostream>
 #include <filesystem>
 #include <fstream>
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
             auto transport = config.createTransportFunction2D();
             auto reaction = config.createReactionFunction<2>();
             auto bc = config.createBoundaryConditions<2>();
-            
+
             // Test delle funzioni in alcuni punti
             Point<2> test_points[3] = {Point<2>(0.5, 0.5), Point<2>(0.2, 0.8), Point<2>(0.7, 0.3)};
             std::cout << "=== TOML FUNCTION VALUES ===" << std::endl;
@@ -63,8 +63,12 @@ int main(int argc, char* argv[]) {
             for (const auto& boundary : config.boundary_conditions) {
                 std::cout << "  Tag " << boundary.tag << ": " << boundary.type << " = " << boundary.function << std::endl;
             }
-            
-            Fem<2> fem(grid, forcing, diffusion, transport, reaction, bc);
+
+
+            //TODO CHANGE
+            OrderTwoQuadrature<2> quadrature;
+
+            Fem<2> fem(grid, forcing, diffusion, transport, reaction, bc, quadrature);
             fem.assemble();
             fem.solve();
             fem.outputVtu("../" + config.problem.output_file + ".vtu");

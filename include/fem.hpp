@@ -32,6 +32,7 @@ private:
     Function<dim, dim> transport_term;
 
     BoundaryConditions<dim, 1> boundaryConditions;
+    QuadratureRule<dim> quadrature;
 
     SparseMat A;
     VectorXd rhs;
@@ -41,7 +42,7 @@ public:
     // Costruttore moderno con BoundaryConditions
     Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
         Function<dim, dim> transport, Function<dim, 1> reaction,
-        const BoundaryConditions<dim, 1>& boundaryConditions);
+        const BoundaryConditions<dim, 1>& boundaryConditions, QuadratureRule<dim> quadrature);
 
     // Assemblaggio matrici
     void assemble();
@@ -54,12 +55,11 @@ public:
 
     void outputVtu(const std::string& filename) const;
     void outputCsv(const std::string& filename) const;
+
 private:
-    std::unique_ptr<QuadratureRule<dim>> getQuadratureRule() const;
 
     // Metodi helper per assemblaggio
-    void assembleElement(int elemIndex, QuadratureRule<dim>& quad, 
-                        std::vector<Triplet>& triplets);
+    void assembleElement(int elemIndex, std::vector<Triplet>& triplets);
 };
 
 #endif // FEM2D_HPP

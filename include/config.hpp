@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "grid1D.hpp"
-#include "grid2D.hpp"
+#include "grid.hpp"
 #include "function.hpp"
 #include "boundary_conditions.hpp"
 #include <memory>

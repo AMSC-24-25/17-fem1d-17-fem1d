@@ -76,19 +76,21 @@ int main(int argc, char *argv[])
             return 2.0*(p[0] + p[1]) - 2.0*(p[0]*p[0] + p[1]*p[1]);
         });
         
-        Function<2,1> diffusion([](Point<2> p) { 
-            return 1.0;
-        });
-        
-        Function<2,1> reaction([](Point<2> p) { 
-            return 0.0;
-        });
-        
-        Function<2,2> transport([](Point<2> p) { 
-            return Point<2>(0.0, 0.0);
-        });
 
         BoundaryConditions<2,1> boundary_conditions;
+        Function<2,1> diffusion([](Point<2> p) { return 1.0; });
+        Function<2,1> reaction([](Point<2> p) { return 0.0; });
+        Function<2,2> transport([](Point<2> p) { return Point<2>(0.0, 0.0); });
+
+        // 2. Configurazione delle condizioni al contorno PRIMA del parsing
+
+        OrderTwoQuadrature<2> quadrature;
+
+        // Test Neumann: flusso normale specificato sul lato superiore
+        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { 
+            return sin(EIGEN_PI * p[0]);  // Flusso sinusoidale lungo x
+        }));
+        // Configurazione con mix di Dirichlet e Neumann
         boundary_conditions.addDirichlet(0, Point<1>(0.0));
         boundary_conditions.addDirichlet(1, Point<1>(0.0));
         boundary_conditions.addDirichlet(2, Point<1>(0.0));
@@ -114,7 +116,8 @@ int main(int argc, char *argv[])
         Grid2D grid;
         grid.parseFromMsh(argv[2]);
         
-        Fem<2> fem2d(grid, forcing, diffusion, transport, reaction, boundary_conditions);
+        // 4. Crea e risolvi il problema FEM con BoundaryConditions
+        Fem<2> fem2d(grid, forcing, diffusion, transport, reaction, boundary_conditions, quadrature);
         
         fem2d.assemble();
         fem2d.solve();

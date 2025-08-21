@@ -75,6 +75,7 @@ public:
         return Point<dim>(result);
     }
 
+    // Dot product
     double operator *(Point<dim> p) const {
         double result = 0.0;
         for (unsigned int i = 0; i < dim; ++i) {
@@ -89,6 +90,14 @@ public:
         }
         return result;
     }
+
+    // Point<dim> operator *(double scalar) const {
+    //     Point<dim> result(*this);
+    //     for (unsigned int i = 0; i < dim; ++i) {
+    //         result[i] *= scalar;
+    //     }
+    //     return result;
+    // }
 
     double x() const {
         static_assert(dim >= 1, "Point is not 1D");
@@ -106,6 +115,7 @@ public:
     }
 
 };
+
 
 // template<unsigned int dim>
 //  class one : public Point<dim> {
@@ -128,5 +138,37 @@ public:
 //         }
 //     }
 // };
+
+// Prodotto tra punti di dimensione diversa
+template<unsigned int dim1, unsigned int dim2>
+auto operator*(const Point<dim1>& p1, const Point<dim2>& p2) {
+    if constexpr (dim1 == 1) {
+        // Prodotto scalare-vettore: restituisce un vettore della stessa dimensione del secondo operando
+        std::array<double, dim2> coords;
+        for (int i = 0; i < dim2; i++)
+            coords[i] = p1.x() * p2[i];
+        return Point<dim2>(coords);
+    } 
+    else if constexpr (dim2 == 1) {
+        // Prodotto vettore-scalare: restituisce un vettore della stessa dimensione del primo operando
+        std::array<double, dim1> coords;
+        for (int i = 0; i < dim1; i++)
+            coords[i] = p1[i] * p2.x();
+        return Point<dim1>(coords);
+    } 
+    else if constexpr (dim1 == dim2) {
+        // Prodotto scalare (dot product) tra vettori della stessa dimensione: restituisce uno scalare
+        double result = 0.0;
+        for (unsigned int i = 0; i < dim1; ++i) {
+            result += p1[i] * p2[i];
+        }
+        return Point<1>(result);
+    }
+    else {
+        // Per completezza, questo ramo non dovrebbe mai essere raggiunto
+        static_assert(dim1 == dim2, "Incompatible dimensions for multiplication");
+        return Point<1>(); // Per evitare warning "non tutte le vie restituiscono un valore"
+    }
+}
 
 #endif

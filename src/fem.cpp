@@ -6,10 +6,10 @@ template class Fem<2>;
 template<unsigned int dim>
 Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
              Function<dim, dim> transport, Function<dim, 1> reaction,
-             const BoundaryConditions<dim, 1>& boundaryConditions) :
+             const BoundaryConditions<dim, 1>& boundaryConditions, QuadratureRule<dim> quadrature) :
     mesh(grid), forcing_term(forcing), diffusion_term(diffusion), 
     transport_term(transport), reaction_term(reaction),
-    boundaryConditions(boundaryConditions)
+    boundaryConditions(boundaryConditions), quadrature(quadrature)
 {
     // Inizializza matrici
     int numNodes = mesh.getNumNodes();
@@ -18,11 +18,6 @@ Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusi
     solution.resize(numNodes);
     rhs.setZero();
     solution.setZero();
-}
-
-template<>
-std::unique_ptr<QuadratureRule<2>> Fem<2>::getQuadratureRule() const {
-    return std::make_unique<OrderTwoQuadrature<2>>();
 }
 
 // Main assembly
@@ -38,12 +33,10 @@ void Fem<dim>::assemble() {
     unsigned int expNonZero = (dim==1) ? 3 : (dim==2) ? 9 : 25; // Estimate non-zero entries per element
     triplets.reserve(expNonZero * mesh.getNumElements());
 
-    // Obtain quadrature rule from specialised method
-    std::unique_ptr<QuadratureRule<dim>> quadrature = getQuadratureRule();
 
     // Loop on elements - assemble local matrix for each. Appends non-zero values to triplets
     for (unsigned int e = 0; e < mesh.getNumElements(); ++e) {
-        assembleElement(e, *quadrature, triplets);
+        assembleElement(e, triplets);
     }
     
     // Global sparse matrix assembly
@@ -58,8 +51,7 @@ void Fem<dim>::assemble() {
 
 // Assemblaggio di un singolo elemento (triangolo)
 template<unsigned int dim>
-void Fem<dim>::assembleElement(int elemIndex, QuadratureRule<dim>& quad, 
-                           std::vector<Triplet>& triplets) {
+void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
 
     const Cell<dim>& cell = mesh.getCell(elemIndex);
 
@@ -79,7 +71,7 @@ void Fem<dim>::assembleElement(int elemIndex, QuadratureRule<dim>& quad,
     std::vector<double> weights;
     
     // Get quadrature data
-    quad.getQuadratureData(cell, grad_phi, quadrature_points, phi, weights);
+    quadrature.getQuadratureData(cell, grad_phi, quadrature_points, phi, weights);
 
     // Local matrices for element
     MatrixXd diff_local = MatrixXd::Zero(matSize, matSize); // Diffusione
