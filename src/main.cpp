@@ -146,12 +146,17 @@ int main(int argc, char *argv[])
         boundary_conditions.addDirichlet(1, 0.0);
         boundary_conditions.addDirichlet(2, 0.0);
         boundary_conditions.addDirichlet(3, 0.0);
-
+        boundary_conditions.addDirichlet(4, 0.0);
+        boundary_conditions.addDirichlet(5, 0.0);
+        
         cout << "Condizioni al contorno configurate:" << endl;
-        cout << "  Physical tag 0 (lato sinistro): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 1 (lato destro): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 2 (lato inferiore): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 3 (lato superiore): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 0 (faccia posteriore): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 1 (faccia anteriore): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 2 (faccia sinistra): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 3 (faccia destra): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 4 (faccia inferiore): Dirichlet u = 0" << endl;
+        cout << "  Physical tag 5 (faccia superiore): Dirichlet u = 0" << endl;
+        cout << "NOTA: Si considera \"anteriore\" come la faccia la cui normale è (1, 0, 0)." << endl;
 
         // 3. Parse della mesh
         Grid<3> grid;
