@@ -64,7 +64,21 @@ void Fem<dim>::assemble() {
     A.setFromTriplets(triplets.begin(), triplets.end());
 
     // Apply boundary conditions
+
+
+
+
+
+    // PRIMA di bc.apply(...)
+    int d = 31;
+    std::cout << "Before BC: A(d,d)=" << A.coeff(d,d)
+            << " rhs[d]=" << rhs[d] << "\n";
+    
     boundaryConditions.apply(mesh, A, rhs);
+
+
+    std::cout << "After  BC: A(d,d)=" << A.coeff(d,d)
+          << " rhs[d]=" << rhs[d] << "\n";
     
     std::cout << "Matrix assembled: " << A.rows() << "x" << A.cols() 
               << " with " << A.nonZeros() << " non-zeros" << std::endl;
@@ -111,7 +125,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
                 // Transport contribution term ∫ (b·∇φᵢ) φⱼ dx
                 // Note: product of 2 Points is their scalar product
                 diff_local(i,j) += w * diff_val * (grad_phi[i] * grad_phi[j]);
-                transport_local(i,j) += w * (transport_val * grad_phi[i]) * phi[q][j];
+                transport_local(i,j) += w * (transport_val * grad_phi[j]) * phi[q][i];
 
                 // Reaction contribution matrix: ∫ φᵢ φⱼ dx
                 react_local(i,j) += w * react_val * phi[q][i] * phi[q][j];

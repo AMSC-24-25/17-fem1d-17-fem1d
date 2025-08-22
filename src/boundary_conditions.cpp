@@ -67,24 +67,31 @@ void BoundaryConditions<2, 1>::applyNeumann(
                  << "] - contributi: [" << contributions[0] << ", " << contributions[1] << "]" << std::endl;
     }
 }
+
+
 template<>
 void BoundaryConditions<1,1>::applyNeumann(
-    const BoundaryCondition<1, 1>& bc, const Grid<1>& mesh, 
-    SparseMat& A, VectorXd& rhs) {
-    
-    std::cout << "  Applicando condizione di Neumann 1D su tag " << bc.getBoundaryId() << std::endl;
+    const BoundaryCondition<1,1>& bc,
+    const Grid<1>& mesh,
+    SparseMat& /*A*/,
+    VectorXd& rhs)
+{
+    const auto& bcs = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
+    if (bcs.empty()) {
+        std::cerr << "Neumann 1D: nessun boundary cell per tag "
+                  << bc.getBoundaryId() << "\n";
+        return;
+    }
 
-    const BoundaryCell<0> boundaryCell = mesh.getBoundaryCellsByTag(bc.getBoundaryId())[0];
-    unsigned int node_index = boundaryCell.getNodeIndex(0);
-    double node = boundaryCell.getNode(0);
+    const BoundaryCell<0>& bc0 = bcs[0];
+    const int       d = bc0.getNodeIndex(0);   // DOF globale
+    const Point<1>& X = bc0.getNode(0);        // coordinata fisica
 
-    int adjacentNode = (node_index == 0) ? (node_index+1) : (node_index-1);
-    double h = mesh.getNode(adjacentNode) - mesh.getNode(node_index);
-    h = std::abs(h);
+    const double g = bc.getBoundaryFunction().value(X); // g = μ ∂u/∂n (flusso uscente)
+    rhs[d] += g;
 
-    // ∂u/∂n = -∂u/∂x at x = 0 (outward normal points left)
-    // ∂u/∂n = ∂u/∂x at x = L (outward normal points right)
-    int sign = (node_index == 0) ? -1 : 1;
-    double neumannValue = sign * bc.getBoundaryFunction().value(node);
-    rhs[node_index] -= neumannValue * h/2.0;
+    // DEBUG
+    std::cout << "[Neumann 1D] tag=" << bc.getBoundaryId()
+              << " node=" << d << " x=" << X[0]
+              << "  add g=" << g << "\n";
 }
