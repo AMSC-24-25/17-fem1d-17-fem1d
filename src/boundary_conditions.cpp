@@ -76,7 +76,7 @@ void BoundaryConditions<1,1>::applyNeumann(
     SparseMat& /*A*/,
     VectorXd& rhs)
 {
-    const auto& bcs = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
+    const std::vector<BoundaryCell<0>> bcs = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
     if (bcs.empty()) {
         std::cerr << "Neumann 1D: nessun boundary cell per tag "
                   << bc.getBoundaryId() << "\n";
