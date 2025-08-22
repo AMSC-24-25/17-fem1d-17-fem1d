@@ -90,9 +90,9 @@ void BoundaryConditions<dim, returnDim>::applyDirichlet(
 // =============================================================================
 
 /*
- * TODO: Implementazione per 3D
+ * TODO: 3D implementation
  * 
- * Per supportare completamente il 3D, è necessario implementare:
+ * To fully support 3D, you need to implement:
  * 
  * 1. Grid3D class with tetrahedra/hexahedra
  * 2. BoundaryCell<2> for triangular/quadrilateral boundary faces
@@ -103,7 +103,7 @@ void BoundaryConditions<dim, returnDim>::applyDirichlet(
  *    - faceArea()
  * 5. Specialization BoundaryConditions<3,1>
  * 
- * Il pattern sarà simile al 2D:
+ * The pattern will be similar to 2D:
  * 
  * void applyNeumann3D(const BoundaryCondition<3,1>& bc, const Grid3D& mesh, 
  *                     SparseMat& A, VectorXd& rhs) {

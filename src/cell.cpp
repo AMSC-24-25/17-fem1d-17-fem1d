@@ -18,7 +18,7 @@ double Cell<2>::measure() const {
         exit(-1);
     }
 
-    // Formula is A = 0.5 * |AB x AC|
+    // Area formula: A = 0.5 * |AB x AC|
     const Cell<2>& cell = *this;
     const Point<2> AB = cell[1] - cell[0];
     const Point<2> AC = cell[2] - cell[0];
@@ -33,7 +33,7 @@ double Cell<3>::measure() const {
         exit(-1);
     }
 
-    // Formula is V = |(AB x AC) · AD| / 6
+    // Volume formula: V = |(AB x AC) · AD| / 6
     const Cell<3>& cell = *this;
     Point<3> AB = cell[1] - cell[0]; 
     Point<3> AC = cell[2] - cell[0]; 
@@ -61,7 +61,7 @@ Point<1> Cell<1>::barycentricGradient(int i) const {
     else if (i == 1)
         return 1.0 / measure();
 
-    std::cerr << "Indice shape function non valido in barycentricGradient\n";
+    std::cerr << "Invalid shape function index in barycentricGradient\n";
     exit(-1);
 }
 
@@ -76,7 +76,7 @@ Point<2> Cell<2>::barycentricGradient(int i) const {
         return Point<2>(0,0);
     }
     if (i >= 0 && i < 3) {
-        // Indici dei nodi opposti a i
+    // Indices of the nodes opposite to i
         unsigned int idx[2];
         int count = 0;
         for (int j = 0; j < 3; ++j) {
@@ -90,14 +90,14 @@ Point<2> Cell<2>::barycentricGradient(int i) const {
                 -(oppositeSide[0]) / detT
             });
     }
-    std::cerr << "Indice shape function non valido in barycentricGradient\n";
+    std::cerr << "Invalid shape function index in barycentricGradient\n";
     exit(-1);
 }
 
 // Returns gradient of i-th barycentric shape function (constant on tetrahedra)
 template<>
 Point<3> Cell<3>::barycentricGradient(int i) const {
-    // Gradiente delle coordinate baricentriche in un tetraedro
+    // Gradient of barycentric coordinates in a tetrahedron
     // lambda_i(x) = a_i*x + b_i*y + c_i*z + d_i
     // grad(lambda_i) = (a_i, b_i, c_i)
     if (getN() != 4) {
@@ -113,10 +113,10 @@ Point<3> Cell<3>::barycentricGradient(int i) const {
         return Point<3>(0,0,0);
     }
 
-    // Gradiente di lambda_i (opposto al nodo i)
+    // Gradient of lambda_i (opposite to node i)
     const Cell<3>& cell = *this;
     if (i >= 0 && i < 4) {
-        // Indici dei nodi opposti a i
+    // Indices of the nodes opposite to i
         int idx[3];
         int count = 0;
         for (int j = 0; j < 4; ++j) {

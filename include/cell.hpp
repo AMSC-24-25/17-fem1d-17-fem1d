@@ -80,7 +80,7 @@ inline std::array<double, 3> barycentricCoordinates(const Cell<2>& cell, const P
 
     double detT = (xB - xA)*(yC - yA) - (xC - xA)*(yB - yA);
     if (std::abs(detT) < 1e-14) {
-        std::cerr << "Triangolo degenere in barycentricCoordinates\n";
+        std::cerr << "Degenerate triangle in barycentricCoordinates\n";
         exit(-1);
     }
     double l1 = ((xB - x)*(yC - y) - (xC - x)*(yB - y)) / detT;
@@ -89,15 +89,15 @@ inline std::array<double, 3> barycentricCoordinates(const Cell<2>& cell, const P
     return {l1, l2, l3};
 }
 
-// ============= GEOMETRIA PER BOUNDARY CELLS (EDGE) =============
+// ============= GEOMETRY FOR BOUNDARY CELLS (EDGE) =============
 
 inline Point<2> mapToGlobalEdge(const BoundaryCell<1>& edge, double xi) {
-    // Mappa da coordinata locale xi ∈ [-1, 1] a coordinate globali
-    // xi = -1 -> nodo 0, xi = +1 -> nodo 1
+    // Maps from local coordinate xi ∈ [-1, 1] to global coordinates
+    // xi = -1 -> node 0, xi = +1 -> node 1
     const Point<2>& p1 = edge[0];
     const Point<2>& p2 = edge[1];
     
-    double t = (xi + 1.0) / 2.0;  // trasforma da [-1,1] a [0,1]
+    double t = (xi + 1.0) / 2.0;  // transforms from [-1,1] to [0,1]
     double x = (1.0 - t) * p1[0] + t * p2[0];
     double y = (1.0 - t) * p1[1] + t * p2[1];
     
@@ -105,23 +105,23 @@ inline Point<2> mapToGlobalEdge(const BoundaryCell<1>& edge, double xi) {
 }
 
 inline Point<2> edgeNormal(const BoundaryCell<1>& edge) {
-    // Calcola il vettore normale unitario al segmento (outward normal)
+    // Computes the unit normal vector to the segment (outward normal)
     const Point<2>& p1 = edge[0];
     const Point<2>& p2 = edge[1];
     
-    // Vettore tangente
+    // Tangent vector
     double dx = p2[0] - p1[0];
     double dy = p2[1] - p1[1];
     
-    // Vettore normale (ruotato di 90° in senso orario: (dx,dy) -> (dy,-dx))
-    // Questo dà la normale esterna per mesh con orientazione antioraria
+    // Normal vector (rotated 90° clockwise: (dx,dy) -> (dy,-dx))
+    // This gives the outward normal for meshes with counterclockwise orientation
     double nx = dy;
     double ny = -dx;
     
-    // Normalizza
+    // Normalize
     double length = sqrt(nx*nx + ny*ny);
     if (length < 1e-14) {
-        std::cerr << "Edge degenere in edgeNormal\n";
+        std::cerr << "Degenerate edge in edgeNormal\n";
         exit(-1);
     }
     
@@ -129,17 +129,17 @@ inline Point<2> edgeNormal(const BoundaryCell<1>& edge) {
 }
 
 inline void getShapeFunctions1D(double xi, std::vector<double>& phi) {
-    // Shape functions lineari 1D in [-1, 1]
+    // Linear 1D shape functions in [-1, 1]
     phi.resize(2);
-    phi[0] = (1.0 - xi) / 2.0;  // shape function per nodo 0
-    phi[1] = (1.0 + xi) / 2.0;  // shape function per nodo 1
+    phi[0] = (1.0 - xi) / 2.0;  // shape function for node 0
+    phi[1] = (1.0 + xi) / 2.0;  // shape function for node 1
 }
 
-// ============= GEOMETRIA PER BOUNDARY CELLS (FACCE 3D) =============
+// ============= GEOMETRY FOR BOUNDARY CELLS (3D FACES) =============
 
 inline Point<3> mapToGlobalFace(const BoundaryCell<2>& face, double xi, double eta) {
-    // Mappa da coordinate locali (xi, eta) a coordinate globali per faccia triangolare
-    // Coordinata baricentrica: (1-xi-eta, xi, eta)
+    // Maps from local coordinates (xi, eta) to global coordinates for a triangular face
+    // Barycentric coordinate: (1-xi-eta, xi, eta)
     const Point<3>& p1 = face[0];
     const Point<3>& p2 = face[1];
     const Point<3>& p3 = face[2];
@@ -152,24 +152,24 @@ inline Point<3> mapToGlobalFace(const BoundaryCell<2>& face, double xi, double e
 }
 
 inline Point<3> faceNormal(const BoundaryCell<2>& face) {
-    // Calcola il vettore normale unitario alla faccia triangolare
+    // Computes the unit normal vector to the triangular face
     const Point<3>& p1 = face[0];
     const Point<3>& p2 = face[1];
     const Point<3>& p3 = face[2];
     
-    // Due vettori sui lati del triangolo
+    // Two vectors on the sides of the triangle
     Point<3> v1(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
     Point<3> v2(p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]);
     
-    // Prodotto vettoriale v1 × v2
+    // Cross product v1 × v2
     double nx = v1[1] * v2[2] - v1[2] * v2[1];
     double ny = v1[2] * v2[0] - v1[0] * v2[2];
     double nz = v1[0] * v2[1] - v1[1] * v2[0];
     
-    // Normalizza
+    // Normalize
     double length = sqrt(nx*nx + ny*ny + nz*nz);
     if (length < 1e-14) {
-        std::cerr << "Faccia degenere in faceNormal\n";
+        std::cerr << "Degenerate face in faceNormal\n";
         exit(-1);
     }
     
@@ -177,16 +177,16 @@ inline Point<3> faceNormal(const BoundaryCell<2>& face) {
 }
 
 inline double faceArea(const BoundaryCell<2>& face) {
-    // Calcola l'area della faccia triangolare
+    // Computes the area of the triangular face
     const Point<3>& p1 = face[0];
     const Point<3>& p2 = face[1];
     const Point<3>& p3 = face[2];
     
-    // Due vettori sui lati del triangolo
+    // Two vectors on the sides of the triangle
     Point<3> v1(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
     Point<3> v2(p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]);
     
-    // Modulo del prodotto vettoriale / 2
+    // Norm of the cross product / 2
     double nx = v1[1] * v2[2] - v1[2] * v2[1];
     double ny = v1[2] * v2[0] - v1[0] * v2[2];
     double nz = v1[0] * v2[1] - v1[1] * v2[0];
@@ -195,11 +195,11 @@ inline double faceArea(const BoundaryCell<2>& face) {
 }
 
 inline void getShapeFunctions2D(double xi, double eta, std::vector<double>& phi) {
-    // Shape functions lineari 2D per triangolo in coordinate baricentriche
+    // Linear 2D shape functions for triangle in barycentric coordinates
     phi.resize(3);
-    phi[0] = 1.0 - xi - eta;  // shape function per nodo 0
-    phi[1] = xi;              // shape function per nodo 1
-    phi[2] = eta;             // shape function per nodo 2
+    phi[0] = 1.0 - xi - eta;  // shape function for node 0
+    phi[1] = xi;              // shape function for node 1
+    phi[2] = eta;             // shape function for node 2
 }
 
 

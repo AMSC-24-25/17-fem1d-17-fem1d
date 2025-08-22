@@ -9,7 +9,7 @@
 #include "boundary_conditions.hpp"
 #include <memory>
 
-// Struttura per la configurazione del problema
+// Structure for problem configuration
 struct ProblemConfig {
     unsigned int dimension;
     std::string mesh_file;
@@ -17,7 +17,7 @@ struct ProblemConfig {
     int grid_size;  // For 1D uniform grids
 };
 
-// Struttura per la configurazione dell'equazione
+// Structure for equation configuration
 struct EquationConfig {
     // Unified approach: everything is a function expression
     std::string diffusion_function;
@@ -31,7 +31,7 @@ struct EquationConfig {
     double reaction_coefficient = 0.0;
 };
 
-// Struttura per le condizioni al contorno
+// Structure for boundary condition configuration
 struct BCConfig {
     enum Type { DIRICHLET, NEUMANN };
     Type type;
@@ -39,7 +39,7 @@ struct BCConfig {
     std::string function;
 };
 
-// Struttura per la configurazione del solver
+// Structure for solver configuration
 struct SolverConfig {
     double tolerance;
     int max_iterations;
@@ -50,7 +50,7 @@ struct QuadratureCfg {
     std::string type = "order2";
 };
 
-// Struttura principale di configurazione
+// Main configuration structure
 struct Config {
     ProblemConfig problem;
     EquationConfig equation;
@@ -70,12 +70,12 @@ struct Config {
     }
     QuadratureCfg quadrature;
 
-    // Caricamento / validazione / stampa
+    // Loading / validation / printing
     static Config loadFromFile(const std::string& filename);
     bool validate() const;
     void print() const;
 
-    // Factory vari
+    // Various factories
     Grid1D createGrid1D() const;
     Grid2D createGrid2D() const;
     Grid3D createGrid3D() const;

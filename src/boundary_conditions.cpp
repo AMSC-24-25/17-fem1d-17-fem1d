@@ -7,24 +7,24 @@ void BoundaryConditions<3, 1>::applyNeumann(
     const BoundaryCondition<3, 1>& bc, const Grid<3>& mesh, 
     SparseMat& A, VectorXd& rhs) {
     
-    // Ottieni le facce di bordo con il tag fisico specifico
+    // Get boundary faces with the specified physical tag
     //from auto to std::vector<BoundaryCell<2>>
     std::vector<BoundaryCell<2>> boundaryFaces = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
     std::cout << "  Applicando condizione di Neumann 3D su tag " << bc.getBoundaryId()
               << " (" << boundaryFaces.size() << " facce)" << std::endl;
     
-    // Inizializza la quadratura 2D per facce triangolari
+    // Initialize 2D quadrature for triangular faces
     GaussLegendre2D quadrature;
     
-    // Itera su tutte le facce di bordo con questo tag
+    // Iterate over all boundary faces with this tag
     //from const auto& to const BoundaryCell<2>&
     for (const BoundaryCell<2>& face : boundaryFaces) {
-        // Calcola i contributi ai nodi della faccia usando la quadratura
+    // Compute the contributions to the face nodes using quadrature
         std::vector<double> contributions;
         quadrature.integrateShapeFunctions(face, bc.getBoundaryFunction(), contributions);
         
-        // Aggiungi i contributi al vettore RHS
-        //from const auto& to const std::vector<unsigned int>&
+    // Add the contributions to the RHS vector
+    //from const auto& to const std::vector<unsigned int>&
         const std::vector<unsigned int>& nodeIndices = face.getNodeIndexes();
         for (size_t i = 0; i < nodeIndices.size(); ++i) {
             int globalNodeIndex = nodeIndices[i];
@@ -39,32 +39,32 @@ void BoundaryConditions<2, 1>::applyNeumann(
     const BoundaryCondition<2, 1>& bc, const Grid<2>& mesh, 
     SparseMat& A, VectorXd& rhs) {
     
-    // Ottieni gli edge di bordo con il tag fisico specifico
+    // Get boundary edges with the specified physical tag
     //from auto to std::vector<BoundaryCell<1>>
     std::vector<BoundaryCell<1>> boundaryEdges = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
     std::cout << "  Applicando condizione di Neumann su tag " << bc.getBoundaryId()
               << " (" << boundaryEdges.size() << " edge)" << std::endl;
     
-    // Inizializza la quadratura 1D
+    // Initialize 1D quadrature
     GaussLegendre1D quadrature;
     
-    // Itera su tutti gli edge di bordo con questo tag
+    // Iterate over all boundary edges with this tag
     //from const auto& to const BoundaryCell<1>&
     for (const BoundaryCell<1>& edge : boundaryEdges) {
-        // Calcola i contributi ai nodi dell'edge usando la quadratura
+    // Compute the contributions to the edge nodes using quadrature
         std::vector<double> contributions;
         quadrature.integrateShapeFunctions(edge, bc.getBoundaryFunction(), contributions);
         
-        // Aggiungi i contributi al vettore RHS
-        //from const auto& to const std::vector<unsigned int>&
+    // Add the contributions to the RHS vector
+    //from const auto& to const std::vector<unsigned int>&
         const std::vector<unsigned int>& nodeIndices = edge.getNodeIndexes();
         for (size_t i = 0; i < nodeIndices.size(); ++i) {
             int globalNodeIndex = nodeIndices[i];
             rhs[globalNodeIndex] += contributions[i];
         }
         
-        std::cout << "    Edge con nodi [" << nodeIndices[0] << ", " << nodeIndices[1] 
-                 << "] - contributi: [" << contributions[0] << ", " << contributions[1] << "]" << std::endl;
+    std::cout << "    Edge with nodes [" << nodeIndices[0] << ", " << nodeIndices[1] 
+         << "] - contributions: [" << contributions[0] << ", " << contributions[1] << "]" << std::endl;
     }
 }
 

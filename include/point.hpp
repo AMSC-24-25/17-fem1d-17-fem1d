@@ -139,25 +139,25 @@ public:
 //     }
 // };
 
-// Prodotto tra punti di dimensione diversa
+// Product between points of different dimensions
 template<unsigned int dim1, unsigned int dim2>
 Point< (dim1 == 1 ? dim2 : (dim2 == 1 ? dim1 : 1)) > operator*(const Point<dim1>& p1, const Point<dim2>& p2) {
     if constexpr (dim1 == 1) {
-        // Prodotto scalare-vettore: restituisce un vettore della stessa dimensione del secondo operando
+    // Scalar-vector product: returns a vector of the same dimension as the second operand
         std::array<double, dim2> coords;
         for (int i = 0; i < dim2; i++)
             coords[i] = p1.x() * p2[i];
         return Point<dim2>(coords);
     } 
     else if constexpr (dim2 == 1) {
-        // Prodotto vettore-scalare: restituisce un vettore della stessa dimensione del primo operando
+    // Vector-scalar product: returns a vector of the same dimension as the first operand
         std::array<double, dim1> coords;
         for (int i = 0; i < dim1; i++)
             coords[i] = p1[i] * p2.x();
         return Point<dim1>(coords);
     } 
     else if constexpr (dim1 == dim2) {
-        // Prodotto scalare (dot product) tra vettori della stessa dimensione: restituisce uno scalare
+    // Dot product between vectors of the same dimension: returns a scalar
         double result = 0.0;
         for (unsigned int i = 0; i < dim1; ++i) {
             result += p1[i] * p2[i];
@@ -165,9 +165,9 @@ Point< (dim1 == 1 ? dim2 : (dim2 == 1 ? dim1 : 1)) > operator*(const Point<dim1>
         return Point<1>(result);
     }
     else {
-        // Per completezza, questo ramo non dovrebbe mai essere raggiunto
+    // For completeness, this branch should never be reached
         static_assert(dim1 == dim2, "Incompatible dimensions for multiplication");
-        return Point<1>(); // Per evitare warning "non tutte le vie restituiscono un valore"
+    return Point<1>(); // To avoid warning "not all code paths return a value"
     }
 }
 

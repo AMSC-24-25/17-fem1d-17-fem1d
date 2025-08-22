@@ -15,10 +15,10 @@ using SparseMat = Eigen::SparseMatrix<double, Eigen::RowMajor>;
 // ENUMS AND BASIC STRUCTURES
 // =============================================================================
 
-/// Enum per il tipo di condizione al contorno
+/// Enum for the type of boundary condition
 enum class BCType {
-    DIRICHLET,  ///< u = valore specificato
-    NEUMANN     ///< du/dn = valore specificato
+    DIRICHLET,  ///< u = specified value
+    NEUMANN     ///< du/dn = specified value
 };
 
 // Single boundary condition
@@ -51,11 +51,11 @@ class BoundaryConditions {
     using IndexVector = std::vector<unsigned int>;
 
 public:
-    // Costruttori
+    // Constructors
     BoundaryConditions() = default;
     BoundaryConditions(const std::vector<BoundaryCondition<dim, returnDim>>& conditions);
 
-    // Metodi per aggiungere condizioni
+    // Methods to add conditions
     void addDirichlet(int boundaryId, Function<dim, returnDim> func) {
         conditions.emplace_back(boundaryId, BCType::DIRICHLET, func);
     }
@@ -69,13 +69,13 @@ public:
         conditions.emplace_back(boundaryId, BCType::NEUMANN, value);
     }
 
-    // Applicazione delle condizioni al contorno
+    // Application of boundary conditions
     void apply(const Grid<dim>& mesh, SparseMat& A, VectorXd& rhs);
 
 private:
     std::vector<BoundaryCondition<dim, returnDim>> conditions;
 
-    // Metodi helper per applicazione
+    // Helper methods for application
     void applyDirichlet(const BoundaryCondition<dim, returnDim>& bc, const Grid<dim>& mesh, 
                        SparseMat& A, VectorXd& rhs);
     void applyNeumann(const BoundaryCondition<dim, returnDim>& bc, const Grid<dim>& mesh, 

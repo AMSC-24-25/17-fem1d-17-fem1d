@@ -13,7 +13,9 @@ Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusi
     transport_term(transport), reaction_term(reaction),
     boundaryConditions(boundaryConditions), quadrature(quadrature)
 {
+// Modern constructor with BoundaryConditions
     // Inizializza matrici
+    // Initialize matrices
     int numNodes = mesh.getNumNodes();
     A.resize(numNodes, numNodes);
     rhs.resize(numNodes);
@@ -28,6 +30,7 @@ void Fem<dim>::assemble() {
     std::cout << "### ASSEMBLE " << dim << "D ###" << std::endl;
 
     // Inizializzazione
+    // Initialization
     int numNodes = mesh.getNumNodes();
     rhs.setZero();
      
@@ -48,6 +51,7 @@ void Fem<dim>::assemble() {
         }
     }
     // Unisci tutti i triplet
+    // Merge all triplet vectors
     std::vector<Triplet> triplets;
     for (auto& v : triplets_thread) {
         triplets.insert(triplets.end(), v.begin(), v.end());
@@ -125,6 +129,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
             int globalJ = cell.getNodeIndex(j);
 
             // Aggiungi alla matrice globale solo se non zero
+        // Add to the global matrix only if not zero
             double value = diff_local(i,j) + transport_local(i,j) + react_local(i,j);
             if (std::abs(value) > 1e-14) {
                 triplets.push_back(Triplet(globalI, globalJ, value));
@@ -141,6 +146,7 @@ void Fem<dim>::solve() {
     std::cout << "### SOLVE " << dim << "D ###" << std::endl;
 
     // Risolvi il sistema Ax = b usando SparseLU
+    // Solve the system Ax = b using SparseLU
     if(A.nonZeros() < 1e4) {
         Eigen::SparseLU<SparseMat> solver;
         solver.analyzePattern(A);

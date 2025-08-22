@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
             //from auto to std::unique_ptr<QuadratureRule<2>>
             std::unique_ptr<QuadratureRule<2>> quadrature = config.createQuadrature<2>();
 
-            // Test delle funzioni in alcuni punti
+            // Test functions at some points
             Point<2> test_points[3] = {Point<2>(0.5, 0.5), Point<2>(0.2, 0.8), Point<2>(0.7, 0.3)};
             std::cout << "=== TOML FUNCTION VALUES ===" << std::endl;
             for(int i = 0; i < 3; i++) {
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
             //from auto to std::unique_ptr<QuadratureRule<3>>
             std::unique_ptr<QuadratureRule<3>> quadrature = config.createQuadrature<3>();
 
-            // Test delle funzioni in alcuni punti
+            // Test functions at some points
             Point<3> test_points[3] = {Point<3>(0.5, 0.5, 0.5), Point<3>(0.2, 0.8, 0.3), Point<3>(0.7, 0.3, 0.9)};
             std::cout << "=== TOML FUNCTION VALUES ===" << std::endl;
             for(int i = 0; i < 3; i++) {

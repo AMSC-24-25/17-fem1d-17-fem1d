@@ -21,7 +21,7 @@ using Eigen::Vector3d;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SparseMat;
 typedef Eigen::Triplet<double> Triplet;
 
-// Struttura per boundary conditions moderne
+// Structure for modern boundary conditions
 template<unsigned int dim>
 class Fem {
 private:
@@ -39,18 +39,18 @@ private:
     VectorXd solution;
 
 public:
-    // Costruttore moderno con BoundaryConditions
+    // Modern constructor with BoundaryConditions
     Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
         Function<dim, dim> transport, Function<dim, 1> reaction,
         const BoundaryConditions<dim, 1>& boundaryConditions, QuadratureRule<dim> quadrature);
 
-    // Assemblaggio matrici
+    // Matrix assembly
     void assemble();
     
-    // Risoluzione sistema
+    // System solution
     void solve();
     
-    // Getter per la soluzione
+    // Getter for the solution
     const VectorXd& getSolution() const { return solution; }
 
     void outputVtu(const std::string& filename) const;
@@ -58,7 +58,7 @@ public:
 
 private:
 
-    // Metodi helper per assemblaggio
+    // Helper methods for assembly
     void assembleElement(int elemIndex, std::vector<Triplet>& triplets);
 };
 

@@ -41,28 +41,28 @@ class Grid1D{
 
     // Returns a 1D grid with boundary tags 0, 1
     operator Grid<1>() const {
-        // Inizializza vettori vuoti invece di preallocare
+    // Initialize empty vectors instead of preallocating
         std::vector<Cell<1>> cells;
         std::vector<Point<1>> uniqueNodes;
         
-        // Riserva spazio ma non crea elementi
+    // Reserve space but do not create elements
         cells.reserve(getN()-1);
         uniqueNodes.reserve(getN());
 
-        // Aggiungi prima tutti i nodi
+    // First add all nodes
         for (unsigned int i = 0; i < N; ++i) {
             double x = (*this)(i);
             uniqueNodes.emplace_back(x);
         }
 
-        // Poi crea celle tra nodi adiacenti
+    // Then create cells between adjacent nodes
         for (unsigned int i = 0; i < N-1; ++i) {
             Cell<1>::NodeVector nodeVector = {Point<1>((*this)(i)), Point<1>((*this)(i+1))};
             Cell<1>::NodeIndexes nodeIndexes = {i, i+1};
             cells.emplace_back(nodeVector, nodeIndexes);
         }
 
-        // Boundary cells
+    // Boundary cells
         std::vector<BoundaryCell<0>> boundaryCells;
         boundaryCells.reserve(2);
         boundaryCells.emplace_back(BoundaryCell<0>({getStart()}, {0}, 0));

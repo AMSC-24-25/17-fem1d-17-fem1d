@@ -10,7 +10,7 @@ template <unsigned int dim, unsigned int returnDim>
 class Function
 {
 
-    // da: using fun = std::function<double(const Point<dim>&)>;
+    // from: using fun = std::function<double(const Point<dim>&)>;
     using fun = std::function<Point<returnDim>(const Point<dim> &)>;
 
 public:
@@ -61,7 +61,7 @@ private:
     std::vector<fun> gradient;
 
 public:
-    // Costruttori pubblici: necessari per creare funzioni da lambda/callable
+    // Public constructors: necessary to create functions from lambda/callable
 
     //explicit Function(fun f) : function(f) {}
 

@@ -17,7 +17,7 @@ Config Config::loadFromFile(const std::string& filename) {
     Config config;
     
     try {
-        // Parse TOML file with toml11 v4 - molto più semplice!
+    // Parse TOML file with toml11 v4 - much simpler!
         //from auto to toml::value
         const toml::value data = toml::parse(filename);
         
@@ -29,11 +29,11 @@ Config Config::loadFromFile(const std::string& filename) {
         config.problem.output_file = toml::find_or(problem, "output_file", std::string("output/solution"));
         config.problem.grid_size = toml::find_or(problem, "grid_size", 100);
         
-        // Parse equation section - unified approach: everything is a function
+    // Parse equation section - unified approach: everything is a function
         //from const auto& to const toml::value&
         const toml::value& equation = toml::find(data, "equation");
         
-        // Read as functions first, fallback to coefficient values
+    // Read as functions first, fallback to coefficient values
         config.equation.diffusion_function = toml::find_or(equation, "diffusion_function", 
             toml::find_or(equation, "diffusion_coefficient", std::string("1.0")));
         config.equation.transport_function = toml::find_or(equation, "transport_function", 
@@ -42,14 +42,14 @@ Config Config::loadFromFile(const std::string& filename) {
             toml::find_or(equation, "reaction_coefficient", std::string("0.0")));
         config.equation.forcing_function = toml::find_or(equation, "forcing_function", std::string("0.0"));
         
-        // Parse solver section
+    // Parse solver section
         //from const auto& to const toml::value&
         const toml::value& solver = toml::find(data, "solver");
         config.solver.tolerance = toml::find_or(solver, "tolerance", 1e-12);
         config.solver.max_iterations = toml::find_or(solver, "max_iterations", 1000);
         config.solver.method = toml::find_or(solver, "method", std::string("direct"));
         
-        // Parse boundary conditions (arrays) - molto più elegante!
+    // Parse boundary conditions (arrays) - much more elegant!
         if (data.contains("boundary_conditions")) {
             //from const auto& to const toml::array&
             const toml::array& bcs = toml::find(data, "boundary_conditions").as_array();
@@ -157,7 +157,7 @@ void Config::print() const {
 // Enhanced function parsing with exprtk - supports any mathematical expression!
 template<unsigned int dim>
 Function<dim,1> parseSimpleFunction(const std::string& expression) {
-    // Ottimizzazione per funzioni costanti semplici
+    // Optimization for simple constant functions
     if (expression == "0" || expression == "0.0") {
         return Function<dim,1>([](Point<dim> p) -> double { return 0.0; });
     }
@@ -165,7 +165,7 @@ Function<dim,1> parseSimpleFunction(const std::string& expression) {
         return Function<dim,1>([](Point<dim> p) -> double { return 1.0; });
     }
     
-    // Per tutte le altre espressioni, usa exprtk direttamente
+    // For all other expressions, use exprtk directly
     typedef exprtk::symbol_table<double> symbol_table_t;
     typedef exprtk::expression<double> expression_t;
     typedef exprtk::parser<double> parser_t;
@@ -282,7 +282,7 @@ template<>
 std::unique_ptr<QuadratureRule<1>> Config::createQuadrature<1>() const {
     if (quadrature.type == "order4")
         return std::make_unique<OrderFourQuadrature<1>>();
-    // default sicuro: order2
+    // safe default: order2
     return std::make_unique<OrderTwoQuadrature<1>>();
 }
 

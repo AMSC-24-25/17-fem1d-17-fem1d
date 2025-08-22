@@ -117,17 +117,17 @@ void QuadratureRule<dim>::getQuadratureData(
     }
 }
 
-// ============= IMPLEMENTAZIONE GaussLegendre1D =============
+// ============= GaussLegendre1D IMPLEMENTATION =============
 
 void GaussLegendre1D::getQuadratureData(const BoundaryCell<1>& edge,
                                         std::vector<Point<2>>& quadrature_points,
                                         std::vector<std::vector<double>>& phi,
                                         std::vector<double>& weights) const {
-    // Proprietà geometriche dell'edge
+    // Geometric properties of the edge
     double length = edge[0].distance(edge[1]);
-    double jacobian = length / 2.0;  // |J| = length/2 per trasformazione [-1,1] -> edge
+    double jacobian = length / 2.0;  // |J| = length/2 for transformation [-1,1] -> edge
     
-    // Inizializza i vettori di output
+    // Initialize output vectors
     quadrature_points.clear();
     phi.clear();
     weights.clear();
@@ -135,23 +135,23 @@ void GaussLegendre1D::getQuadratureData(const BoundaryCell<1>& edge,
     phi.reserve(points.size());
     weights.reserve(points.size());
     
-    // Itera sui punti di quadratura
+    // Iterate over quadrature points
     for (size_t q = 0; q < points.size(); ++q) {
-        // Punto di quadratura globale
+    // Global quadrature point
         Point<2> globalPoint = mapToGlobalEdge(edge, points[q]);
         quadrature_points.push_back(globalPoint);
         
-        // Shape functions nel punto di quadratura
+    // Shape functions at the quadrature point
         std::vector<double> phi_q;
         getShapeFunctions1D(points[q], phi_q);
         phi.push_back(phi_q);
         
-        // Peso fisico
+    // Physical weight
         weights.push_back(w[q] * jacobian);
     }
 }
 
-//TODO non so se csia giusto Function <2,1>
+//TODO not sure if Function <2,1> is correct
 double GaussLegendre1D::integrate(const BoundaryCell<1>& edge, 
                                  const Function<2,1>& func) const {
     std::vector<Point<2>> quadrature_points;
@@ -184,26 +184,26 @@ void GaussLegendre1D::integrateShapeFunctions(const BoundaryCell<1>& edge,
     contributions.resize(2, 0.0);  // 2 nodi per edge
     
     for (size_t q = 0; q < quadrature_points.size(); ++q) {
-        // Valore della funzione di Neumann nel punto
+    // Value of the Neumann function at the point
         double neumannValue = neumannFunc.value(quadrature_points[q]);
         
-        // Contributi ai nodi dell'edge
+    // Contributions to the edge nodes
         for (int i = 0; i < 2; ++i) {
             contributions[i] += weights[q] * neumannValue * phi[q][i];
         }
     }
 }
 
-// ============= IMPLEMENTAZIONE GaussLegendre2D =============
+// ============= GaussLegendre2D IMPLEMENTATION =============
 
 void GaussLegendre2D::getQuadratureData(const BoundaryCell<2>& face,
                                         std::vector<Point<3>>& quadrature_points,
                                         std::vector<std::vector<double>>& phi,
                                         std::vector<double>& weights) const {
-    // Area della faccia triangolare
+    // Area of the triangular face
     double area = faceArea(face);
     
-    // Inizializza i vettori di output
+    // Initialize output vectors
     quadrature_points.clear();
     phi.clear();
     weights.clear();
@@ -211,18 +211,19 @@ void GaussLegendre2D::getQuadratureData(const BoundaryCell<2>& face,
     phi.reserve(points.size());
     weights.reserve(points.size());
     
-    // Itera sui punti di quadratura
+    // Iterate over quadrature points
     for (size_t q = 0; q < points.size(); ++q) {
-        // Punto di quadratura globale su faccia
+    //TODO not sure if Function <2,1> is correct
+    // Global quadrature point on face
         Point<3> globalPoint = mapToGlobalFace(face, points[q][0], points[q][1]);
         quadrature_points.push_back(globalPoint);
         
-        // Shape functions nel punto di quadratura
+    // Shape functions at the quadrature point
         std::vector<double> phi_q;
         getShapeFunctions2D(points[q][0], points[q][1], phi_q);
         phi.push_back(phi_q);
         
-        // Peso fisico (peso * area della faccia)
+    // Physical weight (weight * face area)
         weights.push_back(w[q] * area);
     }
 }
@@ -256,10 +257,10 @@ void GaussLegendre2D::integrateShapeFunctions(const BoundaryCell<2>& face,
     contributions.resize(3, 0.0);  // 3 nodi per faccia triangolare
     
     for (size_t q = 0; q < quadrature_points.size(); ++q) {
-        // Valore della funzione di Neumann nel punto
+    // Value of the Neumann function at the point
         double neumannValue = neumannFunc.value(quadrature_points[q]);
         
-        // Contributi ai nodi della faccia
+    // Contributions to the face nodes
         for (int i = 0; i < 3; ++i) {
             contributions[i] += weights[q] * neumannValue * phi[q][i];
         }
