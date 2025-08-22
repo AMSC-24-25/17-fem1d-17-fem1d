@@ -89,9 +89,8 @@ struct Config {
     void print() const;
 
     // Various factories
-    Grid1D createGrid1D() const;
-    Grid2D createGrid2D() const;
-    Grid3D createGrid3D() const;
+    template<unsigned int dim>
+    Grid<dim> createGrid() const;
 
     template<unsigned int dim> Function<dim,1> createForcingFunction() const;
     template<unsigned int dim>
@@ -99,18 +98,14 @@ struct Config {
 
     template<unsigned int dim> Function<dim,1> createDiffusionFunction() const;
     template<unsigned int dim> Function<dim,1> createReactionFunction() const;
-    Function<1,1> createTransportFunction1D() const;
-    Function<2,2> createTransportFunction2D() const;
-    Function<3,3> createTransportFunction3D() const;
+    template<unsigned int dim> Function<dim,dim> createTransportFunction() const;
 
     template<unsigned int dim> BoundaryConditions<dim,1> createBoundaryConditions() const;
-    template<unsigned int dim> BoundaryConditions_td<dim,1> createBoundaryConditionsTD() const;  // NEW
+    template<unsigned int dim> BoundaryConditions_td<dim,1> createBoundaryConditionsTD() const; 
 
-    template<unsigned int dim>
-    std::unique_ptr<QuadratureRule<dim>> createQuadrature() const;
+    template<unsigned int dim> std::unique_ptr<QuadratureRule<dim>> createQuadrature() const;
 
-    template<unsigned int dim>
-    Function<dim,1> Config::createInitialConditionFunction() const;
+    template<unsigned int dim> Function<dim,1> createInitialConditionFunction() const;
 };
 
 #endif // CONFIG_HPP

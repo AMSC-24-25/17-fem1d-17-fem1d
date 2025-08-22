@@ -271,7 +271,8 @@ std::function<double(const Point<dim>&, double)> parseTimeDependentFunction(cons
 }
 
 // Config factory methods implementation
-Grid1D Config::createGrid1D() const {
+template<>
+Grid<1> Config::createGrid<1>() const {
     if (!problem.mesh_file.empty() && problem.mesh_file != "mesh/default.msh") {
         // If a specific mesh file is provided, try to load it
         std::cerr << "Warning: 1D mesh file loading not implemented, using uniform grid" << std::endl;
@@ -280,14 +281,16 @@ Grid1D Config::createGrid1D() const {
     return Grid1D(0.0, 1.0, problem.grid_size);
 }
 
-Grid2D Config::createGrid2D() const {
-    Grid2D grid;
+template<>
+Grid<2> Config::createGrid<2>() const {
+    Grid<2> grid;
     grid.parseFromMsh(problem.mesh_file);
     return grid;
 }
 
-Grid3D Config::createGrid3D() const {
-    Grid3D grid;
+template<>
+Grid<3> Config::createGrid<3>() const {
+    Grid<3> grid;
     grid.parseFromMsh(problem.mesh_file);
     return grid;
 }
@@ -298,11 +301,11 @@ Function<dim,1> Config::createForcingFunction() const {
 }
 template<unsigned int dim>
 std::function<double(const Point<dim>&, double)> Config::createForcingFunction_td() const {
-    return parseTimeDependentFunction<dim>(equation.forcing_function);
+    return parseTimeDependentFunction<dim>(time_dependent.forcing_function_td);
 }
 template<unsigned int dim>
 Function<dim,1> Config::createInitialConditionFunction() const {
-    return parseSimpleFunction<dim>(equation.initial_condition);
+    return parseSimpleFunction<dim>(time_dependent.initial_condition);
 }
 
 template<unsigned int dim>
@@ -315,13 +318,14 @@ Function<dim,1> Config::createReactionFunction() const {
     return parseSimpleFunction<dim>(equation.reaction_function);
 }
 
-Function<1,1> Config::createTransportFunction1D() const {
+template<>
+Function<1,1> Config::createTransportFunction<1>() const {
     return parseSimpleFunction<1>(equation.transport_function);
 }
 
-Function<2,2> Config::createTransportFunction2D() const {
+template<>
+Function<2,2> Config::createTransportFunction<2>() const {
     // Parse as scalar and assume transport in x direction
-    // from auto to Function<2,1>
     Function<2,1> scalarFunc = parseSimpleFunction<2>(equation.transport_function);
     return Function<2,2>([scalarFunc](Point<2> p) { 
         double coeff = scalarFunc(p);
@@ -329,9 +333,9 @@ Function<2,2> Config::createTransportFunction2D() const {
     });
 }
 
-Function<3,3> Config::createTransportFunction3D() const {
+template<>
+Function<3,3> Config::createTransportFunction<3>() const {
     // Parse as scalar and assume transport in x direction
-    //from auto to Function<3,1>
     Function<3,1> scalarFunc = parseSimpleFunction<3>(equation.transport_function);
     return Function<3,3>([scalarFunc](Point<3> p) { 
         double coeff = scalarFunc(p);
@@ -416,19 +420,19 @@ std::unique_ptr<QuadratureRule<3>> Config::createQuadrature<3>() const {
     return std::make_unique<OrderTwoQuadrature<3>>();
 }
 
-// Explicit template instantiations
-template Function<1,1> Config::createForcingFunction<1>() const;
-template Function<2,1> Config::createForcingFunction<2>() const;
-template Function<3,1> Config::createForcingFunction<3>() const;
-template Function<1,1> Config::createDiffusionFunction<1>() const;
-template Function<2,1> Config::createDiffusionFunction<2>() const;
-template Function<3,1> Config::createDiffusionFunction<3>() const;
-template Function<1,1> Config::createReactionFunction<1>() const;
-template Function<2,1> Config::createReactionFunction<2>() const;
-template Function<3,1> Config::createReactionFunction<3>() const;
-template BoundaryConditions<1,1> Config::createBoundaryConditions<1>() const;
-template BoundaryConditions<2,1> Config::createBoundaryConditions<2>() const;
-template BoundaryConditions<3,1> Config::createBoundaryConditions<3>() const;
-template BoundaryConditions_td<1,1> Config::createBoundaryConditionsTD<1>() const;
-template BoundaryConditions_td<2,1> Config::createBoundaryConditionsTD<2>() const;
-template BoundaryConditions_td<3,1> Config::createBoundaryConditionsTD<3>() const;
+
+#define INSTANTIATE_CONFIG_FUNCS(DIM) \
+    template Grid<DIM> Config::createGrid<DIM>() const; \
+    template Function<DIM,1> Config::createForcingFunction<DIM>() const; \
+    template std::function<double(const Point<DIM>&, double)> Config::createForcingFunction_td<DIM>() const; \
+    template Function<DIM,1> Config::createDiffusionFunction<DIM>() const; \
+    template Function<DIM,1> Config::createReactionFunction<DIM>() const; \
+    template Function<DIM,1> Config::createInitialConditionFunction<DIM>() const; \
+    template Function<DIM,DIM> Config::createTransportFunction<DIM>() const; \
+    template BoundaryConditions<DIM,1> Config::createBoundaryConditions<DIM>() const; \
+    template BoundaryConditions_td<DIM,1> Config::createBoundaryConditionsTD<DIM>() const; \
+    template std::unique_ptr<QuadratureRule<DIM>> Config::createQuadrature<DIM>() const;
+
+INSTANTIATE_CONFIG_FUNCS(1)
+INSTANTIATE_CONFIG_FUNCS(2)
+INSTANTIATE_CONFIG_FUNCS(3)

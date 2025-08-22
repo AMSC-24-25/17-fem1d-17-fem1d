@@ -6,7 +6,9 @@
 #include <fstream>
 
 // Forward declarations
+template<unsigned int dim>
 void solveSteadyStateProblem(const Config& config);
+template<unsigned int dim>
 void solveTimeDependentProblem(const Config& config);
 
 int main(int argc, char* argv[]) {
@@ -17,15 +19,40 @@ int main(int argc, char* argv[]) {
     
     try {
         Config config = Config::loadFromFile(argv[1]);
-        std::filesystem::create_directories("../output");
-        
+
         // Check if problem is time-dependent
         if (config.problem.time_dependent) {
             std::cout << "=== TIME-DEPENDENT PROBLEM ===" << std::endl;
-            solveTimeDependentProblem(config);
+            switch(config.problem.dimension) {
+                case 1:
+                    solveTimeDependentProblem<1>(config);
+                    break;
+                case 2:
+                    solveTimeDependentProblem<2>(config);
+                    break;
+                case 3:
+                    solveTimeDependentProblem<3>(config);
+                    break;
+                default:
+                    std::cerr << "Error: Unsupported dimension " << config.problem.dimension << std::endl;
+                    exit(-1);
+            }
         } else {
             std::cout << "=== STEADY-STATE PROBLEM ===" << std::endl;
-            solveSteadyStateProblem(config);
+            switch(config.problem.dimension) {
+                case 1:
+                    solveSteadyStateProblem<1>(config);
+                    break;
+                case 2:
+                    solveSteadyStateProblem<2>(config);
+                    break;
+                case 3:
+                    solveSteadyStateProblem<3>(config);
+                    break;
+                default:
+                    std::cerr << "Error: Unsupported dimension " << config.problem.dimension << std::endl;
+                    exit(-1);
+            }
         }
         
     } catch (const std::exception& e) {
@@ -36,142 +63,56 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
+template<unsigned int dim>
 void solveSteadyStateProblem(const Config& config) {
-    if (config.problem.dimension == 1) {
-        Grid1D grid = config.createGrid1D();
-        Function<1,1> forcing = config.createForcingFunction<1>();
-        Function<1,1> diffusion = config.createDiffusionFunction<1>();
-        Function<1,1> transport = config.createTransportFunction1D();
-        Function<1,1> reaction = config.createReactionFunction<1>();
-        BoundaryConditions<1,1> bc = config.createBoundaryConditions<1>();
-        std::unique_ptr<QuadratureRule<1>> quadrature = config.createQuadrature<1>();
-        
-        Fem<1> fem(grid, forcing, diffusion, transport, reaction, bc, *quadrature);
-        fem.assemble();
-        fem.solve();
-        fem.outputCsv("../" + config.problem.output_file + ".csv");
-        fem.outputVtu("../" + config.problem.output_file + ".vtu");
-        
-    } else if (config.problem.dimension == 2) {
-        Grid2D grid = config.createGrid2D();
-        Function<2,1> forcing = config.createForcingFunction<2>();
-        Function<2,1> diffusion = config.createDiffusionFunction<2>();
-        Function<2,2> transport = config.createTransportFunction2D();
-        Function<2,1> reaction = config.createReactionFunction<2>();
-        BoundaryConditions<2,1> bc = config.createBoundaryConditions<2>();
-        std::unique_ptr<QuadratureRule<2>> quadrature = config.createQuadrature<2>();
-        
-        Fem<2> fem(grid, forcing, diffusion, transport, reaction, bc, *quadrature);
-        fem.assemble();
-        fem.solve();
-        fem.outputVtu("../" + config.problem.output_file + ".vtu");
-        fem.outputCsv("../" + config.problem.output_file + ".csv");
-        
-    } else if (config.problem.dimension == 3) {
-        Grid3D grid = config.createGrid3D();
-        Function<3,1> forcing = config.createForcingFunction<3>();
-        Function<3,1> diffusion = config.createDiffusionFunction<3>();
-        Function<3,3> transport = config.createTransportFunction3D();
-        Function<3,1> reaction = config.createReactionFunction<3>();
-        BoundaryConditions<3,1> bc = config.createBoundaryConditions<3>();
-        std::unique_ptr<QuadratureRule<3>> quadrature = config.createQuadrature<3>();
-        
-        Fem<3> fem(grid, forcing, diffusion, transport, reaction, bc, *quadrature);
-        fem.assemble();
-        fem.solve();
-        fem.outputVtu("../" + config.problem.output_file + ".vtu");
-        fem.outputCsv("../" + config.problem.output_file + ".csv");
-        
-    } else {
-        std::cerr << "Error: Unsupported dimension " << config.problem.dimension << std::endl;
-    }
+    if (dim < 1 || dim > 3) {
+        std::cerr << "Error: Unsupported dimension " << dim << std::endl;
+        exit(-1);
+    } 
+
+    Grid<dim> grid = config.createGrid<dim>();
+    Function<dim,1> forcing = config.createForcingFunction<dim>();
+    Function<dim,1> diffusion = config.createDiffusionFunction<dim>();
+    Function<dim,dim> transport = config.createTransportFunction<dim>();
+    Function<dim,1> reaction = config.createReactionFunction<dim>();
+    BoundaryConditions<dim,1> bc = config.createBoundaryConditions<dim>();
+    std::unique_ptr<QuadratureRule<dim>> quadrature = config.createQuadrature<dim>();
+
+    Fem<dim> fem(grid, forcing, diffusion, transport, reaction, bc, *quadrature);
+    fem.assemble();
+    fem.solve();
+    fem.outputCsv(config.problem.output_file + ".csv");
+    fem.outputVtu(config.problem.output_file + ".vtu");
 }
 
+template<unsigned int dim>
 void solveTimeDependentProblem(const Config& config) {
-    if (config.problem.dimension == 1) {
-        Grid1D grid = config.createGrid1D();
-        Function<1,1> diffusion = config.createDiffusionFunction<1>();
-        Function<1,1> transport = config.createTransportFunction1D();
-        Function<1,1> reaction = config.createReactionFunction<1>();
-        BoundaryConditions_td<1,1> bc = config.createBoundaryConditionsTD<1>();
-        std::unique_ptr<QuadratureRule<1>> quadrature = config.createQuadrature<1>();
-        
-        FemTD<1> femtd(grid, diffusion, transport, reaction, bc, *quadrature);
-        
-        // Set time-dependent forcing (simplified)
-        femtd.set_forcing([](const Point<1>& p, double t) -> double {
-            return std::sin(2*M_PI*p[0]) * std::cos(t);
-        });
-        
-        // Set initial condition
-        Function<1,1> initial([](const Point<1>& p) -> double { return 0.0; });
-        femtd.set_initial_condition(initial);
-        
-        // Run simulation
-        femtd.run(config.time_dependent.final_time, 
-                  config.time_dependent.time_step, 
-                  config.time_dependent.theta,
-                  "../" + config.problem.output_file);
-                  
-    } else if (config.problem.dimension == 2) {
-        Grid2D grid = config.createGrid2D();
-        Function<2,1> diffusion = config.createDiffusionFunction<2>();
-        Function<2,2> transport = config.createTransportFunction2D();
-        Function<2,1> reaction = config.createReactionFunction<2>();
-        BoundaryConditions_td<2,1> bc = config.createBoundaryConditionsTD<2>();
-        std::unique_ptr<QuadratureRule<2>> quadrature = config.createQuadrature<2>();
-        
-        FemTD<2> femtd(grid, diffusion, transport, reaction, bc, *quadrature);
-        
-        // Set time-dependent forcing (simplified)
-        femtd.set_forcing([](const Point<2>& p, double t) -> double {
-            return std::sin(2*M_PI*p[0]*p[1]) * std::exp(-t);
-        });
-        
-        // Set initial condition
-        Function<2,1> initial([](const Point<2>& p) -> double {
-            return std::exp(-((p[0]-0.5)*(p[0]-0.5) + (p[1]-0.5)*(p[1]-0.5))/0.1);
-        });
-        femtd.set_initial_condition(initial);
-        
-        // Pre-assemble time-invariant matrices
-        femtd.assemble_time_invariant();
-        
-        // Run simulation
-        femtd.run(config.time_dependent.final_time, 
-                  config.time_dependent.time_step, 
-                  config.time_dependent.theta,
-                  "../" + config.problem.output_file);
-                  
-    } else if (config.problem.dimension == 3) {
-        Grid3D grid = config.createGrid3D();
-        Function<3,1> diffusion = config.createDiffusionFunction<3>();
-        Function<3,3> transport = config.createTransportFunction3D();
-        Function<3,1> reaction = config.createReactionFunction<3>();
-        BoundaryConditions_td<3,1> bc = config.createBoundaryConditionsTD<3>();
-        std::unique_ptr<QuadratureRule<3>> quadrature = config.createQuadrature<3>();
-        
-        FemTD<3> femtd(grid, diffusion, transport, reaction, bc, *quadrature);
-        
-        // Set time-dependent forcing (simplified)
-        femtd.set_forcing([](const Point<3>& p, double t) -> double {
-            return std::sin(2*M_PI*p[0]*p[1]*p[2]) + 4*M_PI*M_PI*t*std::sin(2*M_PI*p[0]*p[1]*p[2]);
-        });
-        
-        // Set initial condition
-        Function<3,1> initial([](const Point<3>& p) -> double { return 0.0; });
-        femtd.set_initial_condition(initial);
-        
-        // Pre-assemble time-invariant matrices
-        femtd.assemble_time_invariant();
-        
-        // Run simulation
-        femtd.run(config.time_dependent.final_time, 
-                  config.time_dependent.time_step, 
-                  config.time_dependent.theta,
-                  "../" + config.problem.output_file);
-                  
-    } else {
-        std::cerr << "Error: Unsupported dimension " << config.problem.dimension << std::endl;
+    if (dim < 1 || dim > 3) {
+        std::cerr << "Error: Unsupported dimension " << dim << std::endl;
+        exit(-1);
     }
+
+    Grid<dim> grid = config.createGrid<dim>();
+    Function<dim,1> diffusion = config.createDiffusionFunction<dim>();
+    Function<dim,dim> transport = config.createTransportFunction<dim>();
+    Function<dim,1> reaction = config.createReactionFunction<dim>();
+    BoundaryConditions_td<dim,1> bc = config.createBoundaryConditionsTD<dim>();
+    std::unique_ptr<QuadratureRule<dim>> quadrature = config.createQuadrature<dim>();
+    
+    FemTD<dim> femtd(grid, diffusion, transport, reaction, bc, *quadrature);
+    
+    // Set time-dependent forcing (simplified)
+    femtd.set_forcing(
+        config.createForcingFunction_td<dim>()
+    );
+    
+    // Set initial condition
+    Function<dim,1> initial = config.createInitialConditionFunction<dim>();
+    femtd.set_initial_condition(initial);
+    
+    // Run simulation
+    femtd.run(config.time_dependent.final_time, 
+                config.time_dependent.time_step, 
+                config.time_dependent.theta,
+                config.problem.output_file);
 }
