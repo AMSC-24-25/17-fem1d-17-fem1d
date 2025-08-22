@@ -76,9 +76,13 @@ void BoundaryConditions<1,1>::applyNeumann(
     unsigned int node_index = boundaryCell.getNodeIndex(0);
     double node = boundaryCell.getNode(0);
 
+    int adjacentNode = (node_index == 0) ? (node_index+1) : (node_index-1);
+    double h = mesh.getNode(adjacentNode) - mesh.getNode(node_index);
+    h = std::abs(h);
+
     // ∂u/∂n = -∂u/∂x at x = 0 (outward normal points left)
     // ∂u/∂n = ∂u/∂x at x = L (outward normal points right)
-    double sign = (node_index == 0) ? -1.0 : 1.0;
+    int sign = (node_index == 0) ? -1 : 1;
     double neumannValue = sign * bc.getBoundaryFunction().value(node);
-    rhs[node_index] -= neumannValue * boundaryCell.measure()/2.0;
+    rhs[node_index] -= neumannValue * h/2.0;
 }
