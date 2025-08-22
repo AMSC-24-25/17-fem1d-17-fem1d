@@ -72,12 +72,12 @@ void BoundaryConditions<1,1>::applyNeumann(
     
     std::cout << "  Applicando condizione di Neumann 1D su tag " << bc.getBoundaryId() << std::endl;
     
-    int startIndex = 0;
-    int endIndex = mesh.getNumElements() - 1;
+    unsigned int node_index = mesh.getBoundaryNodesByTag(bc.getBoundaryId())[0];
+    double node = mesh.getNode(node_index);
 
-    // Neumann condition at the left endpoint (x = 0)
     // ∂u/∂n = -∂u/∂x at x = 0 (outward normal points left)
-    double node = mesh.getBoundaryNodesByTag(bc.getBoundaryId())[0];
-    double neumannValue = bc.getBoundaryFunction().value(node);
-    rhs[startIndex] -= neumannValue * 0.5; // Factor 0.5 comes from FEM integration
+    // ∂u/∂n = ∂u/∂x at x = L (outward normal points right)
+    double sign = (node_index == 0) ? -1.0 : 1.0;
+    double neumannValue = sign * bc.getBoundaryFunction().value(node);
+    rhs[node_index] -= neumannValue * 0.5; // Factor 0.5 comes from FEM integration
 }
