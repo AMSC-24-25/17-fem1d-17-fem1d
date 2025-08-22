@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     else if (argv[1][0] == '2') {
         // 2D case
         Function<2,1> forcing([](Point<2> p) { 
-            return -1.0*p[1] + -1.0*p[0] + 1.0*p[0] * p[1];
+            return (-1.0*p[1]) + (-1.0*p[0]) + 1.0*p[0] * p[1];
         });
         
         BoundaryConditions<2,1> boundary_conditions;
@@ -82,9 +82,9 @@ int main(int argc, char *argv[])
 
         // Configurazione con mix di Dirichlet e Neumann
         boundary_conditions.addDirichlet(0, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return 0.0; }));
+        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return p[1]; }));
         boundary_conditions.addDirichlet(2, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return 0.0; }));
+        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return p[0]; }));
         
         cout << "Boundary conditions:" << endl;
         cout << "  Tag 0: Dirichlet u = 0.0" << endl;
