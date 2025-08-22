@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
         OrderTwoQuadrature<2> quadrature;
 
         fun_td<2,1> exactFunc = [](Point<2> p, double t) -> double {
-            return std::sin(2.0 * M_PI * p[0] * p[1]) * t;
+            return std::sin(2.0 * M_PI * (p[0] + p[1])) * sin(2.0 * M_PI*t);
         };
 
         // Configurazione con mix di Dirichlet e Neumann
@@ -109,20 +109,24 @@ int main(int argc, char *argv[])
         FemTD<2> femtd(grid, diffusion, transport, reaction, boundary_conditions, quadrature);
 
         femtd.set_forcing([](const Point<2>& p, double t) -> double {
-            double exact = std::sin(2.0 * M_PI * p[0] * p[1]) * t;
-            double exactD2 = -4*M_PI*M_PI*std::sin(2.0 * M_PI * p[0] * p[1]) * t;
-            return 1*exactD2 + 1*exact;
+            double factor = 2.0 * M_PI;
+            double timeFact = sin(factor*t);
+            double timeFactD1 = factor * cos(factor*t);
+            double exact = std::sin(factor * (p[0] + p[1])) * timeFact;
+            double exactDT = std::sin(factor * (p[0] + p[1])) * timeFactD1;
+            double exactD1_X = factor * std::cos(factor * (p[0] + p[1])) * timeFact;
+            double exactD1_Y = factor * std::cos(factor * (p[0] + p[1])) * timeFact;
+            double exactD2_X = -factor*factor*std::sin(factor * (p[0] + p[1])) * timeFact;
+            double exactD2_Y = -factor*factor*std::sin(factor * (p[0] + p[1])) * timeFact;
+            return exactDT - (exactD2_X + exactD2_Y) + exact;
         });
 
         femtd.set_initial_condition(Function<2,1>([](const Point<2>&){
             return 0.0;
         }));
 
-        // Pre-assembla M e K (tempo-indipendenti)
-        femtd.assemble_time_invariant();
-
         const double T = 1.0;     // tempo finale
-        const double dt = 1e-2;   // passo
+        const double dt = 0.01;   // passo
         const double theta = 0.5; // 0=Esplicito, 1=Implicit Euler, 0.5=Crank–Nicolson
 
         // Output file prefix (facoltativi)

@@ -48,8 +48,8 @@ void FemTD<dim>::assemble_time_invariant() {
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
-        auto& tM = tripM_thr[tid];
-        auto& tK = tripK_thr[tid];
+        std::vector<Triplet>& tM = tripM_thr[tid];
+        std::vector<Triplet>& tK = tripK_thr[tid];
         tM.reserve(expPerElem * (ne/nthreads + 1));
         tK.reserve(expPerElem * (ne/nthreads + 1));
 
@@ -57,8 +57,8 @@ void FemTD<dim>::assemble_time_invariant() {
         for (int e=0; e<ne; ++e) assemble_M_and_K_element(e, tM, tK);
     }
     std::vector<Triplet> tripM, tripK;
-    for (auto& v: tripM_thr) tripM.insert(tripM.end(), v.begin(), v.end());
-    for (auto& v: tripK_thr) tripK.insert(tripK.end(), v.begin(), v.end());
+    for (std::vector<Triplet>& v: tripM_thr) tripM.insert(tripM.end(), v.begin(), v.end());
+    for (std::vector<Triplet>& v: tripK_thr) tripK.insert(tripK.end(), v.begin(), v.end());
 #else
     std::vector<Triplet> tripM, tripK;
     tripM.reserve(expPerElem * ne);
@@ -126,6 +126,7 @@ void FemTD<dim>::build_load(VectorXd& F, double t) const {
     
     const unsigned matSize = dim + 1;
 
+    #pragma omp parallel for reduction(+:F)
     for (int i = 0; i < mesh_.getNumElements(); ++i) {
         const Cell<dim>& cell = mesh_.getCell(i);
 
@@ -134,8 +135,7 @@ void FemTD<dim>::build_load(VectorXd& F, double t) const {
         std::vector<std::vector<double>> phi;
         std::vector<double> w;
         // Rimuovi const usando un cast
-        QuadratureRule<dim>& non_const_quad = const_cast<QuadratureRule<dim>&>(quad_);
-        non_const_quad.getQuadratureData(cell, grad_phi, xq, phi, w);
+        quad_.getQuadratureData(cell, grad_phi, xq, phi, w);
 
         for (int q=0; q<(int)xq.size(); ++q) {
             const double fval = forcing_td_(xq[q], t);
@@ -151,6 +151,7 @@ void FemTD<dim>::build_load(VectorXd& F, double t) const {
 // ===== IC =====
 template<unsigned int dim>
 void FemTD<dim>::apply_initial_condition() {
+    #pragma omp parallel for
     for (int i=0; i<mesh_.getNumNodes(); ++i) {
         const Point<dim>& X = mesh_.getNode(i);
         u_[i] = u0_.value(X);
@@ -162,8 +163,6 @@ void FemTD<dim>::apply_initial_condition() {
 template<unsigned int dim>
 double FemTD<dim>::step(double t_new, double dt, double theta) {
     const int N = mesh_.getNumNodes();
-
-    A_ = (1.0/dt) * M_ + theta * K_;
 
     VectorXd f_new(N), f_old(N);
     build_load(f_new, t_new);
@@ -204,6 +203,8 @@ void FemTD<dim>::run(double T, double dt, double theta,
                      const std::string& csv_prefix)
 {
     assemble_time_invariant();
+    A_ = (1.0/dt) * M_ + theta * K_;
+
     apply_initial_condition();
 
     if (!vtu_prefix.empty()) write_vtu(vtu_prefix + "_t0.vtu");
