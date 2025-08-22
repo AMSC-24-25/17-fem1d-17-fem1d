@@ -23,6 +23,7 @@ file(GLOB ALL_SRC_FILES src/*.cpp)
 list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*config.cpp$")
 list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*TomlMain.cpp$")
 list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*main.cpp$")
+list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*main_td.cpp$")
 add_library(fem1d_lib STATIC ${ALL_SRC_FILES})
 target_link_libraries(fem1d_lib Eigen3::Eigen)
 

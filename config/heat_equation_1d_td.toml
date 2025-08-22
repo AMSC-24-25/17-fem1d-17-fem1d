@@ -16,12 +16,11 @@ type = "order2"
 diffusion_coefficient = 1.0
 transport_coefficient = 0.0
 reaction_coefficient = 0.0
-forcing_function = "sin(2*pi*x) * cos(t)"  # will be ignored for TD
-# Note: forcing_function above is static - for TD use the section below
+forcing_function = "0"  # will be ignored for TD
 
 [time_dependent]
-final_time = 2.0
-time_step = 0.01
+final_time = 6.28
+time_step = 0.05
 theta = 0.5  # Crank-Nicolson
 initial_condition = "sin(2*pi*x)"
 forcing_function_td = "sin(2*pi*x) * cos(t)"

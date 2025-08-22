@@ -296,6 +296,14 @@ template<unsigned int dim>
 Function<dim,1> Config::createForcingFunction() const {
     return parseSimpleFunction<dim>(equation.forcing_function);
 }
+template<unsigned int dim>
+std::function<double(const Point<dim>&, double)> Config::createForcingFunction_td() const {
+    return parseTimeDependentFunction<dim>(equation.forcing_function);
+}
+template<unsigned int dim>
+Function<dim,1> Config::createInitialConditionFunction() const {
+    return parseSimpleFunction<dim>(equation.initial_condition);
+}
 
 template<unsigned int dim>
 Function<dim,1> Config::createDiffusionFunction() const {

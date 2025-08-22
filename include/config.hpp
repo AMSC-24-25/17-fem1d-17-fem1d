@@ -94,6 +94,9 @@ struct Config {
     Grid3D createGrid3D() const;
 
     template<unsigned int dim> Function<dim,1> createForcingFunction() const;
+    template<unsigned int dim>
+    std::function<double(const Point<dim>&, double)> createForcingFunction_td() const;
+
     template<unsigned int dim> Function<dim,1> createDiffusionFunction() const;
     template<unsigned int dim> Function<dim,1> createReactionFunction() const;
     Function<1,1> createTransportFunction1D() const;
@@ -105,6 +108,9 @@ struct Config {
 
     template<unsigned int dim>
     std::unique_ptr<QuadratureRule<dim>> createQuadrature() const;
+
+    template<unsigned int dim>
+    Function<dim,1> Config::createInitialConditionFunction() const;
 };
 
 #endif // CONFIG_HPP
