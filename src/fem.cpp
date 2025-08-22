@@ -64,24 +64,7 @@ void Fem<dim>::assemble() {
     A.setFromTriplets(triplets.begin(), triplets.end());
 
     // Apply boundary conditions
-
-
-
-
-
-    // PRIMA di bc.apply(...)
-    int d = 31;
-    std::cout << "Before BC: A(d,d)=" << A.coeff(d,d)
-            << " rhs[d]=" << rhs[d] << "\n";
-    
     boundaryConditions.apply(mesh, A, rhs);
-
-
-    std::cout << "After  BC: A(d,d)=" << A.coeff(d,d)
-          << " rhs[d]=" << rhs[d] << "\n";
-    
-    std::cout << "Matrix assembled: " << A.rows() << "x" << A.cols() 
-              << " with " << A.nonZeros() << " non-zeros" << std::endl;
 }
 
 // Assemblaggio di un singolo elemento (triangolo)

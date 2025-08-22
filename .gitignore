@@ -8,6 +8,7 @@
 # Debug/Outputs
 valgrind-out.txt
 *.csv
+*.vtu
 
 # CMake
 CMakeFiles
