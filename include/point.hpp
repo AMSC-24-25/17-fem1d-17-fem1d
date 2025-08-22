@@ -141,7 +141,7 @@ public:
 
 // Prodotto tra punti di dimensione diversa
 template<unsigned int dim1, unsigned int dim2>
-auto operator*(const Point<dim1>& p1, const Point<dim2>& p2) {
+Point< (dim1 == 1 ? dim2 : (dim2 == 1 ? dim1 : 1)) > operator*(const Point<dim1>& p1, const Point<dim2>& p2) {
     if constexpr (dim1 == 1) {
         // Prodotto scalare-vettore: restituisce un vettore della stessa dimensione del secondo operando
         std::array<double, dim2> coords;

@@ -233,7 +233,8 @@ Function<dim, returnDim> Function<dim, returnDim>::operator+(double k) const
 
     fun resultFunction = [thisFun, k](const Point<dim> &p) -> Point<returnDim>
     {
-        auto v = thisFun.value(p);
+        //from auto to Point<returnDim>
+        Point<returnDim> v = thisFun.value(p);
         for (unsigned int i = 0; i < returnDim; ++i)
             v[i] += k;
         return v;
@@ -250,7 +251,8 @@ Function<dim, returnDim> Function<dim, returnDim>::operator*(double k) const
 
     fun resultFunction = [thisFun, k](const Point<dim> &p) -> Point<returnDim>
     {
-        auto v = thisFun.value(p);
+        //from auto to Point<returnDim>
+        Point<returnDim> v = thisFun.value(p);
         for (unsigned int i = 0; i < returnDim; ++i)
             v[i] *= k;
         return v;
