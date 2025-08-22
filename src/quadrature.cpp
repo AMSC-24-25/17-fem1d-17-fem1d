@@ -125,8 +125,8 @@ void GaussLegendre1D::getQuadratureData(const BoundaryCell<1>& edge,
                                         std::vector<double>& weights) const {
     // Geometric properties of the edge
     double length = edge[0].distance(edge[1]);
-    double jacobian = length / 2.0;  // |J| = length/2 for transformation [-1,1] -> edge
-    
+    double jacobian = length;  // |J| = length for transformation [0,1] -> edge
+
     // Initialize output vectors
     quadrature_points.clear();
     phi.clear();

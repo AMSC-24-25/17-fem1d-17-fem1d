@@ -62,15 +62,17 @@ public:
 // Class for 1D quadrature on boundary segments (Gauss-Legendre)
 class GaussLegendre1D {
 private:
-    std::vector<double> points;        // Quadrature points in [-1, 1]
+    std::vector<double> points;        // Quadrature points in [0, 1]
     std::vector<double> w;             // Quadrature weights (same name as other classes)
     
 public:
     // Constructor for 2-point quadrature (order 3)
     GaussLegendre1D() {
-    // 2-point Gauss-Legendre points in [-1, 1]
-        points = {-1.0/sqrt(3.0), 1.0/sqrt(3.0)};
-        w = {1.0, 1.0};
+        // Points and weights for [0, 1]
+        double x1 = 0.5 - 0.5/std::sqrt(3.0);
+        double x2 = 0.5 + 0.5/std::sqrt(3.0);
+        points = {x1, x2};
+        w = {0.5, 0.5};
     }
     
     // Main method to obtain quadrature data

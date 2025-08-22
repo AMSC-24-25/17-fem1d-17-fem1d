@@ -92,15 +92,11 @@ inline std::array<double, 3> barycentricCoordinates(const Cell<2>& cell, const P
 // ============= GEOMETRY FOR BOUNDARY CELLS (EDGE) =============
 
 inline Point<2> mapToGlobalEdge(const BoundaryCell<1>& edge, double xi) {
-    // Maps from local coordinate xi ∈ [-1, 1] to global coordinates
-    // xi = -1 -> node 0, xi = +1 -> node 1
+    // Maps from local coordinate xi ∈ [0, 1] to global coordinates
     const Point<2>& p1 = edge[0];
     const Point<2>& p2 = edge[1];
-    
-    double t = (xi + 1.0) / 2.0;  // transforms from [-1,1] to [0,1]
-    double x = (1.0 - t) * p1[0] + t * p2[0];
-    double y = (1.0 - t) * p1[1] + t * p2[1];
-    
+    double x = (1.0 - xi) * p1[0] + xi * p2[0];
+    double y = (1.0 - xi) * p1[1] + xi * p2[1];
     return Point<2>(x, y);
 }
 
@@ -129,10 +125,10 @@ inline Point<2> edgeNormal(const BoundaryCell<1>& edge) {
 }
 
 inline void getShapeFunctions1D(double xi, std::vector<double>& phi) {
-    // Linear 1D shape functions in [-1, 1]
+    // Linear 1D shape functions in [0, 1]
     phi.resize(2);
-    phi[0] = (1.0 - xi) / 2.0;  // shape function for node 0
-    phi[1] = (1.0 + xi) / 2.0;  // shape function for node 1
+    phi[0] = 1.0 - xi;  // shape function for node 0
+    phi[1] = xi;        // shape function for node 1
 }
 
 // ============= GEOMETRY FOR BOUNDARY CELLS (3D FACES) =============
