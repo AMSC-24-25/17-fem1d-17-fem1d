@@ -66,43 +66,26 @@ int main(int argc, char *argv[])
     // system("python ../scripts/plot_sol.py");
     }
     else if (argv[1][0] == '2') {
-    // 2D case
+        // 2D case
         Function<2,1> forcing([](Point<2> p) { 
-            // return 2.0*(p[0] + p[1]) - 2.0*(p[0]*p[0] + p[1]*p[1]);
-            return 0.0;
+            return -1.0*p[1] + -1.0*p[0] + 1.0*p[0] * p[1];
         });
         
         BoundaryConditions<2,1> boundary_conditions;
         Function<2,1> diffusion([](Point<2> p) { return 1.0; });
-        Function<2,1> reaction([](Point<2> p) { return 0.0; });
-        Function<2,2> transport([](Point<2> p) { return Point<2>(0.0, 0.0); });
+        Function<2,1> reaction([](Point<2> p) { return 1.0; });
+        Function<2,2> transport([](Point<2> p) { return Point<2>(-1.0, -1.0); });
 
-    // 2. Configure boundary conditions BEFORE mesh parsing
+        // 2. Configurazione delle condizioni al contorno PRIMA del parsing
 
         OrderTwoQuadrature<2> quadrature;
 
-        // Test Neumann: flusso normale specificato sul lato superiore
-        // boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { 
-        //     return sin(EIGEN_PI * p[0]);  // Flusso sinusoidale lungo x
-        // }));
         // Configurazione con mix di Dirichlet e Neumann
-        Function<2,1> fDirichlet([](Point<2> p) { return p[0] + p[1]; });
-        boundary_conditions.addDirichlet(0, fDirichlet);
-        boundary_conditions.addDirichlet(1, fDirichlet);
-        boundary_conditions.addDirichlet(2, fDirichlet);
-        boundary_conditions.addDirichlet(3, fDirichlet);
-
-    // Test functions at some points
-        Point<2> test_points[3] = {Point<2>(0.5, 0.5), Point<2>(0.2, 0.8), Point<2>(0.7, 0.3)};
-        cout << "=== MAIN.CPP FUNCTION VALUES ===" << endl;
-        for(int i = 0; i < 3; i++) {
-            Point<2> p = test_points[i];
-            cout << "Point (" << p[0] << ", " << p[1] << "):" << endl;
-            cout << "  forcing = " << forcing.value(p) << endl;
-            cout << "  diffusion = " << diffusion.value(p) << endl;
-            cout << "  reaction = " << reaction.value(p) << endl;
-            cout << "  transport = (" << transport.value(p)[0] << ", " << transport.value(p)[1] << ")" << endl;
-        }
+        boundary_conditions.addDirichlet(0, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
+        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return 0.0; }));
+        boundary_conditions.addDirichlet(2, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
+        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return 0.0; }));
+        
         cout << "Boundary conditions:" << endl;
         cout << "  Tag 0: Dirichlet u = 0.0" << endl;
         cout << "  Tag 1: Dirichlet u = 0.0" << endl;
