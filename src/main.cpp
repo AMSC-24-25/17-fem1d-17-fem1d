@@ -9,6 +9,10 @@ using std::endl;
 
 constexpr double PI = EIGEN_PI;
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 /**
  * Simple FEM solver for 1D and 2D problems
  * Usage: ./fem 1d L N  or  ./fem 2d mesh.msh

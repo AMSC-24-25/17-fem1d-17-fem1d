@@ -1,13 +1,15 @@
 #include <iostream>
 #include <fstream>
-#include "fem.hpp"
-#include "fem_td.hpp"            // la classe time-dependent che ti ho dato
+#include "fem_td.hpp"
 #include "grid.hpp"
-#include "boundary_conditions.hpp"
 #include "boundary_conditions_td.hpp"
 
 using std::cout;
 using std::endl;
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 constexpr double PI = EIGEN_PI;
 
