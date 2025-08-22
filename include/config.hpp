@@ -7,6 +7,7 @@
 #include "grid.hpp"
 #include "function.hpp"
 #include "boundary_conditions.hpp"
+#include "boundary_conditions_td.hpp"
 #include <memory>
 
 // Structure for problem configuration
@@ -15,6 +16,7 @@ struct ProblemConfig {
     std::string mesh_file;
     std::string output_file;
     int grid_size;  // For 1D uniform grids
+    bool time_dependent = false;  // NEW: flag for time-dependent problems
 };
 
 // Structure for equation configuration
@@ -37,6 +39,16 @@ struct BCConfig {
     Type type;
     unsigned int tag;
     std::string function;
+    std::string time_function = "";  // NEW: optional time-dependent function "f(x,y,z,t)"
+};
+
+// NEW: Structure for time-dependent configuration
+struct TimeDependentConfig {
+    double final_time = 1.0;
+    double time_step = 0.01;
+    double theta = 0.5;  // 0=Explicit, 0.5=Crank-Nicolson, 1=Implicit
+    std::string initial_condition = "0.0";
+    std::string forcing_function_td = "";  // f(x,y,z,t) - time dependent forcing
 };
 
 // Structure for solver configuration
@@ -56,6 +68,7 @@ struct Config {
     EquationConfig equation;
     std::vector<BCConfig> boundary_conditions;
     SolverConfig solver;
+    TimeDependentConfig time_dependent;  // NEW: time-dependent settings
     int quadrature_order = 2;
     template<int dim>
     static std::unique_ptr<QuadratureRule<dim>> make_quadrature(int order) {
@@ -88,6 +101,7 @@ struct Config {
     Function<3,3> createTransportFunction3D() const;
 
     template<unsigned int dim> BoundaryConditions<dim,1> createBoundaryConditions() const;
+    template<unsigned int dim> BoundaryConditions_td<dim,1> createBoundaryConditionsTD() const;  // NEW
 
     template<unsigned int dim>
     std::unique_ptr<QuadratureRule<dim>> createQuadrature() const;

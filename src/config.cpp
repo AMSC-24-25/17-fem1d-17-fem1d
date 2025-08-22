@@ -28,6 +28,7 @@ Config Config::loadFromFile(const std::string& filename) {
         config.problem.mesh_file = toml::find_or(problem, "mesh_file", std::string("mesh/default.msh"));
         config.problem.output_file = toml::find_or(problem, "output_file", std::string("output/solution"));
         config.problem.grid_size = toml::find_or(problem, "grid_size", 100);
+        config.problem.time_dependent = toml::find_or(problem, "time_dependent", false);  // NEW
         
     // Parse equation section - unified approach: everything is a function
         //from const auto& to const toml::value&
@@ -49,7 +50,7 @@ Config Config::loadFromFile(const std::string& filename) {
         config.solver.max_iterations = toml::find_or(solver, "max_iterations", 1000);
         config.solver.method = toml::find_or(solver, "method", std::string("direct"));
         
-    // Parse boundary conditions (arrays) - much more elegant!
+        // Parse boundary conditions (arrays) - much more elegant!
         if (data.contains("boundary_conditions")) {
             //from const auto& to const toml::array&
             const toml::array& bcs = toml::find(data, "boundary_conditions").as_array();
@@ -58,6 +59,7 @@ Config Config::loadFromFile(const std::string& filename) {
                 BCConfig bc;
                 bc.tag = toml::find<int>(bc_toml, "tag");
                 bc.function = toml::find<std::string>(bc_toml, "function");
+                bc.time_function = toml::find_or(bc_toml, "time_function", std::string(""));  // NEW
                 
                 std::string type_str = toml::find_or(bc_toml, "type", std::string("dirichlet"));
                 bc.type = (type_str == "neumann") ? BCConfig::NEUMANN : BCConfig::DIRICHLET;
@@ -66,7 +68,15 @@ Config Config::loadFromFile(const std::string& filename) {
             }
         }
 
-        if (data.contains("quadrature")) {
+        // NEW: Parse time-dependent section
+        if (data.contains("time_dependent")) {
+            const toml::value& td = toml::find(data, "time_dependent");
+            config.time_dependent.final_time = toml::find_or(td, "final_time", 1.0);
+            config.time_dependent.time_step = toml::find_or(td, "time_step", 0.01);
+            config.time_dependent.theta = toml::find_or(td, "theta", 0.5);
+            config.time_dependent.initial_condition = toml::find_or(td, "initial_condition", std::string("0.0"));
+            config.time_dependent.forcing_function_td = toml::find_or(td, "forcing_function_td", std::string(""));
+        }        if (data.contains("quadrature")) {
             //from const auto& to const toml::value&
             const toml::value& quad = toml::find(data, "quadrature");
             std::string qtype = toml::find_or(quad, "type", std::string("order2"));
@@ -130,6 +140,7 @@ void Config::print() const {
     std::cout << "  Dimension: " << problem.dimension << std::endl;
     std::cout << "  Mesh file: " << problem.mesh_file << std::endl;
     std::cout << "  Output file: " << problem.output_file << std::endl;
+    std::cout << "  Time-dependent: " << (problem.time_dependent ? "Yes" : "No") << std::endl;  // NEW
     
     std::cout << "Equation:" << std::endl;
     std::cout << "  Diffusion function: " << equation.diffusion_function << std::endl;
@@ -149,8 +160,25 @@ void Config::print() const {
         std::cout << "  BC " << i+1 << ": ";
         std::cout << (bc.type == BCConfig::DIRICHLET ? "Dirichlet" : "Neumann");
         std::cout << " on tag " << bc.tag;
-        std::cout << ", function: " << bc.function << std::endl;
+        std::cout << ", function: " << bc.function;
+        if (!bc.time_function.empty()) {
+            std::cout << ", time_function: " << bc.time_function;  // NEW
+        }
+        std::cout << std::endl;
     }
+    
+    // NEW: Print time-dependent config if applicable
+    if (problem.time_dependent) {
+        std::cout << "Time-Dependent Settings:" << std::endl;
+        std::cout << "  Final time: " << time_dependent.final_time << std::endl;
+        std::cout << "  Time step: " << time_dependent.time_step << std::endl;
+        std::cout << "  Theta: " << time_dependent.theta << std::endl;
+        std::cout << "  Initial condition: " << time_dependent.initial_condition << std::endl;
+        if (!time_dependent.forcing_function_td.empty()) {
+            std::cout << "  TD Forcing function: " << time_dependent.forcing_function_td << std::endl;
+        }
+    }
+    
     std::cout << "===================" << std::endl;
 }
 
@@ -197,6 +225,49 @@ Function<dim,1> parseSimpleFunction(const std::string& expression) {
             return 0.0;
         }
     });
+}
+
+// NEW: Parse time-dependent function f(x,y,z,t)
+template<unsigned int dim>
+std::function<double(const Point<dim>&, double)> parseTimeDependentFunction(const std::string& expression) {
+    if (expression.empty() || expression == "0" || expression == "0.0") {
+        return [](const Point<dim>& p, double t) -> double { return 0.0; };
+    }
+    
+    typedef exprtk::symbol_table<double> symbol_table_t;
+    typedef exprtk::expression<double> expression_t;
+    typedef exprtk::parser<double> parser_t;
+    
+    return [expression](const Point<dim>& p, double t) -> double {
+        symbol_table_t symbol_table;
+        expression_t expr;
+        parser_t parser;
+        
+        // Register variables based on dimension
+        double x = (dim >= 1) ? p[0] : 0.0;
+        double y = (dim >= 2) ? p[1] : 0.0;
+        double z = (dim >= 3) ? p[2] : 0.0;
+        double time = t;
+        
+        symbol_table.add_variable("x", x);
+        if (dim >= 2) symbol_table.add_variable("y", y);
+        if (dim >= 3) symbol_table.add_variable("z", z);
+        symbol_table.add_variable("t", time);
+        symbol_table.add_variable("time", time);
+        
+        // Add common constants
+        symbol_table.add_constant("pi", M_PI);
+        symbol_table.add_constant("e", M_E);
+        
+        expr.register_symbol_table(symbol_table);
+        
+        if (parser.compile(expression, expr)) {
+            return expr.value();
+        } else {
+            std::cerr << "Error parsing time-dependent expression '" << expression << "': " << parser.error() << std::endl;
+            return 0.0;
+        }
+    };
 }
 
 // Config factory methods implementation
@@ -278,6 +349,42 @@ BoundaryConditions<dim,1> Config::createBoundaryConditions() const {
     return bc;
 }
 
+// NEW: Create time-dependent boundary conditions
+template<unsigned int dim>
+BoundaryConditions_td<dim,1> Config::createBoundaryConditionsTD() const {
+    BoundaryConditions_td<dim,1> bc;
+
+    for (const BCConfig& bcConfig : boundary_conditions) {
+        // Use time_function if available, otherwise fall back to regular function (time-independent)
+        std::string function_expr = bcConfig.time_function.empty() ? bcConfig.function : bcConfig.time_function;
+        
+        if (bcConfig.time_function.empty()) {
+            // Time-independent: convert regular function to time-dependent
+            Function<dim,1> static_func = parseSimpleFunction<dim>(bcConfig.function);
+            auto td_func = [static_func](const Point<dim>& p, double t) -> double {
+                return static_func.value(p);
+            };
+            
+            if (bcConfig.type == BCConfig::DIRICHLET) {
+                bc.addDirichlet(bcConfig.tag, td_func);
+            } else if (bcConfig.type == BCConfig::NEUMANN) {
+                bc.addNeumann(bcConfig.tag, td_func);
+            }
+        } else {
+            // Time-dependent function
+            auto td_func = parseTimeDependentFunction<dim>(bcConfig.time_function);
+            
+            if (bcConfig.type == BCConfig::DIRICHLET) {
+                bc.addDirichlet(bcConfig.tag, td_func);
+            } else if (bcConfig.type == BCConfig::NEUMANN) {
+                bc.addNeumann(bcConfig.tag, td_func);
+            }
+        }
+    }
+    
+    return bc;
+}
+
 template<>
 std::unique_ptr<QuadratureRule<1>> Config::createQuadrature<1>() const {
     if (quadrature.type == "order4")
@@ -314,3 +421,6 @@ template Function<3,1> Config::createReactionFunction<3>() const;
 template BoundaryConditions<1,1> Config::createBoundaryConditions<1>() const;
 template BoundaryConditions<2,1> Config::createBoundaryConditions<2>() const;
 template BoundaryConditions<3,1> Config::createBoundaryConditions<3>() const;
+template BoundaryConditions_td<1,1> Config::createBoundaryConditionsTD<1>() const;
+template BoundaryConditions_td<2,1> Config::createBoundaryConditionsTD<2>() const;
+template BoundaryConditions_td<3,1> Config::createBoundaryConditionsTD<3>() const;

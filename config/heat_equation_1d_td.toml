@@ -1,0 +1,45 @@
+# Time-dependent 1D heat equation example
+# u_t - D * u_xx = f(x,t)
+# u(0,t) = 0, u(1,t) = sin(t)
+
+[problem]
+dimension = 1
+grid_size = 100
+output_file = "output/heat_1d_td"
+time_dependent = true
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Heat equation coefficients
+diffusion_coefficient = 1.0
+transport_coefficient = 0.0
+reaction_coefficient = 0.0
+forcing_function = "sin(2*pi*x) * cos(t)"  # will be ignored for TD
+# Note: forcing_function above is static - for TD use the section below
+
+[time_dependent]
+final_time = 2.0
+time_step = 0.01
+theta = 0.5  # Crank-Nicolson
+initial_condition = "sin(2*pi*x)"
+forcing_function_td = "sin(2*pi*x) * cos(t)"
+
+# Time-dependent boundary conditions
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "0.0"  # fallback static
+time_function = "0.0"  # u(0,t) = 0
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "0.0"  # fallback static
+time_function = "sin(t)"  # u(1,t) = sin(t)
+
+[solver]
+tolerance = 1e-10
+max_iterations = 500
+method = "direct"
