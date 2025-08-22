@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "fem.hpp"
+#include "fem_td.hpp"            // la classe time-dependent che ti ho dato
 #include "grid.hpp"
 #include "boundary_conditions.hpp"
 
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+
     if (argv[1][0] == '1') {
     // 1D case: fix argument parsing
         if (argc < 4) {
@@ -42,28 +44,39 @@ int main(int argc, char *argv[])
             }
         );
 
-    // Function<1,1> diffusion_term = OneFunction<1,1>();
-        Function<1,1> diffusion_term = Function<1,1>([](Point<1> p) -> double { return 2.0; });
-        Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 4.0; });
-        Function<1,1> reaction_term = Function<1,1>([](Point<1> p) -> double {return 5.0; });
-    
+        // Function<1,1> diffusion_term = OneFunction<1,1>();
+        Function<1,1> diffusion_term = Function<1,1>([](Point<1> p) -> double { return 8.0; });
+        Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 0.5; });
+        Function<1,1> reaction_term = Function<1,1>([](Point<1> p) -> double {return 2.0; });
+
 
         BoundaryConditions<1,1> boundary_conditions;
-        boundary_conditions.addDirichlet(0, Point<1>(0.0));
-        boundary_conditions.addNeumann(1, Point<1>(2.0 * M_PI * 2.0));
+        boundary_conditions.addDirichlet(0, Function<1,1>([](Point<1> p) -> double { return exp(2.0*(p[0])); }));
+        boundary_conditions.addNeumann(1, Function<1,1>([](Point<1> p) -> double { return 8*2.0*exp(2.0*(p[0])); }));
 
         OrderTwoQuadrature<1> quadrature;
-        Fem<1> fem(grid, forcing, diffusion_term, transport_term, reaction_term, boundary_conditions, quadrature);
+        FemTD<1> femtd(grid, diffusion_term, transport_term, reaction_term, boundary_conditions, quadrature);
 
-        fem.assemble();
-        fem.solve();
+        femtd.set_forcing([](const Point<1>& x, double t) {
+            (void)t;
+            return (- 8.0*4 + 0.5*2 + 2.0)*exp(2.0*(x[0]));
+        });
 
-        std::string csvFilePath = "../sol1d.csv";
-        std::string vtuFilePath = "output/sol1d.vtu";
-        fem.outputCsv(csvFilePath);
-        fem.outputVtu(vtuFilePath);
+        femtd.set_initial_condition(Function<1,1>([](const Point<1>& p){
+            return exp(2.0*(p[0]));
+        }));
 
-    // system("python ../scripts/plot_sol.py");
+        // Pre-assembla M e K (tempo-indipendenti)
+        femtd.assemble_time_invariant();
+
+        const double T = 1.0;     // tempo finale
+        const double dt = 0.001;   // passo
+        const double theta = 1; // 0=Esplicito, 1=Implicit Euler, 0.5=Crank–Nicolson
+
+        // Output file prefix (facoltativi)
+        femtd.run(T, dt, theta, /*vtu_prefix*/ "out/u", /*csv_prefix*/ "");
+        // system("python ../scripts/plot_sol.py");
+    
     }
     else if (argv[1][0] == '2') {
         // 2D case
@@ -81,11 +94,11 @@ int main(int argc, char *argv[])
         OrderTwoQuadrature<2> quadrature;
 
         // Configurazione con mix di Dirichlet e Neumann
-        boundary_conditions.addDirichlet(0, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return p[1]; }));
-        boundary_conditions.addDirichlet(2, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return p[0]; }));
-        
+        boundary_conditions.addDirichlet(0, Point<1>(0.0));
+        boundary_conditions.addDirichlet(1, Point<1>(0.0));
+        boundary_conditions.addDirichlet(2, Point<1>(0.0));
+        boundary_conditions.addDirichlet(3, Point<1>(0.0));
+
         cout << "Boundary conditions:" << endl;
         cout << "  Tag 0: Dirichlet u = 0.0" << endl;
         cout << "  Tag 1: Dirichlet u = 0.0" << endl;
@@ -94,19 +107,30 @@ int main(int argc, char *argv[])
 
         Grid<2> grid;
         grid.parseFromMsh(argv[2]);
-        
-    // 4. Create and solve the FEM problem with BoundaryConditions
-        Fem<2> fem(grid, forcing, diffusion, transport, reaction, boundary_conditions, quadrature);
 
-        fem.assemble();
-        fem.solve();
+        FemTD<2> femtd(grid, diffusion, transport, reaction, boundary_conditions, quadrature);
 
-        std::string csvFilePath = "../sol2d.csv";
-        std::string vtuFilePath = "output/sol2d.vtu";
-        fem.outputCsv(csvFilePath);
-        fem.outputVtu(vtuFilePath);
+        femtd.set_forcing([](const Point<2>& p, double t) -> double {
+            return std::sin(2.0 * M_PI * t * p[0]);   // esempio semplice
+        });
+
+        femtd.set_initial_condition(Function<2,1>([](const Point<2>&){
+            return 0.0;
+        }));
+
+        // Pre-assembla M e K (tempo-indipendenti)
+        femtd.assemble_time_invariant();
+
+        const double T = 1.0;     // tempo finale
+        const double dt = 1e-2;   // passo
+        const double theta = 0.5; // 0=Esplicito, 1=Implicit Euler, 0.5=Crank–Nicolson
+
+        // Output file prefix (facoltativi)
+        femtd.run(T, dt, theta, /*vtu_prefix*/ "out/u", /*csv_prefix*/ "");
     }
     else if (argv[1][0] == '3'){
+        std::cerr << "3D CASE IS ONLY TIME-INDEPENDENT" << std::endl;
+
     // 3D case - Problem definition BEFORE mesh parsing
         cout << "=== Configurazione problema 3D ===" << endl;
         

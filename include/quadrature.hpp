@@ -41,8 +41,8 @@ public:
         std::vector<Point<dim>>& grad_phi,
         std::vector<Point<dim>>& quadrature_points,
         std::vector<std::vector<double>>& phi,
-        std::vector<double>& weight
-    );
+        std::vector<double>& weights
+    ) const;
 };
 
 template<unsigned int dim>

@@ -89,7 +89,7 @@ void QuadratureRule<dim>::getQuadratureData(
     std::vector<Point<dim>>& quadrature_points,
     std::vector<std::vector<double>>& phi,
     std::vector<double>& weights
-){
+) const {
     // Compute constant gradients of P1 basis functions on this tetrahedral cell
     grad_phi.resize(dim + 1);
     double cellMeasure = cell.measure();
