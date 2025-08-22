@@ -1,6 +1,6 @@
 [problem]
 dimension = 1
-mesh_file = "mesh/line.msh"
+grid_size = 100
 output_file = "output/solution_1d"
 
 [quadrature]
@@ -9,9 +9,9 @@ type = "order2"
 [equation]
 # Equazione 1D: -d/dx(D * du/dx) + b * du/dx + sigma*u = f
 diffusion_coefficient = 1.0
-transport_coefficient = 0.2
+transport_coefficient = 0.0
 reaction_coefficient = 0.0
-forcing_function = "sin(pi*x)"
+forcing_function = "4*pi*pi*sin(2*pi*x)"
 
 # u(0) = 0 (Dirichlet al punto sinistro)
 [[boundary_conditions]]
@@ -23,7 +23,7 @@ function = "0.0"
 [[boundary_conditions]]
 type = "neumann"
 tag = 1
-function = "1.0"
+function = "2*pi*sin(2*pi*x)"
 
 [solver]
 tolerance = 1e-10

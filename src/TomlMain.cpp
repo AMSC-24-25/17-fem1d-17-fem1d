@@ -30,21 +30,12 @@ int main(int argc, char* argv[]) {
             std::unique_ptr<QuadratureRule<1>> quadrature = config.createQuadrature<1>();
 
             Fem<1> fem(grid, forcing, diffusion, transport, reaction, bc, *quadrature);
+            fem.assemble();
             fem.solve();
             
-            std::string filename = "../" + config.problem.output_file + ".csv";
-            std::ofstream file(filename);
-            if (file.is_open()) {
-                file << "x,solution\n";
-                //from auto to const Eigen::VectorXd&
-                const Eigen::VectorXd& solution = fem.getSolution();
-                for (int i = 0; i < grid.getN(); ++i) {
-                    double x = grid(i);
-                    file << x << "," << solution[i] << "\n";
-                }
-                file.close();
-            }
-            
+            fem.outputCsv("../" + config.problem.output_file + ".csv");
+            fem.outputVtu("../" + config.problem.output_file + ".vtu");
+
         } else if (config.problem.dimension == 2) {
             Grid2D grid = config.createGrid2D();
 
