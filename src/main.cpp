@@ -37,19 +37,20 @@ int main(int argc, char *argv[])
         Function<1,1> forcing(
             [](Point<1> p) -> double { //value
                 // return sin(2*PI*p[0]);
-                return -1;
+                return (4.0 * M_PI * M_PI * 2.0 + 5.0) * sin(2.0 * M_PI * p[0]) 
+                + 2.0 * M_PI * 4.0 * cos(2.0 * M_PI * p[0]);
             }
         );
 
         // Function<1,1> diffusion_term = OneFunction<1,1>();
-        Function<1,1> diffusion_term = Function<1,1>([](Point<1> p) -> double { return 1; });
-        Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 3; });
-        Function<1,1> reaction_term = Function<1,1>([](Point<1> p) -> double {return 0; });
+        Function<1,1> diffusion_term = Function<1,1>([](Point<1> p) -> double { return 2.0; });
+        Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 4.0; });
+        Function<1,1> reaction_term = Function<1,1>([](Point<1> p) -> double {return 5.0; });
     
 
         BoundaryConditions<1,1> boundary_conditions;
         boundary_conditions.addDirichlet(0, Point<1>(0.0));
-        boundary_conditions.addDirichlet(1, Point<1>(0.0));
+        boundary_conditions.addNeumann(1, Point<1>(2.0 * M_PI * 2.0));
 
         OrderTwoQuadrature<1> quadrature;
         Fem<1> fem(grid, forcing, diffusion_term, transport_term, reaction_term, boundary_conditions, quadrature);

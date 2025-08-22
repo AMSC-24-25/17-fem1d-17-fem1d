@@ -35,15 +35,21 @@ void BoundaryConditions<dim, returnDim>::apply(const Grid<dim>& mesh,
 
     std::cout << "Applying " << conditions.size() << " boundary conditions..." << std::endl;
 
+    std::vector<BoundaryCondition<dim, returnDim>> dirichletConditions;
+
     for (const BoundaryCondition<dim, returnDim>& condition : conditions) {
         switch (condition.getType()) {
             case BCType::DIRICHLET:
-                applyDirichlet(condition, mesh, A, rhs);
+                dirichletConditions.push_back(condition);
                 break;
             case BCType::NEUMANN:
                 applyNeumann(condition, mesh, A, rhs);
                 break;
         }
+    }
+
+    for (const BoundaryCondition<dim, returnDim>& dirichletCondition : dirichletConditions) {
+        applyDirichlet(dirichletCondition, mesh, A, rhs);
     }
 
     std::cout << "Boundary conditions applied successfully" << std::endl;

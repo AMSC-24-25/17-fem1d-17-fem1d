@@ -82,6 +82,12 @@ private:
                      SparseMat& A, VectorXd& rhs);
 };
 
+
+    // void applyNeumann(const BoundaryCondition<1,1>& bc,
+    //                 const Grid<1>& mesh,
+    //                 Eigen::SparseMatrix<double, Eigen::RowMajor>& /*A*/,
+    //                 Eigen::VectorXd& rhs);
+
 // =============================================================================
 // TEMPLATE IMPLEMENTATION
 // =============================================================================
