@@ -98,10 +98,10 @@ int main(int argc, char *argv[])
         boundary_conditions.addDirichlet(3, exactFunc);
 
         cout << "Boundary conditions:" << endl;
-        cout << "  Tag 0: Dirichlet u = 0.0" << endl;
-        cout << "  Tag 1: Dirichlet u = 0.0" << endl;
-        cout << "  Tag 2: Dirichlet u = 0.0" << endl;
-        cout << "  Tag 3: Dirichlet u = 0.0" << endl;
+        cout << "  Tag 0: Dirichlet u = exact" << endl;
+        cout << "  Tag 1: Dirichlet u = exact" << endl;
+        cout << "  Tag 2: Dirichlet u = exact" << endl;
+        cout << "  Tag 3: Dirichlet u = exact" << endl;
 
         Grid<2> grid;
         grid.parseFromMsh(argv[2]);
@@ -114,8 +114,6 @@ int main(int argc, char *argv[])
             double timeFactD1 = factor * cos(factor*t);
             double exact = std::sin(factor * (p[0] + p[1])) * timeFact;
             double exactDT = std::sin(factor * (p[0] + p[1])) * timeFactD1;
-            double exactD1_X = factor * std::cos(factor * (p[0] + p[1])) * timeFact;
-            double exactD1_Y = factor * std::cos(factor * (p[0] + p[1])) * timeFact;
             double exactD2_X = -factor*factor*std::sin(factor * (p[0] + p[1])) * timeFact;
             double exactD2_Y = -factor*factor*std::sin(factor * (p[0] + p[1])) * timeFact;
             return exactDT - (exactD2_X + exactD2_Y) + exact;
