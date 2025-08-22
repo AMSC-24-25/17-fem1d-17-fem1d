@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     else if (argv[1][0] == '3'){
         // 3D time-dependent case
         cout << "=== 3D Time-Dependent Problem Configuration ===" << endl;
-        
+
         // 1. Problem functions definition
         Function<3,1> diffusion([](Point<3> p) { return 1.0; });
         Function<3,1> reaction([](Point<3> p) { return 0.0; });
@@ -139,23 +139,53 @@ int main(int argc, char *argv[])
 
         // 2. Configure boundary conditions BEFORE mesh parsing
         BoundaryConditions_td<3,1> boundary_conditions;
-        
-        // Configuration: Dirichlet on all faces for manufactured solution
-        boundary_conditions.addDirichlet(0, 0.0);
-        boundary_conditions.addDirichlet(1, 0.0);
-        boundary_conditions.addDirichlet(2, 0.0);
-        boundary_conditions.addDirichlet(3, 0.0);
-        boundary_conditions.addDirichlet(4, 0.0);
-        boundary_conditions.addDirichlet(5, 0.0);
+
+        // Manufactured solution: u(x, y, z, t) = sin(2π x y z) * t
+        auto exact_sol = [](const Point<3>& p, double t) -> double {
+            return std::sin(2.0 * M_PI * p[0] * p[1] * p[2]) * t;
+        };
+
+        // Dirichlet su alcune facce (ad esempio tag 0, 1, 2)
+        boundary_conditions.addDirichlet(0, exact_sol);
+        boundary_conditions.addDirichlet(1, exact_sol);
+        boundary_conditions.addDirichlet(2, exact_sol);
+
+        boundary_conditions.addNeumann(5, [](const Point<3>& p, double t) {
+            double xyz = p[0]*p[1]*p[2];
+            double pi2 = 2.0*M_PI;
+            double cos_term = std::cos(pi2*xyz);
+            return pi2 * p[0]*p[1] * cos_term * t; // dudx
+        });
+        boundary_conditions.addNeumann(3, [](const Point<3>& p, double t) {
+            double xyz = p[0]*p[1]*p[2];
+            double pi2 = 2.0*M_PI;
+            double cos_term = std::cos(pi2*xyz);
+            return pi2 * p[0]*p[2] * cos_term * t; // dudy
+        });
+        boundary_conditions.addNeumann(4, [](const Point<3>& p, double t) {
+            double xyz = p[0]*p[1]*p[2];
+            double pi2 = 2.0*M_PI;
+            double cos_term = std::cos(pi2*xyz);
+            return -pi2 * p[0]*p[1] * cos_term * t; // dudz
+        });
+
+        // cout << "Boundary conditions configured:" << endl;
+        // cout << "  Physical tag 0 (back face): Dirichlet u = 0" << endl;
+        // cout << "  Physical tag 1 (front face): Dirichlet u = 0" << endl;
+        // cout << "  Physical tag 2 (left face): Dirichlet u = 0" << endl;
+        // cout << "  Physical tag 3 (right face): Dirichlet u = 0" << endl;
+        // cout << "  Physical tag 4 (bottom face): Dirichlet u = 0" << endl;
+        // cout << "  Physical tag 5 (top face): Neumann g = 1.0" << endl;
+        // cout << "NOTE: 'front' is considered as the face whose normal is (1, 0, 0)." << endl;
+
 
         cout << "Boundary conditions configured:" << endl;
-        cout << "  Physical tag 0 (back face): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 1 (front face): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 2 (left face): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 3 (right face): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 4 (bottom face): Dirichlet u = 0" << endl;
-        cout << "  Physical tag 5 (top face): Dirichlet u = 0" << endl;
-        cout << "NOTE: 'front' is considered as the face whose normal is (1, 0, 0)." << endl;
+        cout << "  Physical tag 0: Dirichlet u = exact" << endl;
+        cout << "  Physical tag 1: Dirichlet u = exact" << endl;
+        cout << "  Physical tag 2: Dirichlet u = exact" << endl;
+        cout << "  Physical tag 3: Neumann du/dn = exact" << endl;
+        cout << "  Physical tag 4: Neumann du/dn = exact" << endl;
+        cout << "  Physical tag 5: Neumann du/dn = exact" << endl;
 
         OrderTwoQuadrature<3> quadrature;
 
@@ -172,30 +202,20 @@ int main(int argc, char *argv[])
 
         // 5. Set manufactured solution forcing: u(x,y,z,t) = sin(2π x y z) * t
         femtd.set_forcing([](const Point<3>& p, double t) -> double {
-            // Manufactured solution: u(x, y, z, t) = sin(2π x y z) * t
             double xyz = p[0] * p[1] * p[2];
             double s = std::sin(2.0 * M_PI * xyz);
             double exact = s * t;
-            
-            // Compute Laplacian of sin(2π x y z)
             double pi2 = 2.0 * M_PI;
             double pi2_2 = pi2 * pi2;
-            
-            // First derivatives
             double dsdx = pi2 * p[1] * p[2] * std::cos(2.0 * M_PI * xyz);
             double dsdy = pi2 * p[0] * p[2] * std::cos(2.0 * M_PI * xyz);
             double dsdz = pi2 * p[0] * p[1] * std::cos(2.0 * M_PI * xyz);
-            
-            // Second derivatives
             double d2sdx2 = -pi2_2 * p[1] * p[1] * p[2] * p[2] * s;
             double d2sdy2 = -pi2_2 * p[0] * p[0] * p[2] * p[2] * s;
             double d2sdz2 = -pi2_2 * p[0] * p[0] * p[1] * p[1] * s;
-            
             double laplacian = d2sdx2 + d2sdy2 + d2sdz2;
             double exactD2 = t * laplacian;
             double exactDt = s; // time derivative
-            
-            // PDE: u_t - Δu + 0*u = f (reaction = 0)
             return exactDt - exactD2;
         });
 
