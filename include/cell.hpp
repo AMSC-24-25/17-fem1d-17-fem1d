@@ -33,8 +33,8 @@ struct Cell {
         }
         return nodes[i];
     }
-    const Point<dim>& getCell(unsigned int i) const{
-        return *this[i];
+    const Point<dim>& getNode(unsigned int i) const{
+        return (*this)[i];
     }
     const unsigned int& getNodeIndex(unsigned int i) const {
         if (i >= getN()) {
@@ -42,6 +42,9 @@ struct Cell {
             exit(-1);
         }
         return nodeIndices[i];
+    }
+    const NodeIndexes& getNodeIndexes() const {
+        return nodeIndices;
     }
     
     // Returns gradient of i-th barycentric shape function (constant on tetrahedra)
@@ -60,12 +63,7 @@ struct BoundaryCell : public Cell<dim+1> {
     : Cell<dim+1>(nodes_, nodeIndices_), boundary_id(boundary_id_) {};
     BoundaryCell() = default;
 
-    // Aggiungi metodi mancanti
-    const NodeIndexes& getNodeIndexes() const {
-        return this->nodeIndices;
-    }
-
-    int getBoundaryId() const {
+    unsigned int getBoundaryId() const {
         return boundary_id;
     }
 };

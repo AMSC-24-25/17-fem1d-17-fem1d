@@ -8,7 +8,7 @@ void BoundaryConditions<3, 1>::applyNeumann(
     SparseMat& A, VectorXd& rhs) {
     
     // Ottieni le facce di bordo con il tag fisico specifico
-    auto boundaryFaces = mesh.getBoundaryFacesByTag(bc.getBoundaryId());
+    auto boundaryFaces = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
     std::cout << "  Applicando condizione di Neumann 3D su tag " << bc.getBoundaryId()
               << " (" << boundaryFaces.size() << " facce)" << std::endl;
     
@@ -41,7 +41,7 @@ void BoundaryConditions<2, 1>::applyNeumann(
     SparseMat& A, VectorXd& rhs) {
     
     // Ottieni gli edge di bordo con il tag fisico specifico
-    auto boundaryEdges = mesh.getBoundaryEdgesByTag(bc.getBoundaryId());
+    auto boundaryEdges = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
     std::cout << "  Applicando condizione di Neumann su tag " << bc.getBoundaryId()
               << " (" << boundaryEdges.size() << " edge)" << std::endl;
     
@@ -71,13 +71,14 @@ void BoundaryConditions<1,1>::applyNeumann(
     SparseMat& A, VectorXd& rhs) {
     
     std::cout << "  Applicando condizione di Neumann 1D su tag " << bc.getBoundaryId() << std::endl;
-    
-    unsigned int node_index = mesh.getBoundaryNodesByTag(bc.getBoundaryId())[0];
-    double node = mesh.getNode(node_index);
+
+    const BoundaryCell<0> boundaryCell = mesh.getBoundaryCellsByTag(bc.getBoundaryId())[0];
+    unsigned int node_index = boundaryCell.getNodeIndex(0);
+    double node = boundaryCell.getNode(0);
 
     // ∂u/∂n = -∂u/∂x at x = 0 (outward normal points left)
     // ∂u/∂n = ∂u/∂x at x = L (outward normal points right)
     double sign = (node_index == 0) ? -1.0 : 1.0;
     double neumannValue = sign * bc.getBoundaryFunction().value(node);
-    rhs[node_index] -= neumannValue * 0.5; // Factor 0.5 comes from FEM integration
+    rhs[node_index] -= neumannValue * boundaryCell.measure()/2.0;
 }

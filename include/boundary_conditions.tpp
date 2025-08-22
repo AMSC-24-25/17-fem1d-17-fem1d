@@ -101,7 +101,7 @@ void BoundaryConditions<dim, returnDim>::applyDirichlet(
  * 
  * void applyNeumann3D(const BoundaryCondition<3,1>& bc, const Grid3D& mesh, 
  *                     SparseMat& A, VectorXd& rhs) {
- *     auto boundaryFaces = mesh.getBoundaryFacesByTag(bc.getBoundaryId());
+ *     auto boundaryFaces = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
  *     GaussLegendre2D quadrature;
  *     
  *     for (const auto& face : boundaryFaces) {
