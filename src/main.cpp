@@ -37,12 +37,18 @@ int main(int argc, char *argv[])
         
         Grid1D grid(0, atof(argv[2]), atoi(argv[3]));
 
-        // Diffusione = 1
-        Function<1,1> diffusion_term = Function<1,1>([](Point<1> p) { return 1.0; });
-        // Niente trasporto
-        Function<1,1> transport_term = Function<1,1>([](Point<1> p) { return 0.0; });
-        // Niente reazione
-        Function<1,1> reaction_term = Function<1,1>([](Point<1> p) { return 0.0; });
+        Function<1,1> forcing(
+            [](Point<1> p) -> double { //value
+                // return sin(2*PI*p[0]);
+                return (4.0 * M_PI * M_PI * 2.0 + 5.0) * sin(2.0 * M_PI * p[0]) 
+                + 2.0 * M_PI * 4.0 * cos(2.0 * M_PI * p[0]);
+            }
+        );
+
+        // Function<1,1> diffusion_term = OneFunction<1,1>();
+        Function<1,1> diffusion_term = Function<1,1>([](Point<1> p) -> double { return 8.0; });
+        Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 0.5; });
+        Function<1,1> reaction_term = Function<1,1>([](Point<1> p) -> double {return 2.0; });
 
         BoundaryConditions_td<1,1> boundary_conditions;
         boundary_conditions.addDirichlet(0, [](Point<1> p, double t) -> double { return 0; });
@@ -52,12 +58,14 @@ int main(int argc, char *argv[])
         FemTD<1> femtd(grid, diffusion_term, transport_term, reaction_term, boundary_conditions, quadrature);
 
         femtd.set_forcing([](const Point<1>& p, double t) {
-            return p[0]; // f(x,t) = q * x, con q = 1
+            double exact = std::sin(2.0 * M_PI * p[0]) * t;
+            double exactD1 = 2*M_PI*std::cos(2.0 * M_PI * p[0]) * t;
+            double exactD2 = -4*M_PI*M_PI*std::sin(2.0 * M_PI * p[0]) * t;
+            return 8*exactD2 + 0.5*exactD1 + 2*exact;
         });
 
-        // Condizione iniziale
         femtd.set_initial_condition(Function<1,1>([](const Point<1>& p){
-            return 0.0; // u(x,0) = 0
+            return 0;
         }));
 
         const double T = 1.0;     // tempo finale
@@ -70,28 +78,14 @@ int main(int argc, char *argv[])
     }
     else if (argv[1][0] == '2') {
         // 2D case
-        Function<2,1> forcing([](Point<2> p) { 
-            return (-1.0*p[1]) + (-1.0*p[0]) + 1.0*p[0] * p[1];
-        });
-        
         BoundaryConditions_td<2,1> boundary_conditions;
         Function<2,1> diffusion([](Point<2> p) { return 1.0; });
         Function<2,1> reaction([](Point<2> p) { return 1.0; });
         Function<2,2> transport([](Point<2> p) { return Point<2>(-0.0, -0.0); });
 
-    // Forzante identicamente nulla (tutta la dinamica viene dai BC)
-    Function<2,1> forcing([](Point<2>) { return 0.0; });
+        // 2. Configurazione delle condizioni al contorno PRIMA del parsing
 
-    // Boundary conditions:
-    // - Dirichlet u=0 su due lati (tag 0 e 2)
-    // - Neumann costante q=+1 su un lato (tag 1)
-    // - Neumann omogenea q=0 sull'ultimo lato (tag 3)
-    const double q = 1.0;  // flusso costante
-    BoundaryConditions<2,1> boundary_conditions;
-    boundary_conditions.addDirichlet(0, Function<2,1>([](Point<2>) { return 0.0; }));
-    boundary_conditions.addNeumann (1, Function<2,1>([&](Point<2>) { return q; }));
-    boundary_conditions.addDirichlet(2, Function<2,1>([](Point<2>) { return 0.0; }));
-    boundary_conditions.addNeumann (3, Function<2,1>([](Point<2>) { return 0.0; }));
+        OrderTwoQuadrature<2> quadrature;
 
         fun_td<2,1> exactFunc = [](Point<2> p, double t) -> double {
             return std::sin(2.0 * M_PI * p[0] * p[1]) * t;
@@ -103,27 +97,37 @@ int main(int argc, char *argv[])
         boundary_conditions.addDirichlet(2, exactFunc);
         boundary_conditions.addDirichlet(3, exactFunc);
 
-    OrderTwoQuadrature<2> quadrature;
+        cout << "Boundary conditions:" << endl;
+        cout << "  Tag 0: Dirichlet u = 0.0" << endl;
+        cout << "  Tag 1: Dirichlet u = 0.0" << endl;
+        cout << "  Tag 2: Dirichlet u = 0.0" << endl;
+        cout << "  Tag 3: Dirichlet u = 0.0" << endl;
 
-    // Solver TD
-    FemTD<2> femtd(grid, diffusion, transport, reaction, boundary_conditions, quadrature);
+        Grid<2> grid;
+        grid.parseFromMsh(argv[2]);
 
-    // f(x,t) = 0 (coerente con i coefficienti sopra)
-    femtd.set_forcing([](const Point<2>&, double){ return 0.0; });
+        FemTD<2> femtd(grid, diffusion, transport, reaction, boundary_conditions, quadrature);
 
-    // IC: u(x,y,0)=0
-    femtd.set_initial_condition(Function<2,1>([](const Point<2>&){ return 0.0; }));
+        femtd.set_forcing([](const Point<2>& p, double t) -> double {
+            double exact = std::sin(2.0 * M_PI * p[0] * p[1]) * t;
+            double exactD2 = -4*M_PI*M_PI*std::sin(2.0 * M_PI * p[0] * p[1]) * t;
+            return 1*exactD2 + 1*exact;
+        });
 
-    // Pre-assemblaggi e run
-    femtd.assemble_time_invariant();
+        femtd.set_initial_condition(Function<2,1>([](const Point<2>&){
+            return 0.0;
+        }));
 
-    const double T = 1.0;     // tempo finale
-    const double dt = 1e-2;   // passo
-    const double theta = 1.0; // implicito (robusto con flussi)
+        // Pre-assembla M e K (tempo-indipendenti)
+        femtd.assemble_time_invariant();
 
-    femtd.run(T, dt, theta, /*vtu_prefix*/ "output/u2d_neumann", /*csv_prefix*/ "");
-}
+        const double T = 1.0;     // tempo finale
+        const double dt = 1e-2;   // passo
+        const double theta = 0.5; // 0=Esplicito, 1=Implicit Euler, 0.5=Crank–Nicolson
 
+        // Output file prefix (facoltativi)
+        femtd.run(T, dt, theta, /*vtu_prefix*/ "output/u", /*csv_prefix*/ "");
+    }
     else if (argv[1][0] == '3'){
         // 3D time-dependent case
         cout << "=== 3D Time-Dependent Problem Configuration ===" << endl;
@@ -134,15 +138,15 @@ int main(int argc, char *argv[])
         Function<3,3> transport([](Point<3> p) { return Point<3>(0.0, 0.0, 0.0); });
 
         // 2. Configure boundary conditions BEFORE mesh parsing
-        BoundaryConditions<3,1> boundary_conditions;
+        BoundaryConditions_td<3,1> boundary_conditions;
         
         // Configuration: Dirichlet on all faces for manufactured solution
-        boundary_conditions.addDirichlet(0, Point<1>(0.0));
-        boundary_conditions.addDirichlet(1, Point<1>(0.0));
-        boundary_conditions.addDirichlet(2, Point<1>(0.0));
-        boundary_conditions.addDirichlet(3, Point<1>(0.0));
-        boundary_conditions.addDirichlet(4, Point<1>(0.0));
-        boundary_conditions.addDirichlet(5, Point<1>(0.0));
+        boundary_conditions.addDirichlet(0, 0.0);
+        boundary_conditions.addDirichlet(1, 0.0);
+        boundary_conditions.addDirichlet(2, 0.0);
+        boundary_conditions.addDirichlet(3, 0.0);
+        boundary_conditions.addDirichlet(4, 0.0);
+        boundary_conditions.addDirichlet(5, 0.0);
 
         cout << "Boundary conditions configured:" << endl;
         cout << "  Physical tag 0 (back face): Dirichlet u = 0" << endl;
