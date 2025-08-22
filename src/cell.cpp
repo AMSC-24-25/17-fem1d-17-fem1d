@@ -68,29 +68,24 @@ Point<1> Cell<1>::barycentricGradient(int i) const {
 // Returns gradient of i-th barycentric shape function (constant on triangles)
 template<>
 Point<2> Cell<2>::barycentricGradient(int i) const {
+    if (getN() != 3) {
+        std::cerr << "Cell must be a triangle\n";
+        exit(-1);
+    }
     const Cell<2>& cell = *this;
+    const Point<2>& A = cell[0];
+    const Point<2>& B = cell[1];
+    const Point<2>& C = cell[2];
+    double area2 = measure() * 2.0; // 2 * area
 
-    double detT = measure()*2;
-    if (std::abs(detT) < 1e-15) {
-        std::cerr << "WARNING: Degenerate triangle in barycentricGradient\n";
-        return Point<2>(0,0);
-    }
-    if (i >= 0 && i < 3) {
-    // Indices of the nodes opposite to i
-        unsigned int idx[2];
-        int count = 0;
-        for (int j = 0; j < 3; ++j) {
-            if (j != i) idx[count++] = j;
-        }
-        Point<2> oppositeSide = cell[idx[1]] - cell[idx[0]];
+    if (i == 0)
+        return Point<2>((B[1] - C[1]) / area2, (C[0] - B[0]) / area2);
+    else if (i == 1)
+        return Point<2>((C[1] - A[1]) / area2, (A[0] - C[0]) / area2);
+    else if (i == 2)
+        return Point<2>((A[1] - B[1]) / area2, (B[0] - A[0]) / area2);
 
-        return Point<2>(
-            std::vector<double>{
-                (oppositeSide[1]) / detT, 
-                -(oppositeSide[0]) / detT
-            });
-    }
-    std::cerr << "Invalid shape function index in barycentricGradient\n";
+    std::cerr << "Indice shape function non valido in barycentricGradient\n";
     exit(-1);
 }
 

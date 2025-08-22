@@ -68,7 +68,8 @@ int main(int argc, char *argv[])
     else if (argv[1][0] == '2') {
     // 2D case
         Function<2,1> forcing([](Point<2> p) { 
-            return 2.0*(p[0] + p[1]) - 2.0*(p[0]*p[0] + p[1]*p[1]);
+            // return 2.0*(p[0] + p[1]) - 2.0*(p[0]*p[0] + p[1]*p[1]);
+            return 0.0;
         });
         
         BoundaryConditions<2,1> boundary_conditions;
@@ -80,15 +81,16 @@ int main(int argc, char *argv[])
 
         OrderTwoQuadrature<2> quadrature;
 
-    // Test Neumann: normal flux specified on the top side
-        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { 
-            return sin(EIGEN_PI * p[0]);  // Flusso sinusoidale lungo x
-        }));
-    // Configuration with a mix of Dirichlet and Neumann
-        boundary_conditions.addDirichlet(0, Point<1>(0.0));
-        boundary_conditions.addDirichlet(1, Point<1>(0.0));
-        boundary_conditions.addDirichlet(2, Point<1>(0.0));
-        boundary_conditions.addDirichlet(3, Point<1>(0.0));
+        // Test Neumann: flusso normale specificato sul lato superiore
+        // boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { 
+        //     return sin(EIGEN_PI * p[0]);  // Flusso sinusoidale lungo x
+        // }));
+        // Configurazione con mix di Dirichlet e Neumann
+        Function<2,1> fDirichlet([](Point<2> p) { return p[0] + p[1]; });
+        boundary_conditions.addDirichlet(0, fDirichlet);
+        boundary_conditions.addDirichlet(1, fDirichlet);
+        boundary_conditions.addDirichlet(2, fDirichlet);
+        boundary_conditions.addDirichlet(3, fDirichlet);
 
     // Test functions at some points
         Point<2> test_points[3] = {Point<2>(0.5, 0.5), Point<2>(0.2, 0.8), Point<2>(0.7, 0.3)};

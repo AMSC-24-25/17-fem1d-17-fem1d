@@ -1,6 +1,6 @@
 [problem]
 dimension = 2
-mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
+mesh_file = "../mesh/mesh-square-h0.012500_gmsh22.msh"
 output_file = "output/solution_2d"
 
 [quadrature]
@@ -11,29 +11,29 @@ type = "order2"
 diffusion_coefficient = 1.0
 transport_coefficient = 0.0
 reaction_coefficient = 0.0
-forcing_function = "1"
+forcing_function = "0"
 
 # Condizioni di Dirichlet: u = 0 sui bordi 0, 1, 2, 3
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 0
-function = "0.0"
+function = "x+y"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 1
-function = "0.0"
+function = "x+y"
 
 [[boundary_conditions]]
 type = "dirichlet" 
 tag = 2
-function = "0.0"
+function = "x+y"
 
 # Condizione di Neumann: du/dn = 1 sul bordo 3
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 3
-function = "0.0"
+function = "x+y"
 
 [solver]
 tolerance = 1e-12
