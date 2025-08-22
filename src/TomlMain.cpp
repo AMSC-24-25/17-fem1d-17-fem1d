@@ -16,12 +16,18 @@ int main(int argc, char* argv[]) {
         
         if (config.problem.dimension == 1) {
             Grid1D grid = config.createGrid1D();
-            auto forcing = config.createForcingFunction<1>();
-            auto diffusion = config.createDiffusionFunction<1>();
-            auto transport = config.createTransportFunction1D();
-            auto reaction = config.createReactionFunction<1>();
-            auto bc = config.createBoundaryConditions<1>();
-            auto quadrature = config.createQuadrature<1>();
+
+            //from auto to Function<1,1>
+            Function<1,1> forcing = config.createForcingFunction<1>();
+            Function<1,1> diffusion = config.createDiffusionFunction<1>();
+            Function<1,1> transport = config.createTransportFunction1D();
+            Function<1,1> reaction = config.createReactionFunction<1>();
+
+            //from auto to BoundaryConditions<1,1>
+            BoundaryConditions<1,1> bc = config.createBoundaryConditions<1>();
+
+            //from auto to std::unique_ptr<QuadratureRule<1>>
+            std::unique_ptr<QuadratureRule<1>> quadrature = config.createQuadrature<1>();
 
             Fem<1> fem(grid, forcing, diffusion, transport, reaction, bc, *quadrature);
             fem.solve();
@@ -30,7 +36,8 @@ int main(int argc, char* argv[]) {
             std::ofstream file(filename);
             if (file.is_open()) {
                 file << "x,solution\n";
-                auto solution = fem.getSolution();
+                //from auto to const Eigen::VectorXd&
+                const Eigen::VectorXd& solution = fem.getSolution();
                 for (int i = 0; i < grid.getN(); ++i) {
                     double x = grid(i);
                     file << x << "," << solution[i] << "\n";
@@ -40,12 +47,18 @@ int main(int argc, char* argv[]) {
             
         } else if (config.problem.dimension == 2) {
             Grid2D grid = config.createGrid2D();
-            auto forcing = config.createForcingFunction<2>();
-            auto diffusion = config.createDiffusionFunction<2>();
-            auto transport = config.createTransportFunction2D();
-            auto reaction = config.createReactionFunction<2>();
-            auto bc = config.createBoundaryConditions<2>();
-            auto quadrature = config.createQuadrature<2>();
+
+            //from auto to Function<2,1>
+            Function<2,1> forcing = config.createForcingFunction<2>();
+            Function<2,1> diffusion = config.createDiffusionFunction<2>();
+            Function<2,2> transport = config.createTransportFunction2D();
+            Function<2,1> reaction = config.createReactionFunction<2>();
+
+            //from auto to BoundaryConditions<2,1>
+            BoundaryConditions<2,1> bc = config.createBoundaryConditions<2>();
+
+            //from auto to std::unique_ptr<QuadratureRule<2>>
+            std::unique_ptr<QuadratureRule<2>> quadrature = config.createQuadrature<2>();
 
             // Test delle funzioni in alcuni punti
             Point<2> test_points[3] = {Point<2>(0.5, 0.5), Point<2>(0.2, 0.8), Point<2>(0.7, 0.3)};
@@ -61,7 +74,8 @@ int main(int argc, char* argv[]) {
             
             // Print boundary conditions
             std::cout << "Boundary conditions:" << std::endl;
-            for (const auto& boundary : config.boundary_conditions) {
+            //from const auto& to const BCConfig&
+            for (const BCConfig& boundary : config.boundary_conditions) {
                 std::cout << "  Tag " << boundary.tag << ": " << boundary.type << " = " << boundary.function << std::endl;
             }
 
@@ -74,12 +88,18 @@ int main(int argc, char* argv[]) {
             
         } else if (config.problem.dimension == 3) {
             Grid3D grid = config.createGrid3D();
-            auto forcing = config.createForcingFunction<3>();
-            auto diffusion = config.createDiffusionFunction<3>();
-            auto transport = config.createTransportFunction3D();
-            auto reaction = config.createReactionFunction<3>();
-            auto bc = config.createBoundaryConditions<3>();
-            auto quadrature = config.createQuadrature<3>();
+
+            //from auto to Function<3,1>
+            Function<3,1> forcing = config.createForcingFunction<3>();
+            Function<3,1> diffusion = config.createDiffusionFunction<3>();
+            Function<3,3> transport = config.createTransportFunction3D();
+            Function<3,1> reaction = config.createReactionFunction<3>();
+
+            //from auto to BoundaryConditions<3,1>
+            BoundaryConditions<3,1> bc = config.createBoundaryConditions<3>();
+
+            //from auto to std::unique_ptr<QuadratureRule<3>>
+            std::unique_ptr<QuadratureRule<3>> quadrature = config.createQuadrature<3>();
 
             // Test delle funzioni in alcuni punti
             Point<3> test_points[3] = {Point<3>(0.5, 0.5, 0.5), Point<3>(0.2, 0.8, 0.3), Point<3>(0.7, 0.3, 0.9)};
@@ -94,7 +114,8 @@ int main(int argc, char* argv[]) {
             }
 
             // Print boundary conditions
-            for (const auto& boundary : config.boundary_conditions) {
+            //from const auto& to const BCConfig&
+            for (const BCConfig& boundary : config.boundary_conditions) {
                 std::cout << "  Tag " << boundary.tag << ": " << boundary.type << " = " << boundary.function << std::endl;
             }
 

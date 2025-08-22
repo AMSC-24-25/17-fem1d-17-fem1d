@@ -18,17 +18,20 @@ Config Config::loadFromFile(const std::string& filename) {
     
     try {
         // Parse TOML file with toml11 v4 - molto più semplice!
-        const auto data = toml::parse(filename);
+        //from auto to toml::value
+        const toml::value data = toml::parse(filename);
         
         // Parse problem section
-        const auto& problem = toml::find(data, "problem");
+        //from const auto& to const toml::value&
+        const toml::value& problem = toml::find(data, "problem");
         config.problem.dimension = toml::find_or(problem, "dimension", 2);
         config.problem.mesh_file = toml::find_or(problem, "mesh_file", std::string("mesh/default.msh"));
         config.problem.output_file = toml::find_or(problem, "output_file", std::string("output/solution"));
         config.problem.grid_size = toml::find_or(problem, "grid_size", 100);
         
         // Parse equation section - unified approach: everything is a function
-        const auto& equation = toml::find(data, "equation");
+        //from const auto& to const toml::value&
+        const toml::value& equation = toml::find(data, "equation");
         
         // Read as functions first, fallback to coefficient values
         config.equation.diffusion_function = toml::find_or(equation, "diffusion_function", 
@@ -40,15 +43,18 @@ Config Config::loadFromFile(const std::string& filename) {
         config.equation.forcing_function = toml::find_or(equation, "forcing_function", std::string("0.0"));
         
         // Parse solver section
-        const auto& solver = toml::find(data, "solver");
+        //from const auto& to const toml::value&
+        const toml::value& solver = toml::find(data, "solver");
         config.solver.tolerance = toml::find_or(solver, "tolerance", 1e-12);
         config.solver.max_iterations = toml::find_or(solver, "max_iterations", 1000);
         config.solver.method = toml::find_or(solver, "method", std::string("direct"));
         
         // Parse boundary conditions (arrays) - molto più elegante!
         if (data.contains("boundary_conditions")) {
-            const auto& bcs = toml::find(data, "boundary_conditions").as_array();
-            for (const auto& bc_toml : bcs) {
+            //from const auto& to const toml::array&
+            const toml::array& bcs = toml::find(data, "boundary_conditions").as_array();
+            //from const auto& to const toml::value&
+            for (const toml::value& bc_toml : bcs) {
                 BCConfig bc;
                 bc.tag = toml::find<int>(bc_toml, "tag");
                 bc.function = toml::find<std::string>(bc_toml, "function");
@@ -61,7 +67,8 @@ Config Config::loadFromFile(const std::string& filename) {
         }
 
         if (data.contains("quadrature")) {
-            const auto& quad = toml::find(data, "quadrature");
+            //from const auto& to const toml::value&
+            const toml::value& quad = toml::find(data, "quadrature");
             std::string qtype = toml::find_or(quad, "type", std::string("order2"));
             std::transform(qtype.begin(), qtype.end(), qtype.begin(), ::tolower);
             config.quadrature.type = qtype;
@@ -137,7 +144,8 @@ void Config::print() const {
     
     std::cout << "Boundary Conditions:" << std::endl;
     for (size_t i = 0; i < boundary_conditions.size(); ++i) {
-        const auto& bc = boundary_conditions[i];
+        //from const auto& to const BCConfig&
+        const BCConfig& bc = boundary_conditions[i];
         std::cout << "  BC " << i+1 << ": ";
         std::cout << (bc.type == BCConfig::DIRICHLET ? "Dirichlet" : "Neumann");
         std::cout << " on tag " << bc.tag;
@@ -234,7 +242,8 @@ Function<1,1> Config::createTransportFunction1D() const {
 
 Function<2,2> Config::createTransportFunction2D() const {
     // Parse as scalar and assume transport in x direction
-    auto scalarFunc = parseSimpleFunction<2>(equation.transport_function);
+    // from auto to Function<2,1>
+    Function<2,1> scalarFunc = parseSimpleFunction<2>(equation.transport_function);
     return Function<2,2>([scalarFunc](Point<2> p) { 
         double coeff = scalarFunc(p);
         return Point<2>(coeff, 0.0);  // transport in x direction
@@ -243,7 +252,8 @@ Function<2,2> Config::createTransportFunction2D() const {
 
 Function<3,3> Config::createTransportFunction3D() const {
     // Parse as scalar and assume transport in x direction
-    auto scalarFunc = parseSimpleFunction<3>(equation.transport_function);
+    //from auto to Function<3,1>
+    Function<3,1> scalarFunc = parseSimpleFunction<3>(equation.transport_function);
     return Function<3,3>([scalarFunc](Point<3> p) { 
         double coeff = scalarFunc(p);
         return Point<3>(coeff, 0.0, 0.0);  // transport in x direction
@@ -253,8 +263,9 @@ Function<3,3> Config::createTransportFunction3D() const {
 template<unsigned int dim>
 BoundaryConditions<dim,1> Config::createBoundaryConditions() const {
     BoundaryConditions<dim,1> bc;
-    
-    for (const auto& bcConfig : boundary_conditions) {
+
+    //from const auto& to const BCConfig&
+    for (const BCConfig& bcConfig : boundary_conditions) {
         Function<dim,1> func = parseSimpleFunction<dim>(bcConfig.function);
         
         if (bcConfig.type == BCConfig::DIRICHLET) {
