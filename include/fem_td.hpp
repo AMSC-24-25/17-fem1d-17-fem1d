@@ -8,7 +8,7 @@
 #include "point.hpp"
 #include "function.hpp"
 #include "quadrature.hpp"
-#include "boundary_conditions.hpp"
+#include "boundary_conditions_td.hpp"
 
 using SparseMat = Eigen::SparseMatrix<double, Eigen::RowMajor>;
 using Triplet   = Eigen::Triplet<double>;
@@ -28,7 +28,7 @@ public:
           Function<dim,1> diffusion,
           Function<dim,dim> transport,
           Function<dim,1> reaction,
-          const BoundaryConditions<dim,1>& bc,
+          const BoundaryConditions_td<dim,1>& bc,
           QuadratureRule<dim> quadrature);
 
     // Impostazioni
@@ -58,7 +58,7 @@ private:
     Function<dim,1>           diffusion_;    // μ(x)
     Function<dim,dim>         transport_;    // b(x)
     Function<dim,1>           reaction_;     // r(x)
-    BoundaryConditions<dim,1> bc_;
+    BoundaryConditions_td<dim,1> bc_;
     mutable QuadratureRule<dim>       quad_; // ← Aggiunto mutable qui
 
     ForcingTD                 forcing_td_;   // f(x,t)

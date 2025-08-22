@@ -9,8 +9,6 @@
 template <unsigned int dim, unsigned int returnDim>
 class Function
 {
-
-    // from: using fun = std::function<double(const Point<dim>&)>;
     using fun = std::function<Point<returnDim>(const Point<dim> &)>;
 
 public:

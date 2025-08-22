@@ -1,8 +1,8 @@
-#pragma once
 #ifndef FUNCTION_TPP
 #define FUNCTION_TPP
 
 #include <stdexcept>
+#include "function.hpp"
 
 template <unsigned int dim>
 Function<dim, 1> Function<dim, 1>::operator+(const Function<dim, 1> &f) const

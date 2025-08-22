@@ -9,7 +9,7 @@ FemTD<dim>::FemTD(Grid<dim> grid,
                   Function<dim,1> diffusion,
                   Function<dim,dim> transport,
                   Function<dim,1> reaction,
-                  const BoundaryConditions<dim,1>& bc,
+                  const BoundaryConditions_td<dim,1>& bc,
                   QuadratureRule<dim> quadrature)
 : mesh_(std::move(grid))
 , diffusion_(std::move(diffusion))
@@ -174,7 +174,7 @@ double FemTD<dim>::step(double t_new, double dt, double theta) {
          + theta * f_new + (1.0 - theta) * f_old;
 
     // BC al passo
-    bc_.apply(mesh_, A_, rhs_);
+    bc_.apply(mesh_, A_, rhs_, t_new);
 
     // solve
     if (A_.nonZeros() < 10000) {

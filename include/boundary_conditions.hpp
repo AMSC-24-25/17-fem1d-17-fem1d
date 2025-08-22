@@ -3,6 +3,7 @@
 
 #include "function.hpp"
 #include "point.hpp"
+#include "bctype.hpp"
 #include "grid1D.hpp"
 #include "grid.hpp"
 #include <Eigen/Sparse>
@@ -10,16 +11,6 @@
 
 using Eigen::VectorXd;
 using SparseMat = Eigen::SparseMatrix<double, Eigen::RowMajor>;
-
-// =============================================================================
-// ENUMS AND BASIC STRUCTURES
-// =============================================================================
-
-/// Enum for the type of boundary condition
-enum class BCType {
-    DIRICHLET,  ///< u = specified value
-    NEUMANN     ///< du/dn = specified value
-};
 
 // Single boundary condition
 template<unsigned int dim, unsigned int returnDim>

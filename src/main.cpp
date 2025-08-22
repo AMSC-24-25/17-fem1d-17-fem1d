@@ -4,6 +4,7 @@
 #include "fem_td.hpp"            // la classe time-dependent che ti ho dato
 #include "grid.hpp"
 #include "boundary_conditions.hpp"
+#include "boundary_conditions_td.hpp"
 
 using std::cout;
 using std::endl;
@@ -49,13 +50,12 @@ int main(int argc, char *argv[])
         Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 0.5; });
         Function<1,1> reaction_term = Function<1,1>([](Point<1> p) -> double {return 2.0; });
 
-        BoundaryConditions<1,1> boundary_conditions;
-        boundary_conditions.addDirichlet(0, Function<1,1>([](Point<1> p) -> double { return 0; }));
-        boundary_conditions.addNeumann(1, Function<1,1>([](Point<1> p) -> double { return 0; }));
+        BoundaryConditions_td<1,1> boundary_conditions;
+        boundary_conditions.addDirichlet(0, [](Point<1> p, double t) -> double { return 0; });
+        boundary_conditions.addNeumann(1, [](Point<1> p, double t) -> double { return 2*M_PI*std::cos(2.0 * M_PI * p[0]) * t; });
 
         OrderTwoQuadrature<1> quadrature;
         FemTD<1> femtd(grid, diffusion_term, transport_term, reaction_term, boundary_conditions, quadrature);
-
 
         femtd.set_forcing([](const Point<1>& p, double t) {
             double exact = std::sin(2.0 * M_PI * p[0]) * t;
@@ -68,9 +68,6 @@ int main(int argc, char *argv[])
             return 0;
         }));
 
-        // Pre-assembla M e K (tempo-indipendenti)
-        femtd.assemble_time_invariant();
-
         const double T = 1.0;     // tempo finale
         const double dt = 0.025;   // passo
         const double theta = 1; // 0=Esplicito, 1=Implicit Euler, 0.5=Crank–Nicolson
@@ -78,7 +75,6 @@ int main(int argc, char *argv[])
         // Output file prefix (facoltativi)
         femtd.run(T, dt, theta, /*vtu_prefix*/ "output/u", /*csv_prefix*/ "");
         // system("python ../scripts/plot_sol.py");
-    
     }
     else if (argv[1][0] == '2') {
         // 2D case
@@ -86,7 +82,7 @@ int main(int argc, char *argv[])
             return (-1.0*p[1]) + (-1.0*p[0]) + 1.0*p[0] * p[1];
         });
         
-        BoundaryConditions<2,1> boundary_conditions;
+        BoundaryConditions_td<2,1> boundary_conditions;
         Function<2,1> diffusion([](Point<2> p) { return 1.0; });
         Function<2,1> reaction([](Point<2> p) { return 1.0; });
         Function<2,2> transport([](Point<2> p) { return Point<2>(-0.0, -0.0); });
@@ -95,11 +91,15 @@ int main(int argc, char *argv[])
 
         OrderTwoQuadrature<2> quadrature;
 
+        fun_td<2,1> exactFunc = [](Point<2> p, double t) -> double {
+            return std::sin(2.0 * M_PI * p[0] * p[1]) * t;
+        };
+
         // Configurazione con mix di Dirichlet e Neumann
-        boundary_conditions.addDirichlet(0, Point<1>(0.0));
-        boundary_conditions.addDirichlet(1, Point<1>(0.0));
-        boundary_conditions.addDirichlet(2, Point<1>(0.0));
-        boundary_conditions.addDirichlet(3, Point<1>(0.0));
+        boundary_conditions.addDirichlet(0, exactFunc);
+        boundary_conditions.addDirichlet(1, exactFunc);
+        boundary_conditions.addDirichlet(2, exactFunc);
+        boundary_conditions.addDirichlet(3, exactFunc);
 
         cout << "Boundary conditions:" << endl;
         cout << "  Tag 0: Dirichlet u = 0.0" << endl;
