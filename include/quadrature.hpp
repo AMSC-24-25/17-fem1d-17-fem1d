@@ -102,9 +102,9 @@ public:
     GaussLegendre2D() {
     // Quadrature points on reference triangle (order 2, exact for degree 2 polynomials)
     points = {{1.0/6.0, 1.0/6.0},    // point 1: (1/6, 1/6) - barycentric coordinates (2/3, 1/6, 1/6)
-          {2.0/3.0, 1.0/6.0},    // point 2: (2/3, 1/6) - barycentric coordinates (1/6, 2/3, 1/6)
-          {1.0/6.0, 2.0/3.0}};   // point 3: (1/6, 2/3) - barycentric coordinates (1/6, 1/6, 2/3)
-    w = {1.0/6.0, 1.0/6.0, 1.0/6.0}; // Weights (sum to 1/2, area of reference triangle)
+              {2.0/3.0, 1.0/6.0},    // point 2: (2/3, 1/6) - barycentric coordinates (1/6, 2/3, 1/6)
+              {1.0/6.0, 2.0/3.0}};   // point 3: (1/6, 2/3) - barycentric coordinates (1/6, 1/6, 2/3)
+    w = {1.0/3.0, 1.0/3.0, 1.0/3.0}; // Weights (sum to 1, area of reference triangle with vertices (0,0), (1,0), (0,1))
     }
     
     // Main method to obtain quadrature data on a face
