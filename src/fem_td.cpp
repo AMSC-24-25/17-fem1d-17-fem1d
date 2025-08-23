@@ -252,7 +252,7 @@ void FemTD<dim>::run(double T, double dt, double theta,
 
     double t = 0.0;
     unsigned step_id = 0;
-    while (t < T - 1e-14) {
+    while (t < T - dt/2.0) {
         t += dt;
         ++step_id;
         const double change = step(t, dt, theta);

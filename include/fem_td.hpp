@@ -35,9 +35,6 @@ public:
     void set_forcing(ForcingTD f_td);                 // f(x,t)
     void set_initial_condition(Function<dim,1> u0);   // u0(x)
 
-    // Pre-assembly di M e K (se coefficienti time-independent)
-    void assemble_time_invariant();
-
     // Un singolo passo di tempo (costruisce LHS/RHS e risolve)
     double step(double t_new, double dt, double theta);
 
@@ -69,6 +66,7 @@ private:
     VectorXd  u_, u_old_;
 
 private:
+    void assemble_time_invariant();
     void assemble_M_and_K_element(int elem,
                                   std::vector<Triplet>& tripM,
                                   std::vector<Triplet>& tripK);
