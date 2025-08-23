@@ -10,9 +10,17 @@
 #include <map>
 #include <algorithm>
 #include <cmath>
+#include <vector>
+#include <memory>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
+#endif
+#ifndef M_E
+#define M_E 2.71828182845904523536
 #endif
 
 Config Config::loadFromFile(const std::string& filename) {
@@ -20,11 +28,9 @@ Config Config::loadFromFile(const std::string& filename) {
     
     try {
     // Parse TOML file with toml11 v4 - much simpler!
-        //from auto to toml::value
         const toml::value data = toml::parse(filename);
         
         // Parse problem section
-        //from const auto& to const toml::value&
         const toml::value& problem = toml::find(data, "problem");
         config.problem.dimension = toml::find_or(problem, "dimension", 2);
         config.problem.mesh_file = toml::find_or(problem, "mesh_file", std::string("mesh/default.msh"));
@@ -33,7 +39,6 @@ Config Config::loadFromFile(const std::string& filename) {
         config.problem.time_dependent = toml::find_or(problem, "time_dependent", false);  // NEW
         
     // Parse equation section - unified approach: everything is a function
-        //from const auto& to const toml::value&
         const toml::value& equation = toml::find(data, "equation");
         
     // Read as functions first, fallback to coefficient values
@@ -51,9 +56,7 @@ Config Config::loadFromFile(const std::string& filename) {
         
         // Parse boundary conditions (arrays) - much more elegant!
         if (data.contains("boundary_conditions")) {
-            //from const auto& to const toml::array&
             const toml::array& bcs = toml::find(data, "boundary_conditions").as_array();
-            //from const auto& to const toml::value&
             for (const toml::value& bc_toml : bcs) {
                 BCConfig bc;
                 bc.tag = toml::find<int>(bc_toml, "tag");
@@ -75,8 +78,8 @@ Config Config::loadFromFile(const std::string& filename) {
             config.time_dependent.theta = toml::find_or(td, "theta", 0.5);
             config.time_dependent.initial_condition = toml::find_or(td, "initial_condition", std::string("0.0"));
             config.time_dependent.forcing_function_td = toml::find_or(td, "forcing_function_td", std::string(""));
-        }        if (data.contains("quadrature")) {
-            //from const auto& to const toml::value&
+        }
+        if (data.contains("quadrature")) {
             const toml::value& quad = toml::find(data, "quadrature");
             std::string qtype = toml::find_or(quad, "type", std::string("order2"));
             std::transform(qtype.begin(), qtype.end(), qtype.begin(), ::tolower);
@@ -139,7 +142,6 @@ void Config::print() const {
     
     std::cout << "Boundary Conditions:" << std::endl;
     for (size_t i = 0; i < boundary_conditions.size(); ++i) {
-        //from const auto& to const BCConfig&
         const BCConfig& bc = boundary_conditions[i];
         std::cout << "  BC " << i+1 << ": ";
         std::cout << (bc.type == BCConfig::DIRICHLET ? "Dirichlet" : "Neumann");
@@ -166,6 +168,42 @@ void Config::print() const {
     std::cout << "===================" << std::endl;
 }
 
+ThreadExpressionPool::ThreadExpressionPool(const std::string& expr_string, unsigned int dimension, int num_threads, bool time_dependent = false) 
+  : x_vals(num_threads, 0.0),
+    y_vals(num_threads, 0.0),
+    z_vals(num_threads, 0.0),
+    is_time_dependent(time_dependent) {
+        
+    if (is_time_dependent) {
+        time_vals.resize(num_threads, 0.0);
+    }
+    symbol_tables.resize(num_threads);
+    expressions.resize(num_threads);
+    
+    // Initialize each thread's expression
+    for (int i = 0; i < num_threads; ++i) {
+        symbol_tables[i].add_variable("x", x_vals[i]);
+        if (dimension >= 2) symbol_tables[i].add_variable("y", y_vals[i]);
+        if (dimension >= 3) symbol_tables[i].add_variable("z", z_vals[i]);
+        
+        // Add time variables only for time-dependent expressions
+        if (is_time_dependent) {
+            symbol_tables[i].add_variable("t", time_vals[i]);
+            symbol_tables[i].add_variable("time", time_vals[i]);
+        }
+        
+        symbol_tables[i].add_constant("pi", M_PI);
+        symbol_tables[i].add_constant("e", M_E);
+        
+        expressions[i].register_symbol_table(symbol_tables[i]);
+        
+        parser_t parser;
+        if (!parser.compile(expr_string, expressions[i])) {
+            throw std::runtime_error("Failed to compile expression: " + expr_string);
+        }
+    }
+}
+
 // Enhanced function parsing with exprtk - supports any mathematical expression!
 template<unsigned int dim>
 Function<dim,1> parseSimpleFunction(const std::string& expression) {
@@ -177,37 +215,30 @@ Function<dim,1> parseSimpleFunction(const std::string& expression) {
         return Function<dim,1>([](Point<dim> p) -> double { return 1.0; });
     }
 
-    typedef exprtk::symbol_table<double> symbol_table_t;
-    typedef exprtk::expression<double> expression_t;
-    typedef exprtk::parser<double> parser_t;
+    // Thread pool approach: create one expression per potential thread
+#ifdef _OPENMP
+    const int max_threads = omp_get_max_threads();
+#else
+    const int max_threads = 1;
+#endif
 
-    // Use shared_ptr for variables to avoid dangling references
-    std::shared_ptr<double> x = std::make_shared<double>(0.0);
-    std::shared_ptr<double> y = std::make_shared<double>(0.0);
-    std::shared_ptr<double> z = std::make_shared<double>(0.0);
+    std::shared_ptr<ThreadExpressionPool> pool = std::make_shared<ThreadExpressionPool>(
+                expression, dim, max_threads, false // false = not time-dependent
+    );
 
-    std::shared_ptr<symbol_table_t> symbol_table = std::make_shared<symbol_table_t>();
-    symbol_table->add_variable("x", *x);
-    if (dim >= 2) symbol_table->add_variable("y", *y);
-    if (dim >= 3) symbol_table->add_variable("z", *z);
-    symbol_table->add_constant("pi", M_PI);
-    symbol_table->add_constant("e", M_E);
-
-    std::shared_ptr<expression_t> expr = std::make_shared<expression_t>();
-    expr->register_symbol_table(*symbol_table);
-
-    parser_t parser;
-    if (!parser.compile(expression, *expr)) {
-        std::cerr << "Error parsing expression '" << expression << "': " << parser.error() << std::endl;
-        return Function<dim,1>([](Point<dim>){ return 0.0; });
-    }
-
-    // Capture shared_ptrs by value
-    return Function<dim,1>([x, y, z, expr](Point<dim> p) -> double {
-        *x = (dim >= 1) ? p[0] : 0.0;
-        *y = (dim >= 2) ? p[1] : 0.0;
-        *z = (dim >= 3) ? p[2] : 0.0;
-        return expr->value();
+    // Return thread-safe function using thread pool
+    return Function<dim,1>([pool](Point<dim> p) -> double {
+        #ifdef _OPENMP
+            const int thread_id = omp_get_thread_num();
+        #else
+            const int thread_id = 0;
+        #endif
+        // Update variables for this thread
+        pool->x_vals[thread_id] = (dim >= 1) ? p[0] : 0.0;
+        pool->y_vals[thread_id] = (dim >= 2) ? p[1] : 0.0;
+        pool->z_vals[thread_id] = (dim >= 3) ? p[2] : 0.0;
+        
+        return pool->expressions[thread_id].value();
     });
 }
 
@@ -217,41 +248,36 @@ std::function<double(const Point<dim>&, double)> parseTimeDependentFunction(cons
     if (expression.empty() || expression == "0" || expression == "0.0") {
         return [](const Point<dim>&, double) -> double { return 0.0; };
     }
-
-    typedef exprtk::symbol_table<double> symbol_table_t;
-    typedef exprtk::expression<double> expression_t;
-    typedef exprtk::parser<double> parser_t;
-
-    std::shared_ptr<double> x = std::make_shared<double>(0.0);
-    std::shared_ptr<double> y = std::make_shared<double>(0.0);
-    std::shared_ptr<double> z = std::make_shared<double>(0.0);
-    std::shared_ptr<double> time = std::make_shared<double>(0.0);
-
-    std::shared_ptr<symbol_table_t> symbol_table = std::make_shared<symbol_table_t>();
-    symbol_table->add_variable("x", *x);
-    if (dim >= 2) symbol_table->add_variable("y", *y);
-    if (dim >= 3) symbol_table->add_variable("z", *z);
-    symbol_table->add_variable("t", *time);
-    symbol_table->add_variable("time", *time);
-    symbol_table->add_constant("pi", M_PI);
-    symbol_table->add_constant("e", M_E);
-
-    std::shared_ptr<expression_t> expr = std::make_shared<expression_t>();
-    expr->register_symbol_table(*symbol_table);
-
-    parser_t parser;
-    if (!parser.compile(expression, *expr)) {
-        std::cerr << "Error parsing time-dependent expression '" << expression << "': " << parser.error() << std::endl;
-        return [](const Point<dim>&, double){ return 0.0; };
+    if (expression == "1" || expression == "1.0") {
+        return [](const Point<dim>&, double) -> double { return 1.0; };
     }
 
-    // Capture shared_ptrs by value
-    return [x, y, z, time, expr](const Point<dim>& p, double t) -> double {
-        *x = (dim >= 1) ? p[0] : 0.0;
-        *y = (dim >= 2) ? p[1] : 0.0;
-        *z = (dim >= 3) ? p[2] : 0.0;
-        *time = t;
-        return expr->value();
+    // Thread pool approach: create one expression per potential thread
+#ifdef _OPENMP
+    const int max_threads = omp_get_max_threads();
+#else
+    const int max_threads = 1;
+#endif
+
+    std::shared_ptr<ThreadExpressionPool> pool = std::make_shared<ThreadExpressionPool>(
+                expression, dim, max_threads, true // true = time-dependent
+    ); 
+
+    // Return thread-safe function using thread pool
+    return [pool](const Point<dim>& p, double t) -> double {
+        #ifdef _OPENMP
+            const int thread_id = omp_get_thread_num();
+        #else
+            const int thread_id = 0;
+        #endif
+        
+        // Update variables for this thread
+        pool->x_vals[thread_id] = (dim >= 1) ? p[0] : 0.0;
+        pool->y_vals[thread_id] = (dim >= 2) ? p[1] : 0.0;
+        pool->z_vals[thread_id] = (dim >= 3) ? p[2] : 0.0;
+        pool->time_vals[thread_id] = t;  // Set time value
+        
+        return pool->expressions[thread_id].value();
     };
 }
 
@@ -336,7 +362,6 @@ template<unsigned int dim>
 BoundaryConditions<dim,1> Config::createBoundaryConditions() const {
     BoundaryConditions<dim,1> bc;
 
-    //from const auto& to const BCConfig&
     for (const BCConfig& bcConfig : boundary_conditions) {
         Function<dim,1> func = parseSimpleFunction<dim>(bcConfig.function);
         
@@ -362,7 +387,7 @@ BoundaryConditions_td<dim,1> Config::createBoundaryConditionsTD() const {
         if (bcConfig.time_function.empty()) {
             // Time-independent: convert regular function to time-dependent
             Function<dim,1> static_func = parseSimpleFunction<dim>(bcConfig.function);
-            auto td_func = [static_func](const Point<dim>& p, double t) -> double {
+            fun_td<dim,1> td_func = [static_func](const Point<dim>& p, double t) -> double {
                 return static_func.value(p);
             };
             
@@ -373,7 +398,7 @@ BoundaryConditions_td<dim,1> Config::createBoundaryConditionsTD() const {
             }
         } else {
             // Time-dependent function
-            auto td_func = parseTimeDependentFunction<dim>(bcConfig.time_function);
+            fun_td<dim,1> td_func = parseTimeDependentFunction<dim>(bcConfig.time_function);
             
             if (bcConfig.type == BCConfig::DIRICHLET) {
                 bc.addDirichlet(bcConfig.tag, td_func);

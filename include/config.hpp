@@ -101,4 +101,21 @@ struct Config {
     template<unsigned int dim> Function<dim,1> createInitialConditionFunction() const;
 };
 
+typedef exprtk::symbol_table<double> symbol_table_t;
+typedef exprtk::expression<double> expression_t;
+typedef exprtk::parser<double> parser_t;
+
+// Unified thread-safe expression pool for both simple and time-dependent functions
+struct ThreadExpressionPool {
+    std::vector<double> x_vals;
+    std::vector<double> y_vals;
+    std::vector<double> z_vals;
+    std::vector<double> time_vals;  // Only used for time-dependent expressions
+    std::vector<symbol_table_t> symbol_tables;
+    std::vector<expression_t> expressions;
+    bool is_time_dependent;
+    
+    ThreadExpressionPool(const std::string& expr_string, unsigned int dimension, int num_threads, bool time_dependent = false);
+};
+
 #endif // CONFIG_HPP
