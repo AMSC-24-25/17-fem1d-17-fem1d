@@ -59,67 +59,30 @@ public:
 
 // ============= Boundary Quadrature ===================
 
-// Class for 1D quadrature on boundary segments (Gauss-Legendre)
-class GaussLegendre1D {
+// Class for quadrature on boundary segments (Gauss-Legendre)
+template<unsigned int dim>
+class GaussLegendre {
 private:
-    std::vector<double> points;        // Quadrature points in [0, 1]
-    std::vector<double> w;             // Quadrature weights (same name as other classes)
+    std::vector<std::vector<double>> points;        // Quadrature points 
+    std::vector<double> w;             // Quadrature weights
     
 public:
     // Constructor for 2-point quadrature (order 3)
-    GaussLegendre1D() {
-        // Points and weights for [0, 1]
-        double x1 = 0.5 - 0.5/std::sqrt(3.0);
-        double x2 = 0.5 + 0.5/std::sqrt(3.0);
-        points = {x1, x2};
-        w = {0.5, 0.5};
-    }
+    GaussLegendre();
     
     // Main method to obtain quadrature data
-    void getQuadratureData(const BoundaryCell<1>& edge,
-                          std::vector<Point<2>>& quadrature_points,
+    void getQuadratureData(const BoundaryCell<dim>& edge,
+                          std::vector<Point<dim+1>>& quadrature_points,
                           std::vector<std::vector<double>>& phi,
                           std::vector<double>& weights) const;
     
     // Integrates a function along a boundary segment
-    double integrate(const BoundaryCell<1>& edge, 
-                    const Function<2,1>& func) const;
-    
-    // Integrates shape functions along a segment for Neumann BC
-    void integrateShapeFunctions(const BoundaryCell<1>& edge,
-                                const Function<2,1>& neumannFunc,
-                                std::vector<double>& contributions) const;
-};
+    double integrate(const BoundaryCell<dim>& edge, 
+                    const Function<dim+1,1>& func) const;
 
-// Class for 2D quadrature on boundary triangles (for 3D)
-class GaussLegendre2D {
-private:
-    std::vector<std::vector<double>> points; // Quadrature points in barycentric coordinates (xi, eta)
-    std::vector<double> w;                   // Quadrature weights
-    
-public:
-    // Constructor for 3-point quadrature on triangle (order 2)
-    GaussLegendre2D() {
-    // Quadrature points on reference triangle (order 2, exact for degree 2 polynomials)
-    points = {{1.0/6.0, 1.0/6.0},    // point 1: (1/6, 1/6) - barycentric coordinates (2/3, 1/6, 1/6)
-              {2.0/3.0, 1.0/6.0},    // point 2: (2/3, 1/6) - barycentric coordinates (1/6, 2/3, 1/6)
-              {1.0/6.0, 2.0/3.0}};   // point 3: (1/6, 2/3) - barycentric coordinates (1/6, 1/6, 2/3)
-    w = {1.0/3.0, 1.0/3.0, 1.0/3.0}; // Weights (sum to 1, area of reference triangle with vertices (0,0), (1,0), (0,1))
-    }
-    
-    // Main method to obtain quadrature data on a face
-    void getQuadratureData(const BoundaryCell<2>& face,
-                          std::vector<Point<3>>& quadrature_points,
-                          std::vector<std::vector<double>>& phi,
-                          std::vector<double>& weights) const;
-    
-    // Integrates a function on a triangular face
-    double integrate(const BoundaryCell<2>& face, 
-                    const Function<3,1>& func) const;
-    
-    // Integrates shape functions on a face for Neumann BC 3D
-    void integrateShapeFunctions(const BoundaryCell<2>& face,
-                                const Function<3,1>& neumannFunc,
+    // Integrates shape functions along a segment for Neumann BC
+    void integrateShapeFunctions(const BoundaryCell<dim>& edge,
+                                const Function<dim+1,1>& neumannFunc,
                                 std::vector<double>& contributions) const;
 };
 

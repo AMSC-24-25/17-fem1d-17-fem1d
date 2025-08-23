@@ -117,9 +117,60 @@ void QuadratureRule<dim>::getQuadratureData(
     }
 }
 
-// ============= GaussLegendre1D IMPLEMENTATION =============
+// ============= GaussLegendre general implementations ======
 
-void GaussLegendre1D::getQuadratureData(const BoundaryCell<1>& edge,
+template<unsigned int dim>
+double GaussLegendre<dim>::integrate(const BoundaryCell<dim>& edge, 
+                                 const Function<dim+1,1>& func) const {
+    std::vector<Point<dim+1>> quadrature_points;
+    std::vector<std::vector<double>> phi;
+    std::vector<double> weights;
+    
+    getQuadratureData(edge, quadrature_points, phi, weights);
+    
+    double integral = 0.0;
+    for (size_t q = 0; q < quadrature_points.size(); ++q) {
+        double funcValue = func.value(quadrature_points[q]);
+        integral += weights[q] * funcValue;
+    }
+    
+    return integral;
+}
+
+template<unsigned int dim>
+void GaussLegendre<dim>::integrateShapeFunctions(const BoundaryCell<dim>& edge,
+                                             const Function<dim+1, 1>& neumannFunc,
+                                             std::vector<double>& contributions) const {
+    std::vector<Point<dim+1>> quadrature_points;
+    std::vector<std::vector<double>> phi;
+    std::vector<double> weights;
+    
+    getQuadratureData(edge, quadrature_points, phi, weights);
+
+    contributions.resize(dim+1, 0.0);  // 2 nodes for edge, 3 nodes for face
+
+    for (size_t q = 0; q < quadrature_points.size(); ++q) {
+        // Value of the Neumann function at the point
+        double neumannValue = neumannFunc.value(quadrature_points[q]);
+        
+        // Contributions to the edge nodes
+        for (int i = 0; i < contributions.size(); ++i) {
+            contributions[i] += weights[q] * neumannValue * phi[q][i];
+        }
+    }
+}
+
+// ============= GaussLegendre1D IMPLEMENTATION =============
+template<>
+GaussLegendre<1>::GaussLegendre() {
+    // Points and weights for [0, 1]
+    double x1 = 0.5 - 0.5/std::sqrt(3.0);
+    double x2 = 0.5 + 0.5/std::sqrt(3.0);
+    points = {{x1}, {x2}};
+    w = {0.5, 0.5};
+}
+template<>
+void GaussLegendre<1>::getQuadratureData(const BoundaryCell<1>& edge,
                                         std::vector<Point<2>>& quadrature_points,
                                         std::vector<std::vector<double>>& phi,
                                         std::vector<double>& weights) const {
@@ -138,12 +189,12 @@ void GaussLegendre1D::getQuadratureData(const BoundaryCell<1>& edge,
     // Iterate over quadrature points
     for (size_t q = 0; q < points.size(); ++q) {
     // Global quadrature point
-        Point<2> globalPoint = mapToGlobalEdge(edge, points[q]);
+        Point<2> globalPoint = mapToGlobalEdge(edge, points[q][0]);
         quadrature_points.push_back(globalPoint);
         
     // Shape functions at the quadrature point
         std::vector<double> phi_q;
-        getShapeFunctions1D(points[q], phi_q);
+        getShapeFunctions1D(points[q][0], phi_q);
         phi.push_back(phi_q);
         
     // Physical weight
@@ -151,52 +202,19 @@ void GaussLegendre1D::getQuadratureData(const BoundaryCell<1>& edge,
     }
 }
 
-//TODO not sure if Function <2,1> is correct
-double GaussLegendre1D::integrate(const BoundaryCell<1>& edge, 
-                                 const Function<2,1>& func) const {
-    std::vector<Point<2>> quadrature_points;
-    std::vector<std::vector<double>> phi;
-    std::vector<double> weights;
-    
-    getQuadratureData(edge, quadrature_points, phi, weights);
-    
-    double integral = 0.0;
-    for (size_t q = 0; q < quadrature_points.size(); ++q) {
-        double funcValue = func.value(quadrature_points[q]);
-        integral += weights[q] * funcValue;
-    }
-    
-    return integral;
-}
-
-
-//TODO non so se csia giusto Function <2,1>
-
-void GaussLegendre1D::integrateShapeFunctions(const BoundaryCell<1>& edge,
-                                             const Function<2, 1>& neumannFunc,
-                                             std::vector<double>& contributions) const {
-    std::vector<Point<2>> quadrature_points;
-    std::vector<std::vector<double>> phi;
-    std::vector<double> weights;
-    
-    getQuadratureData(edge, quadrature_points, phi, weights);
-    
-    contributions.resize(2, 0.0);  // 2 nodi per edge
-    
-    for (size_t q = 0; q < quadrature_points.size(); ++q) {
-    // Value of the Neumann function at the point
-        double neumannValue = neumannFunc.value(quadrature_points[q]);
-        
-    // Contributions to the edge nodes
-        for (int i = 0; i < 2; ++i) {
-            contributions[i] += weights[q] * neumannValue * phi[q][i];
-        }
-    }
-}
-
 // ============= GaussLegendre2D IMPLEMENTATION =============
 
-void GaussLegendre2D::getQuadratureData(const BoundaryCell<2>& face,
+template<>
+GaussLegendre<2>::GaussLegendre() {
+    // Quadrature points on reference triangle (order 2, exact for degree 2 polynomials)
+    points = {{1.0/6.0, 1.0/6.0},    // point 1: (1/6, 1/6) - barycentric coordinates (2/3, 1/6, 1/6)
+              {2.0/3.0, 1.0/6.0},    // point 2: (2/3, 1/6) - barycentric coordinates (1/6, 2/3, 1/6)
+              {1.0/6.0, 2.0/3.0}};   // point 3: (1/6, 2/3) - barycentric coordinates (1/6, 1/6, 2/3)
+    w = {1.0/3.0, 1.0/3.0, 1.0/3.0}; // Weights (sum to 1, area of reference triangle with vertices (0,0), (1,0), (0,1))
+}
+
+template<>
+void GaussLegendre<2>::getQuadratureData(const BoundaryCell<2>& face,
                                         std::vector<Point<3>>& quadrature_points,
                                         std::vector<std::vector<double>>& phi,
                                         std::vector<double>& weights) const {
@@ -213,55 +231,19 @@ void GaussLegendre2D::getQuadratureData(const BoundaryCell<2>& face,
     
     // Iterate over quadrature points
     for (size_t q = 0; q < points.size(); ++q) {
-    // Global quadrature point on face
+        // Global quadrature point on face
         Point<3> globalPoint = mapToGlobalFace(face, points[q][0], points[q][1]);
         quadrature_points.push_back(globalPoint);
         
-    // Shape functions at the quadrature point
+        // Shape functions at the quadrature point
         std::vector<double> phi_q;
         getShapeFunctions2D(points[q][0], points[q][1], phi_q);
         phi.push_back(phi_q);
         
-    // Physical weight (weight * face area)
+        // Physical weight (weight * face area)
         weights.push_back(w[q] * area);
     }
 }
 
-double GaussLegendre2D::integrate(const BoundaryCell<2>& face, 
-                                 const Function<3,1>& func) const {
-    std::vector<Point<3>> quadrature_points;
-    std::vector<std::vector<double>> phi;
-    std::vector<double> weights;
-    
-    getQuadratureData(face, quadrature_points, phi, weights);
-    
-    double integral = 0.0;
-    for (size_t q = 0; q < quadrature_points.size(); ++q) {
-        double funcValue = func.value(quadrature_points[q]);
-        integral += weights[q] * funcValue;
-    }
-    
-    return integral;
-}
-
-void GaussLegendre2D::integrateShapeFunctions(const BoundaryCell<2>& face,
-                                             const Function<3,1>& neumannFunc,
-                                             std::vector<double>& contributions) const {
-    std::vector<Point<3>> quadrature_points;
-    std::vector<std::vector<double>> phi;
-    std::vector<double> weights;
-    
-    getQuadratureData(face, quadrature_points, phi, weights);
-    
-    contributions.resize(3, 0.0);  // 3 nodi per faccia triangolare
-    
-    for (size_t q = 0; q < quadrature_points.size(); ++q) {
-    // Value of the Neumann function at the point
-        double neumannValue = neumannFunc.value(quadrature_points[q]);
-        
-    // Contributions to the face nodes
-        for (int i = 0; i < 3; ++i) {
-            contributions[i] += weights[q] * neumannValue * phi[q][i];
-        }
-    }
-}
+template class GaussLegendre<1>;
+template class GaussLegendre<2>;

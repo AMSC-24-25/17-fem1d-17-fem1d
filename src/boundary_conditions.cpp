@@ -2,19 +2,19 @@
 #include "quadrature.hpp"
 #include <iostream>
 
-template <>
-void BoundaryConditions<3, 1>::applyNeumann(
-    const BoundaryCondition<3, 1>& bc, const Grid<3>& mesh, 
+template <unsigned int dim, unsigned int returnDim>
+void BoundaryConditions<dim, returnDim>::applyNeumann(
+    const BoundaryCondition<dim, returnDim>& bc, const Grid<dim>& mesh, 
     SparseMat& A, VectorXd& rhs) {
     
     // Get boundary faces with the specified physical tag
     //from auto to std::vector<BoundaryCell<2>>
-    std::vector<BoundaryCell<2>> boundaryFaces = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
-    std::cout << "  Applying Neumann boundary condition 3D on tag " << bc.getBoundaryId()
-              << " (" << boundaryFaces.size() << " faces)" << std::endl;
+    std::vector<BoundaryCell<dim-1>> boundaryFaces = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
+    std::cout << "  Applying Neumann boundary condition " << dim << "D on tag " << bc.getBoundaryId()
+              << " (" << boundaryFaces.size() << " " << (dim == 1 ? "edges" : "faces") << ")" << std::endl;
 
     // Initialize 2D quadrature for triangular faces
-    GaussLegendre2D quadrature;
+    GaussLegendre<dim-1> quadrature;
     
     // Iterate over all boundary faces with this tag
 #ifdef _OPENMP
@@ -28,7 +28,7 @@ void BoundaryConditions<3, 1>::applyNeumann(
         
         #pragma omp for schedule(static)
         for (int f = 0; f < boundaryFaces.size(); ++f) {
-            const BoundaryCell<2>& face = boundaryFaces[f];
+            const BoundaryCell<dim-1>& face = boundaryFaces[f];
             
             // Compute the contributions to the face nodes using quadrature
             std::vector<double> contributions;
@@ -48,7 +48,7 @@ void BoundaryConditions<3, 1>::applyNeumann(
         rhs += rhs_threads[tid];
     }
 #else
-    for (const BoundaryCell<2>& face : boundaryFaces) {
+    for (const BoundaryCell<dim-1>& face : boundaryFaces) {
         // Compute the contributions to the face nodes using quadrature
         std::vector<double> contributions;
         quadrature.integrateShapeFunctions(face, bc.getBoundaryFunction(), contributions);
@@ -62,69 +62,6 @@ void BoundaryConditions<3, 1>::applyNeumann(
     }
 #endif
 }
-
-// template <unsigned int dim, unsigned int returnDim>
-template <>
-void BoundaryConditions<2, 1>::applyNeumann(
-    const BoundaryCondition<2, 1>& bc, const Grid<2>& mesh, 
-    SparseMat& A, VectorXd& rhs) {
-    
-    // Get boundary edges with the specified physical tag
-    //from auto to std::vector<BoundaryCell<1>>
-    std::vector<BoundaryCell<1>> boundaryEdges = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
-    std::cout << "  Applicando condizione di Neumann su tag " << bc.getBoundaryId()
-              << " (" << boundaryEdges.size() << " edges)" << std::endl;
-    
-    // Initialize 1D quadrature
-    GaussLegendre1D quadrature;
-    
-    // Iterate over all boundary edges with this tag
-#ifdef _OPENMP
-    int nthreads = omp_get_max_threads();
-    std::vector<VectorXd> rhs_threads(nthreads, VectorXd::Zero(rhs.size()));
-    
-    #pragma omp parallel
-    {
-        int tid = omp_get_thread_num();
-        VectorXd& rhs_local = rhs_threads[tid];
-        
-        #pragma omp for schedule(static)
-        for (int e = 0; e < boundaryEdges.size(); ++e) {
-            const BoundaryCell<1>& edge = boundaryEdges[e];
-            
-            // Compute the contributions to the edge nodes using quadrature
-            std::vector<double> contributions;
-            quadrature.integrateShapeFunctions(edge, bc.getBoundaryFunction(), contributions);
-            
-            // Add the contributions to the local RHS vector
-            const std::vector<unsigned int>& nodeIndices = edge.getNodeIndexes();
-            for (size_t i = 0; i < nodeIndices.size(); ++i) {
-                int globalNodeIndex = nodeIndices[i];
-                rhs_local[globalNodeIndex] += contributions[i];
-            }
-        }
-    }
-    
-    // Sum all thread-local vectors
-    for (int tid = 0; tid < nthreads; ++tid) {
-        rhs += rhs_threads[tid];
-    }
-#else
-    for (const BoundaryCell<1>& edge : boundaryEdges) {
-        // Compute the contributions to the edge nodes using quadrature
-        std::vector<double> contributions;
-        quadrature.integrateShapeFunctions(edge, bc.getBoundaryFunction(), contributions);
-        
-        // Add the contributions to the RHS vector
-        const std::vector<unsigned int>& nodeIndices = edge.getNodeIndexes();
-        for (size_t i = 0; i < nodeIndices.size(); ++i) {
-            int globalNodeIndex = nodeIndices[i];
-            rhs[globalNodeIndex] += contributions[i];
-        }
-    }
-#endif
-}
-
 
 template<>
 void BoundaryConditions<1,1>::applyNeumann(
@@ -147,3 +84,7 @@ void BoundaryConditions<1,1>::applyNeumann(
     const double g = bc.getBoundaryFunction().value(X); // g = μ ∂u/∂n (flusso uscente)
     rhs[d] += g;
 }
+
+template class BoundaryConditions<1,1>;
+template class BoundaryConditions<2,1>;
+template class BoundaryConditions<3,1>;
