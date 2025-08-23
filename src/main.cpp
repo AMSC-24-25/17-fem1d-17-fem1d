@@ -86,9 +86,9 @@ int main(int argc, char *argv[])
 
         // Configurazione con mix di Dirichlet e Neumann
         boundary_conditions.addDirichlet(0, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return p[1]; }));
+        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return 1.0; }));
         boundary_conditions.addDirichlet(2, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return p[0]; }));
+        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return 1.0; }));
         
         cout << "Boundary conditions:" << endl;
         cout << "  Tag 0: Dirichlet u = 0.0" << endl;
@@ -127,11 +127,12 @@ int main(int argc, char *argv[])
         BoundaryConditions<3,1> boundary_conditions;
         
 
-        // Configuration: Dirichlet on all faces except the top (tag 5), Neumann on tag 5
         boundary_conditions.addDirichlet(0, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
-        boundary_conditions.addNeumann(1, Function<3,1>([](Point<3> p) { return 1.0; }));
+        // boundary_conditions.addNeumann(1, Function<3,1>([](Point<3> p) { return 1.0; }));
+        boundary_conditions.addDirichlet(1, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
         boundary_conditions.addDirichlet(2, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
-        boundary_conditions.addNeumann(3, Function<3,1>([](Point<3> p) { return 1.0; }));
+        // boundary_conditions.addNeumann(3, Function<3,1>([](Point<3> p) { return 1.0; }));
+        boundary_conditions.addDirichlet(3, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
         boundary_conditions.addDirichlet(4, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
         boundary_conditions.addDirichlet(5, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
 
