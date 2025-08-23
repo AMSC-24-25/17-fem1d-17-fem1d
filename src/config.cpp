@@ -37,8 +37,12 @@ Config Config::loadFromFile(const std::string& filename) {
     // Read as functions first, fallback to coefficient values
         config.equation.diffusion_function = toml::find_or(equation, "diffusion_function", 
             toml::find_or(equation, "diffusion_coefficient", std::string("1.0")));
-        config.equation.transport_function = toml::find_or(equation, "transport_function", 
-            toml::find_or(equation, "transport_coefficient", std::string("0.0")));
+        config.equation.transport_function_x = toml::find_or(equation, "transport_function_x", 
+            toml::find_or(equation, "transport_coefficient_x", std::string("0.0")));
+        config.equation.transport_function_y = toml::find_or(equation, "transport_function_y", 
+            toml::find_or(equation, "transport_coefficient_y", std::string("0.0")));
+        config.equation.transport_function_z = toml::find_or(equation, "transport_function_z", 
+            toml::find_or(equation, "transport_coefficient_z", std::string("0.0")));
         config.equation.reaction_function = toml::find_or(equation, "reaction_function", 
             toml::find_or(equation, "reaction_coefficient", std::string("0.0")));
         config.equation.forcing_function = toml::find_or(equation, "forcing_function", std::string("0.0"));
@@ -144,7 +148,9 @@ void Config::print() const {
     
     std::cout << "Equation:" << std::endl;
     std::cout << "  Diffusion function: " << equation.diffusion_function << std::endl;
-    std::cout << "  Transport function: " << equation.transport_function << std::endl;
+    std::cout << "  Transport function (x): " << equation.transport_function_x << std::endl;
+    std::cout << "  Transport function (y): " << equation.transport_function_y << std::endl;
+    std::cout << "  Transport function (z): " << equation.transport_function_z << std::endl;
     std::cout << "  Reaction function: " << equation.reaction_function << std::endl;
     std::cout << "  Forcing function: " << equation.forcing_function << std::endl;
     
@@ -320,26 +326,30 @@ Function<dim,1> Config::createReactionFunction() const {
 
 template<>
 Function<1,1> Config::createTransportFunction<1>() const {
-    return parseSimpleFunction<1>(equation.transport_function);
+    return parseSimpleFunction<1>(equation.transport_function_x);
 }
 
 template<>
 Function<2,2> Config::createTransportFunction<2>() const {
-    // Parse as scalar and assume transport in x direction
-    Function<2,1> scalarFunc = parseSimpleFunction<2>(equation.transport_function);
-    return Function<2,2>([scalarFunc](Point<2> p) { 
-        double coeff = scalarFunc(p);
-        return Point<2>(coeff, 0.0);  // transport in x direction
+    Function<2,1> xFunc = parseSimpleFunction<2>(equation.transport_function_x);
+    Function<2,1> yFunc = parseSimpleFunction<2>(equation.transport_function_y);
+    return Function<2,2>([xFunc, yFunc](Point<2> p) { 
+        double xCoeff = xFunc(p);
+        double yCoeff = yFunc(p);
+        return Point<2>(xCoeff, yCoeff);
     });
 }
 
 template<>
 Function<3,3> Config::createTransportFunction<3>() const {
-    // Parse as scalar and assume transport in x direction
-    Function<3,1> scalarFunc = parseSimpleFunction<3>(equation.transport_function);
-    return Function<3,3>([scalarFunc](Point<3> p) { 
-        double coeff = scalarFunc(p);
-        return Point<3>(coeff, 0.0, 0.0);  // transport in x direction
+    Function<3,1> xFunc = parseSimpleFunction<3>(equation.transport_function_x);
+    Function<3,1> yFunc = parseSimpleFunction<3>(equation.transport_function_y);
+    Function<3,1> zFunc = parseSimpleFunction<3>(equation.transport_function_z);
+    return Function<3,3>([xFunc, yFunc, zFunc](Point<3> p) { 
+        double xCoeff = xFunc(p);
+        double yCoeff = yFunc(p);
+        double zCoeff = zFunc(p);
+        return Point<3>(xCoeff, yCoeff, zCoeff);
     });
 }
 

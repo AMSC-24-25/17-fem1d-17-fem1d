@@ -23,13 +23,14 @@ struct ProblemConfig {
 struct EquationConfig {
     // Unified approach: everything is a function expression
     std::string diffusion_function;
-    std::string transport_function;
+    std::string transport_function_x;
+    std::string transport_function_y;
+    std::string transport_function_z;
     std::string reaction_function;
     std::string forcing_function;
     
     // Scalar coefficients for backward compatibility
     double diffusion_coefficient = 1.0;
-    double transport_coefficient = 0.0;
     double reaction_coefficient = 0.0;
 };
 
