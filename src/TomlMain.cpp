@@ -16,7 +16,16 @@ int main(int argc, char* argv[]) {
         std::cerr << "Usage: " << argv[0] << " <config.toml>" << std::endl;
         return 1;
     }
-    
+
+#ifdef _OPENMP
+    //Output OpenMP info (max threads, parameters, etc.)
+    int max_threads = omp_get_max_threads();
+    std::cout << "OpenMP is enabled." << std::endl;
+    std::cout << "Max threads: " << max_threads << std::endl;
+#else
+    std::cout << "OpenMP is not enabled. Running sequentially." << std::endl;
+#endif
+
     try {
         Config config = Config::loadFromFile(argv[1]);
 
