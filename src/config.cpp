@@ -62,8 +62,8 @@ Config Config::loadFromFile(const std::string& filename) {
             for (const toml::value& bc_toml : bcs) {
                 BCConfig bc;
                 bc.tag = toml::find<int>(bc_toml, "tag");
-                bc.function = toml::find<std::string>(bc_toml, "function");
-                bc.time_function = toml::find_or(bc_toml, "time_function", std::string(""));  // NEW
+                bc.function = toml::find_or<std::string>(bc_toml, "function", std::string("0.0"));
+                bc.time_function = toml::find_or(bc_toml, "time_function", std::string("")); 
                 
                 std::string type_str = toml::find_or(bc_toml, "type", std::string("dirichlet"));
                 bc.type = (type_str == "neumann") ? BCConfig::NEUMANN : BCConfig::DIRICHLET;
