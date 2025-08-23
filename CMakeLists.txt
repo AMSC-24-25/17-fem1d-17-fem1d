@@ -35,12 +35,17 @@ list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*main_td.cpp$")
 
 # Create external library list
 set(FEM_LIBRARIES Eigen3::Eigen)
+
 if(OpenMP_CXX_FOUND)
-    list(APPEND FEM_LIBRARIES OpenMP::OpenMP_CXX)
+    add_library(fem1d_lib_sequential STATIC ${ALL_SRC_FILES})
+    target_link_libraries(fem1d_lib_sequential ${FEM_LIBRARIES}) 
+    add_library(fem1d_lib STATIC ${ALL_SRC_FILES})
+    target_link_libraries(fem1d_lib ${FEM_LIBRARIES} OpenMP::OpenMP_CXX)
+else()
+    add_library(fem1d_lib STATIC ${ALL_SRC_FILES})
+    target_link_libraries(fem1d_lib ${FEM_LIBRARIES})
 endif()
 
-add_library(fem1d_lib STATIC ${ALL_SRC_FILES})
-target_link_libraries(fem1d_lib ${FEM_LIBRARIES})
 
 # Eseguibile principale
 add_executable(17_fem1d_17_fem1d src/main.cpp)
@@ -49,6 +54,11 @@ target_link_libraries(17_fem1d_17_fem1d fem1d_lib)
 # Nuovo eseguibile con configurazione TOML
 add_executable(TomlMain src/TomlMain.cpp src/config.cpp)
 target_link_libraries(TomlMain fem1d_lib)
+
+if(OpenMP_CXX_FOUND)
+    add_executable(sequentialTomlMain src/TomlMain.cpp src/config.cpp)
+    target_link_libraries(sequentialTomlMain fem1d_lib_sequential)
+endif()
 
 # Eseguibile per main_td.cpp
 add_executable(17_fem1d_17_fem1d_td src/main_td.cpp)
