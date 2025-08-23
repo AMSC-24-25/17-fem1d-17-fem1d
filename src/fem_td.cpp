@@ -38,58 +38,58 @@ void FemTD<dim>::set_initial_condition(Function<dim,1> u0) { u0_ = std::move(u0)
 // ===== assemble M & K (time-invariant) =====
 template<unsigned int dim>
 void FemTD<dim>::assemble_time_invariant() {
-    const int ne = mesh_.getNumElements();
+    const int numElements = mesh_.getNumElements();
     const unsigned matSize = dim + 1;
     const unsigned expPerElem = matSize * matSize;
 
 #ifdef _OPENMP
     int nthreads = omp_get_max_threads();
-    std::vector<std::vector<Triplet>> tripM_thr(nthreads), tripK_thr(nthreads);
+    std::vector<std::vector<Triplet>> tripletM_thr(nthreads), tripletK_thr(nthreads);
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
-        std::vector<Triplet>& tM = tripM_thr[tid];
-        std::vector<Triplet>& tK = tripK_thr[tid];
-        tM.reserve(expPerElem * (ne/nthreads + 1));
-        tK.reserve(expPerElem * (ne/nthreads + 1));
+        std::vector<Triplet>& tM = tripletM_thr[tid];
+        std::vector<Triplet>& tK = tripletK_thr[tid];
+        tM.reserve(expPerElem * (numElements/nthreads + 1));
+        tK.reserve(expPerElem * (numElements/nthreads + 1));
 
         #pragma omp for schedule(static)
-        for (int e=0; e<ne; ++e) assemble_M_and_K_element(e, tM, tK);
+        for (int e=0; e < numElements; ++e) assemble_M_and_K_element(e, tM, tK);
     }
-    std::vector<Triplet> tripM, tripK;
-    for (std::vector<Triplet>& v: tripM_thr) tripM.insert(tripM.end(), v.begin(), v.end());
-    for (std::vector<Triplet>& v: tripK_thr) tripK.insert(tripK.end(), v.begin(), v.end());
+    std::vector<Triplet> tripletM, tripletK;
+    for (std::vector<Triplet>& v: tripletM_thr) tripletM.insert(tripletM.end(), v.begin(), v.end());
+    for (std::vector<Triplet>& v: tripletK_thr) tripletK.insert(tripletK.end(), v.begin(), v.end());
 #else
-    std::vector<Triplet> tripM, tripK;
-    tripM.reserve(expPerElem * ne);
-    tripK.reserve(expPerElem * ne);
-    for (int e=0; e<ne; ++e) assemble_M_and_K_element(e, tripM, tripK);
+    std::vector<Triplet> tripletM, tripletK;
+    tripletM.reserve(expPerElem * numElements);
+    tripletK.reserve(expPerElem * numElements);
+    for (int e=0; e<numElements; ++e) assemble_M_and_K_element(e, tripletM, tripletK);
 #endif
 
-    M_.setFromTriplets(tripM.begin(), tripM.end());
-    K_.setFromTriplets(tripK.begin(), tripK.end());
+    M_.setFromTriplets(tripletM.begin(), tripletM.end());
+    K_.setFromTriplets(tripletK.begin(), tripletK.end());
 }
 
 template<unsigned int dim>
 void FemTD<dim>::assemble_M_and_K_element(int elem,
-                                          std::vector<Triplet>& tripM,
-                                          std::vector<Triplet>& tripK)
+                                          std::vector<Triplet>& tripletM,
+                                          std::vector<Triplet>& tripletK)
 {
     const Cell<dim>& cell = mesh_.getCell(elem);
     const unsigned matSize = dim + 1;
 
     std::vector<Point<dim>> grad_phi;
-    std::vector<Point<dim>> xq;
+    std::vector<Point<dim>> quadraturePoints;
     std::vector<std::vector<double>> phi;
-    std::vector<double> w;
-    quad_.getQuadratureData(cell, grad_phi, xq, phi, w);
+    std::vector<double> weights;
+    quad_.getQuadratureData(cell, grad_phi, quadraturePoints, phi, weights);
 
-    MatrixXd Mloc = MatrixXd::Zero(matSize, matSize);
-    MatrixXd Kloc = MatrixXd::Zero(matSize, matSize);
+    MatrixXd M_local = MatrixXd::Zero(matSize, matSize);
+    MatrixXd K_local = MatrixXd::Zero(matSize, matSize);
 
-    for (int q=0; q<(int)xq.size(); ++q) {
-        const Point<dim>& p = xq[q];
-        const double ww = w[q];
+    for (int q=0; q<(int)quadraturePoints.size(); ++q) {
+        const Point<dim>& p = quadraturePoints[q];
+        const double weight = weights[q];
 
         const double mu = diffusion_.value(p);
         const Point<dim> b = transport_.value(p);
@@ -98,13 +98,13 @@ void FemTD<dim>::assemble_M_and_K_element(int elem,
         for (unsigned i=0; i<matSize; ++i) {
             for (unsigned j=0; j<matSize; ++j) {
                 // M
-                Mloc(i,j) += ww * phi[q][i] * phi[q][j];
+                M_local(i,j) += weight * phi[q][i] * phi[q][j];
 
                 // K = μ ∇φ_i·∇φ_j + (b·∇φ_i) φ_j + r φ_i φ_j
                 const double diff_c = mu * (grad_phi[i] * grad_phi[j]);
                 const double adv_c  = (b * grad_phi[i]) * phi[q][j];
                 const double reac_c = r * phi[q][i] * phi[q][j];
-                Kloc(i,j) += ww * (diff_c + adv_c + reac_c);
+                K_local(i,j) += weight * (diff_c + adv_c + reac_c);
             }
         }
     }
@@ -113,8 +113,8 @@ void FemTD<dim>::assemble_M_and_K_element(int elem,
         const int I = cell.getNodeIndex(i);
         for (unsigned j=0; j<matSize; ++j) {
             const int J = cell.getNodeIndex(j);
-            if (std::abs(Mloc(i,j)) > 1e-14) tripM.emplace_back(I,J,Mloc(i,j));
-            if (std::abs(Kloc(i,j)) > 1e-14) tripK.emplace_back(I,J,Kloc(i,j));
+            if (std::abs(M_local(i,j)) > 1e-14) tripletM.emplace_back(I,J,M_local(i,j));
+            if (std::abs(K_local(i,j)) > 1e-14) tripletK.emplace_back(I,J,K_local(i,j));
         }
     }
 }
@@ -125,28 +125,64 @@ void FemTD<dim>::build_load(VectorXd& F, double t) const {
     F.setZero();
     
     const unsigned matSize = dim + 1;
+    const int numElements = mesh_.getNumElements();
 
-    #pragma omp parallel for reduction(+:F)
-    for (int i = 0; i < mesh_.getNumElements(); ++i) {
-        const Cell<dim>& cell = mesh_.getCell(i);
+#ifdef _OPENMP
+    int nthreads = omp_get_max_threads();
+    std::vector<VectorXd> F_threads(nthreads);
+    
+    #pragma omp parallel
+    {
+        int tid = omp_get_thread_num();
+        F_threads[tid] = VectorXd::Zero(F.size());
+        VectorXd& F_local = F_threads[tid];
 
-        std::vector<Point<dim>> grad_phi;
-        std::vector<Point<dim>> xq;
-        std::vector<std::vector<double>> phi;
-        std::vector<double> w;
-        // Rimuovi const usando un cast
-        quad_.getQuadratureData(cell, grad_phi, xq, phi, w);
+        #pragma omp for schedule(static)
+        for (int i = 0; i < numElements; ++i) {
+            const Cell<dim>& cell = mesh_.getCell(i);
 
-        for (int q=0; q<(int)xq.size(); ++q) {
-            const double fval = forcing_td_(xq[q], t);
-            const double ww = w[q];
-            for (unsigned i=0; i<matSize; ++i) {
-                const int I = cell.getNodeIndex(i);
-                F[I] += ww * fval * phi[q][i];
+            std::vector<Point<dim>> grad_phi;
+            std::vector<Point<dim>> quadraturePoints;
+            std::vector<std::vector<double>> phi;
+            std::vector<double> weights;
+            quad_.getQuadratureData(cell, grad_phi, quadraturePoints, phi, weights);
+
+            for (int q=0; q < quadraturePoints.size(); ++q) {
+                const double forcingVal = forcing_td_(quadraturePoints[q], t);
+                const double weight = weights[q];
+                for (unsigned j=0; j<matSize; ++j) {
+                    const int jGlobal = cell.getNodeIndex(j);
+                    F_local[jGlobal] += weight * forcingVal * phi[q][j];
+                }
             }
         }
     }
-}\
+    
+    // Sum all thread-local vectors
+    for (int tid = 0; tid < nthreads; ++tid) {
+        F += F_threads[tid];
+    }
+#else
+    for (int i = 0; i < numElements; ++i) {
+        const Cell<dim>& cell = mesh_.getCell(i);
+
+        std::vector<Point<dim>> grad_phi;
+        std::vector<Point<dim>> quadraturePoints;
+        std::vector<std::vector<double>> phi;
+        std::vector<double> weights;
+        quad_.getQuadratureData(cell, grad_phi, quadraturePoints, phi, weights);
+
+        for (int q=0; q < quadraturePoints.size(); ++q) {
+            const double forcingVal = forcing_td_(quadraturePoints[q], t);
+            const double weight = weights[q];
+            for (unsigned j=0; j<matSize; ++j) {
+                const int jGlobal = cell.getNodeIndex(j);
+                F[jGlobal] += weight * forcingVal * phi[q][j];
+            }
+        }
+    }
+#endif
+}
 
 // ===== IC =====
 template<unsigned int dim>

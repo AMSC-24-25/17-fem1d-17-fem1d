@@ -17,6 +17,14 @@ set(CMAKE_PREFIX_PATH "/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/eigen/3.3.9/share/
 find_package(Eigen3 3.3 REQUIRED)
 include_directories(${mkEigenInc})
 
+# OpenMP support (optional)
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    message(STATUS "OpenMP found - enabling parallel support")
+else()
+    message(WARNING "OpenMP not found - building without parallel support")
+endif()
+
 # ----- Sources -----
 
 file(GLOB ALL_SRC_FILES src/*.cpp)
@@ -24,8 +32,15 @@ list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*config.cpp$")
 list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*TomlMain.cpp$")
 list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*main.cpp$")
 list(FILTER ALL_SRC_FILES EXCLUDE REGEX ".*main_td.cpp$")
+
+# Create external library list
+set(FEM_LIBRARIES Eigen3::Eigen)
+if(OpenMP_CXX_FOUND)
+    list(APPEND FEM_LIBRARIES OpenMP::OpenMP_CXX)
+endif()
+
 add_library(fem1d_lib STATIC ${ALL_SRC_FILES})
-target_link_libraries(fem1d_lib Eigen3::Eigen)
+target_link_libraries(fem1d_lib ${FEM_LIBRARIES})
 
 # Eseguibile principale
 add_executable(17_fem1d_17_fem1d src/main.cpp)

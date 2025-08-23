@@ -213,7 +213,6 @@ void GaussLegendre2D::getQuadratureData(const BoundaryCell<2>& face,
     
     // Iterate over quadrature points
     for (size_t q = 0; q < points.size(); ++q) {
-    //TODO not sure if Function <2,1> is correct
     // Global quadrature point on face
         Point<3> globalPoint = mapToGlobalFace(face, points[q][0], points[q][1]);
         quadrature_points.push_back(globalPoint);

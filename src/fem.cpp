@@ -92,8 +92,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
     MatrixXd react_local = MatrixXd::Zero(matSize, matSize); // Massa/Reazione
     VectorXd forc_local = VectorXd::Zero(matSize); // Termine forzante
 
-    // Loop on quadrature points
-    #pragma omp parallel for reduction(+:diff_local, transport_local, react_local, forc_local)
+    // Loop on quadrature points (no OpenMP here - quadrature loops are small)
     for (int q = 0; q < quadrature_points.size(); ++q) {
         const Point<dim>& p = quadrature_points[q];
         double w = weights[q];
