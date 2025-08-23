@@ -75,8 +75,4 @@ private:
     void build_load(VectorXd& F, double t) const; // ∫ f(x,t) φ_i
 
     void apply_initial_condition();
-
-    // Writer privati (usati da outputCsv/outputVtu)
-    void write_csv(const std::string& filename) const;
-    void write_vtu(const std::string& filename) const;
 };

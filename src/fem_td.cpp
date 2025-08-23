@@ -207,8 +207,8 @@ void FemTD<dim>::run(double T, double dt, double theta,
 
     apply_initial_condition();
 
-    if (!vtu_prefix.empty()) write_vtu(vtu_prefix + "_t0.vtu");
-    if (!csv_prefix.empty()) write_csv(csv_prefix + "_t0.csv");
+    if (!vtu_prefix.empty()) outputVtu(vtu_prefix + "_t0.vtu");
+    if (!csv_prefix.empty()) outputCsv(csv_prefix + "_t0.csv");
 
     double t = 0.0;
     unsigned step_id = 0;
@@ -217,8 +217,8 @@ void FemTD<dim>::run(double T, double dt, double theta,
         ++step_id;
         const double change = step(t, dt, theta);
 
-        if (!vtu_prefix.empty()) write_vtu(vtu_prefix + "_t" + std::to_string(step_id) + ".vtu");
-        if (!csv_prefix.empty()) write_csv(csv_prefix + "_t" + std::to_string(step_id) + ".csv");
+        if (!vtu_prefix.empty()) outputVtu(vtu_prefix + "_t" + std::to_string(step_id) + ".vtu");
+        if (!csv_prefix.empty()) outputCsv(csv_prefix + "_t" + std::to_string(step_id) + ".csv");
 
         std::cout << "[TD] step " << step_id << " t=" << t
                   << "  ||u^{n+1}-u^{n}||=" << change << "\n";
@@ -227,13 +227,7 @@ void FemTD<dim>::run(double T, double dt, double theta,
 
 // ===== output =====
 template<unsigned int dim>
-void FemTD<dim>::outputCsv(const std::string& filename) const { write_csv(filename); }
-
-template<unsigned int dim>
-void FemTD<dim>::outputVtu(const std::string& filename) const { write_vtu(filename); }
-
-template<unsigned int dim>
-void FemTD<dim>::write_csv(const std::string& filename) const {
+void FemTD<dim>::outputCsv(const std::string& filename) const {
     std::ofstream csv(filename);
     if (!csv) { std::cerr << "Cannot open " << filename << "\n"; return; }
     csv << "# x " << (dim>=2?"y ":"") << (dim==3?"z ":"") << "u\n";
@@ -245,7 +239,7 @@ void FemTD<dim>::write_csv(const std::string& filename) const {
 }
 
 template<unsigned int dim>
-void FemTD<dim>::write_vtu(const std::string& filename) const {
+void FemTD<dim>::outputVtu(const std::string& filename) const {
     std::ofstream vtu(filename);
     if (!vtu) { std::cerr << "Cannot open " << filename << "\n"; return; }
 
