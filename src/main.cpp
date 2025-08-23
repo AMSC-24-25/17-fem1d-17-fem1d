@@ -86,22 +86,15 @@ int main(int argc, char *argv[])
 
         // Configurazione con mix di Dirichlet e Neumann
         boundary_conditions.addDirichlet(0, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return p[1]; }));
+        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return 1.0; }));
         boundary_conditions.addDirichlet(2, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return p[0]; }));
-        
+        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return 1.0; }));
+
         cout << "Boundary conditions:" << endl;
         cout << "  Tag 0: Dirichlet u = 0.0" << endl;
         cout << "  Tag 1: Dirichlet u = 0.0" << endl;
         cout << "  Tag 2: Dirichlet u = 0.0" << endl;
         cout << "  Tag 3: Dirichlet u = 0.0" << endl;
-
-        /* square
-        0 sinistra
-        1 destra
-        2 sotto
-        3 sopra
-        */
 
         Grid<2> grid;
         grid.parseFromMsh(argv[2]);
@@ -123,32 +116,32 @@ int main(int argc, char *argv[])
         
     // 1. Problem functions definition
         Function<3,1> forcing([](Point<3> p) { 
-            return 2 * (p[0] + p[1] + p[2]) - 2 * (p[0] * p[0] + p[1] * p[1] + p[2] * p[2]);
+            return -1.0*p[1]*p[2] -1.0*p[0]*p[2] -1.0*p[0]*p[1] + 1.0*p[0] * p[1] * p[2];
         });
         Function<3,1> diffusion([](Point<3> p) { return 1.0; });
-        Function<3,1> reaction([](Point<3> p) { return 0.0; });
-        Function<3,3> transport([](Point<3> p) { return Point<3>(0.0, 0.0, 0.0); });
+        Function<3,1> reaction([](Point<3> p) { return 1.0; });
+        Function<3,3> transport([](Point<3> p) { return Point<3>(-1.0, -1.0, -1.0); });
 
     // 2. Configure boundary conditions BEFORE mesh parsing
         BoundaryConditions<3,1> boundary_conditions;
 
-    // Configuration: Dirichlet on all faces except the top (tag 5), Neumann on tag 5
-    boundary_conditions.addDirichlet(0, 0.0);
-    boundary_conditions.addDirichlet(1, 0.0);
-    boundary_conditions.addDirichlet(2, 0.0);
-    boundary_conditions.addDirichlet(3, 0.0);
-    boundary_conditions.addDirichlet(4, 0.0);
-    // Neumann on top face (tag 5): constant flux
-    boundary_conditions.addNeumann(5, Function<3,1>([](Point<3> p) { return 1.0; }));
+        boundary_conditions.addDirichlet(0, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
+        boundary_conditions.addNeumann(1, Function<3,1>([](Point<3> p) { return 4.0; }));
+        // boundary_conditions.addDirichlet(1, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
+        boundary_conditions.addDirichlet(2, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
+        boundary_conditions.addNeumann(3, Function<3,1>([](Point<3> p) { return 4.0; }));
+        // boundary_conditions.addDirichlet(3, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
+        boundary_conditions.addDirichlet(4, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
+        boundary_conditions.addDirichlet(5, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
 
-    cout << "Boundary conditions configured:" << endl;
-    cout << "  Physical tag 0 (back face): Dirichlet u = 0" << endl;
-    cout << "  Physical tag 1 (front face): Dirichlet u = 0" << endl;
-    cout << "  Physical tag 2 (left face): Dirichlet u = 0" << endl;
-    cout << "  Physical tag 3 (right face): Dirichlet u = 0" << endl;
-    cout << "  Physical tag 4 (bottom face): Dirichlet u = 0" << endl;
-    cout << "  Physical tag 5 (top face): Neumann g = 1.0" << endl;
-    cout << "NOTE: 'front' is considered as the face whose normal is (1, 0, 0)." << endl;
+        cout << "Boundary conditions configured:" << endl;
+        cout << "  Physical tag 0 (back face): Dirichlet u = xyz" << endl;
+        cout << "  Physical tag 1 (front face): Neumann g = 1.0" << endl;
+        cout << "  Physical tag 2 (left face): Dirichlet u = xyz" << endl;
+        cout << "  Physical tag 3 (right face): Neumann g = 1.0" << endl;
+        cout << "  Physical tag 4 (bottom face): Dirichlet u = xyz" << endl;
+        cout << "  Physical tag 5 (top face): Dirichlet u = xyz" << endl;
+        cout << "NOTE: 'front' is considered as the face whose normal is (1, 0, 0)." << endl;
 
     // 3. Mesh parsing
         Grid<3> grid;
@@ -167,11 +160,11 @@ int main(int argc, char *argv[])
         fem3d.assemble();
         fem3d.solve();
         fem3d.outputCsv(csvFilePath);
-    cout << "3D solution saved to " << csvFilePath << endl;
-    fem3d.outputVtu(vtuFilePath);
-    cout << "3D solution saved to " << vtuFilePath << endl;
-    }
-    else {
+
+        cout << "3D solution saved to " << csvFilePath << endl;
+        fem3d.outputVtu(vtuFilePath);
+        cout << "3D solution saved to " << vtuFilePath << endl;
+    } else {
         cout << "First argument must be '1d' or '2d' or '3d'" << endl;
         return -1;
     }
