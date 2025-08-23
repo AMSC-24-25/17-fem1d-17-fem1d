@@ -45,8 +45,3 @@ function = "0.0"
 type = "neumann"
 tag = 5
 function = "1.0"
-
-[solver]
-tolerance = 1e-14
-max_iterations = 2000
-method = "direct"

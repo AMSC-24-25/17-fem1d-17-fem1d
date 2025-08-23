@@ -24,8 +24,3 @@ function = "0.5"
 type = "neumann"
 tag = 1
 function = "x*x"
-
-[solver]
-tolerance = 1e-14
-max_iterations = 1000
-method = "direct"

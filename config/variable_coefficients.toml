@@ -35,8 +35,3 @@ function = "2*x*y"
 type = "neumann"
 tag = 3
 function = "sin(pi*x + pi*y)"
-
-[solver]
-tolerance = 1e-14
-max_iterations = 2000
-method = "direct"

@@ -34,8 +34,3 @@ function = "cos(2*pi*x)"
 type = "neumann"
 tag = 3
 function = "cos(2*pi*y)"
-
-[solver]
-tolerance = 1e-12
-max_iterations = 2500
-method = "direct"

@@ -43,8 +43,3 @@ time_function = "sin(2.0 * pi * (x + y)) * sin(2.0 * pi*t)"  # time-dependent Di
 type = "dirichlet"
 tag = 3
 time_function = "sin(2.0 * pi * (x + y)) * sin(2.0 * pi*t)"  # time-dependent Dirichlet
-
-[solver]
-tolerance = 1e-12
-max_iterations = 1000
-method = "direct"

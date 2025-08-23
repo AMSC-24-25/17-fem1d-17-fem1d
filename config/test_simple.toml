@@ -19,8 +19,3 @@ forcing_function = "1.0"
 type = "dirichlet"
 tag = 1
 function = "0.0"
-
-[solver]
-tolerance = 1e-6
-max_iterations = 100
-method = "direct"

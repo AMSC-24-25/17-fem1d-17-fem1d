@@ -34,8 +34,3 @@ function = "30.0 + 5*cos(pi*x)"
 type = "neumann"
 tag = 3
 function = "-2*y*y"
-
-[solver]
-tolerance = 1e-13
-max_iterations = 1800
-method = "direct"

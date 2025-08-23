@@ -34,8 +34,3 @@ function = "0.0"
 type = "dirichlet"
 tag = 3
 function = "0.0"
-
-[solver]
-tolerance = 1e-14
-max_iterations = 2000
-method = "direct"
