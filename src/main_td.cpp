@@ -39,14 +39,6 @@ int main(int argc, char *argv[])
         
         Grid1D grid(0, atof(argv[2]), atoi(argv[3]));
 
-        Function<1,1> forcing(
-            [](Point<1> p) -> double { //value
-                // return sin(2*PI*p[0]);
-                return (4.0 * M_PI * M_PI * 2.0 + 5.0) * sin(2.0 * M_PI * p[0]) 
-                + 2.0 * M_PI * 4.0 * cos(2.0 * M_PI * p[0]);
-            }
-        );
-
         // Function<1,1> diffusion_term = OneFunction<1,1>();
         Function<1,1> diffusion_term = Function<1,1>([](Point<1> p) -> double { return 8.0; });
         Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 0.5; });
@@ -54,20 +46,21 @@ int main(int argc, char *argv[])
 
         BoundaryConditions_td<1,1> boundary_conditions;
         boundary_conditions.addDirichlet(0, [](Point<1> p, double t) -> double { return 0; });
-        boundary_conditions.addNeumann(1, [](Point<1> p, double t) -> double { return 2*M_PI*std::cos(2.0 * M_PI * p[0]) * t; });
+        boundary_conditions.addNeumann(1, [](Point<1> p, double t) -> double { return 2*M_PI*8.0* t; });
 
         OrderTwoQuadrature<1> quadrature;
         FemTD<1> femtd(grid, diffusion_term, transport_term, reaction_term, boundary_conditions, quadrature);
 
         femtd.set_forcing([](const Point<1>& p, double t) {
             double exact = std::sin(2.0 * M_PI * p[0]) * t;
-            double exactD1 = 2*M_PI*std::cos(2.0 * M_PI * p[0]) * t;
-            double exactD2 = -4*M_PI*M_PI*std::sin(2.0 * M_PI * p[0]) * t;
-            return 8*exactD2 + 0.5*exactD1 + 2*exact;
+            double exactD1 = 2.0*M_PI*std::cos(2.0 * M_PI * p[0]) * t;
+            double exactD2 = -4.0*M_PI*M_PI*std::sin(2.0 * M_PI * p[0]) * t;
+            double exactDT = std::sin(2.0 * M_PI * p[0]);
+            return exactDT - 8.0*exactD2 + 0.5*exactD1 + 2.0*exact;
         });
 
         femtd.set_initial_condition(Function<1,1>([](const Point<1>& p){
-            return 0;
+            return 0.0;
         }));
 
         const double T = 1.0;     // tempo finale

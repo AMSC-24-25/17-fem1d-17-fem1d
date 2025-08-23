@@ -86,9 +86,9 @@ int main(int argc, char *argv[])
 
         // Configurazione con mix di Dirichlet e Neumann
         boundary_conditions.addDirichlet(0, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return 1.0; }));
+        boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return p[1]; }));
         boundary_conditions.addDirichlet(2, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
-        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return 1.0; }));
+        boundary_conditions.addNeumann(3, Function<2,1>([](Point<2> p) { return p[0]; }));
 
         cout << "Boundary conditions:" << endl;
         cout << "  Tag 0: Dirichlet u = 0.0" << endl;
@@ -126,19 +126,19 @@ int main(int argc, char *argv[])
         BoundaryConditions<3,1> boundary_conditions;
 
         boundary_conditions.addDirichlet(0, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
-        boundary_conditions.addNeumann(1, Function<3,1>([](Point<3> p) { return 4.0; }));
+        boundary_conditions.addNeumann(1, Function<3,1>([](Point<3> p) { return p[1]*p[2]; }));
         // boundary_conditions.addDirichlet(1, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
         boundary_conditions.addDirichlet(2, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
-        boundary_conditions.addNeumann(3, Function<3,1>([](Point<3> p) { return 4.0; }));
-        // boundary_conditions.addDirichlet(3, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
+        // boundary_conditions.addNeumann(3, Function<3,1>([](Point<3> p) { return p[0]*p[2]; }));
+        boundary_conditions.addDirichlet(3, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
         boundary_conditions.addDirichlet(4, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
         boundary_conditions.addDirichlet(5, Function<3,1>([](Point<3> p) { return p[0]*p[1]*p[2]; }));
 
         cout << "Boundary conditions configured:" << endl;
         cout << "  Physical tag 0 (back face): Dirichlet u = xyz" << endl;
-        cout << "  Physical tag 1 (front face): Neumann g = 1.0" << endl;
+        cout << "  Physical tag 1 (front face): Neumann g = yz" << endl;
         cout << "  Physical tag 2 (left face): Dirichlet u = xyz" << endl;
-        cout << "  Physical tag 3 (right face): Neumann g = 1.0" << endl;
+        cout << "  Physical tag 3 (right face): Neumann g = xz" << endl;
         cout << "  Physical tag 4 (bottom face): Dirichlet u = xyz" << endl;
         cout << "  Physical tag 5 (top face): Dirichlet u = xyz" << endl;
         cout << "NOTE: 'front' is considered as the face whose normal is (1, 0, 0)." << endl;

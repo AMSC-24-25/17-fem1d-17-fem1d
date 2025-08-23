@@ -42,12 +42,16 @@ OrderFourQuadrature<1>::OrderFourQuadrature() {
 template<>
 OrderTwoQuadrature<3>::OrderTwoQuadrature() {
     // Four-point quadrature rule for tetrahedron (degree 2 exact)
+    double sqrt5 = std::sqrt(5.0);
+    double a = (5.0 + 3.0 * sqrt5) / 20.0; 
+    double b = (5.0 - sqrt5) / 20.0;        
+    
     // Barycentric coordinates and weights:
     barycPoints = {
-        {13.0/22.0, 3.0/22.0, 3.0/22.0, 3.0/22.0},
-        {3.0/22.0, 13.0/22.0, 3.0/22.0, 3.0/22.0},
-        {3.0/22.0, 3.0/22.0, 13.0/22.0, 3.0/22.0},
-        {3.0/22.0, 3.0/22.0, 3.0/22.0, 13.0/22.0}
+        {a, b, b, b},
+        {b, a, b, b},
+        {b, b, a, b},
+        {b, b, b, a}
     };
     // Weights sum to 1
     w = {1.0/4.0, 1.0/4.0, 1.0/4.0, 1.0/4.0};
@@ -62,24 +66,6 @@ OrderTwoQuadrature<2>::OrderTwoQuadrature() {
     };
     // Weights sum to 1
     w = {1/3.0, 1/3.0, 1/3.0};
-}
-
-template<>
-OrderFourQuadrature<2>::OrderFourQuadrature() {
-    // Six-point quadrature rule for triangle (degree 4 exact, symmetric)
-    barycPoints = {
-        {5.0/11.0, 5.0/11.0, 1.0/11.0},
-        {5.0/11.0, 1.0/11.0, 5.0/11.0},
-        {1.0/11.0, 5.0/11.0, 5.0/11.0},
-        {1.0/11.0, 1.0/11.0, 9.0/11.0},
-        {1.0/11.0, 9.0/11.0, 1.0/11.0},
-        {9.0/11.0, 1.0/11.0, 1.0/11.0}
-    };
-    // Weights sum to 1
-    w = {
-        2.0/9.0, 2.0/9.0, 2.0/9.0,
-        1.0/9.0, 1.0/9.0, 1.0/9.0
-    };
 }
 
 template<unsigned int dim>
@@ -206,11 +192,14 @@ void GaussLegendre<1>::getQuadratureData(const BoundaryCell<1>& edge,
 
 template<>
 GaussLegendre<2>::GaussLegendre() {
-    // Quadrature points on reference triangle (order 2, exact for degree 2 polynomials)
-    points = {{1.0/6.0, 1.0/6.0},    // point 1: (1/6, 1/6) - barycentric coordinates (2/3, 1/6, 1/6)
-              {2.0/3.0, 1.0/6.0},    // point 2: (2/3, 1/6) - barycentric coordinates (1/6, 2/3, 1/6)
-              {1.0/6.0, 2.0/3.0}};   // point 3: (1/6, 2/3) - barycentric coordinates (1/6, 1/6, 2/3)
-    w = {1.0/3.0, 1.0/3.0, 1.0/3.0}; // Weights (sum to 1, area of reference triangle with vertices (0,0), (1,0), (0,1))
+    // Three-point quadrature rule for triangle (order 2)
+    points = {
+        {2/3.0, 1/6.0, 1/6.0},
+        {1/6.0, 2/3.0, 1/6.0},
+        {1/6.0, 1/6.0, 2/3.0}
+    };
+    // Weights sum to 1
+    w = {1/3.0, 1/3.0, 1/3.0};
 }
 
 template<>
@@ -231,14 +220,15 @@ void GaussLegendre<2>::getQuadratureData(const BoundaryCell<2>& face,
     
     // Iterate over quadrature points
     for (size_t q = 0; q < points.size(); ++q) {
-        // Global quadrature point on face
-        Point<3> globalPoint = mapToGlobalFace(face, points[q][0], points[q][1]);
+        // Convert vector to Point<3> for barycentric coordinates
+        Point<3> baryCoords(points[q]);
+        
+        // Global quadrature point on face using full barycentric coordinates
+        Point<3> globalPoint = mapToGlobalFace(face, baryCoords);
         quadrature_points.push_back(globalPoint);
         
-        // Shape functions at the quadrature point
-        std::vector<double> phi_q;
-        getShapeFunctions2D(points[q][0], points[q][1], phi_q);
-        phi.push_back(phi_q);
+        // Shape functions at the quadrature point (using barycentric coordinates)
+        phi.push_back(points[q]);
         
         // Physical weight (weight * face area)
         weights.push_back(w[q] * area);

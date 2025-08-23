@@ -133,43 +133,18 @@ inline void getShapeFunctions1D(double xi, std::vector<double>& phi) {
 
 // ============= GEOMETRY FOR BOUNDARY CELLS (3D FACES) =============
 
-inline Point<3> mapToGlobalFace(const BoundaryCell<2>& face, double xi, double eta) {
-    // Maps from local coordinates (xi, eta) to global coordinates for a triangular face
-    // Barycentric coordinate: (1-xi-eta, xi, eta)
+inline Point<3> mapToGlobalFace(const BoundaryCell<2>& face, Point<3> barycentricCoords) {
+    // Maps from full barycentric coordinates to global coordinates for a triangular face
+    // Barycentric coordinates: (lambda1, lambda2, lambda3) where lambda1 + lambda2 + lambda3 = 1
     const Point<3>& p1 = face[0];
     const Point<3>& p2 = face[1];
     const Point<3>& p3 = face[2];
-    
-    double x = (1.0 - xi - eta) * p1[0] + xi * p2[0] + eta * p3[0];
-    double y = (1.0 - xi - eta) * p1[1] + xi * p2[1] + eta * p3[1];
-    double z = (1.0 - xi - eta) * p1[2] + xi * p2[2] + eta * p3[2];
+
+    double x = barycentricCoords[0] * p1[0] + barycentricCoords[1] * p2[0] + barycentricCoords[2] * p3[0];
+    double y = barycentricCoords[0] * p1[1] + barycentricCoords[1] * p2[1] + barycentricCoords[2] * p3[1];
+    double z = barycentricCoords[0] * p1[2] + barycentricCoords[1] * p2[2] + barycentricCoords[2] * p3[2];
     
     return Point<3>(x, y, z);
-}
-
-inline Point<3> faceNormal(const BoundaryCell<2>& face) {
-    // Computes the unit normal vector to the triangular face
-    const Point<3>& p1 = face[0];
-    const Point<3>& p2 = face[1];
-    const Point<3>& p3 = face[2];
-    
-    // Two vectors on the sides of the triangle
-    Point<3> v1(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
-    Point<3> v2(p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]);
-    
-    // Cross product v1 × v2
-    double nx = v1[1] * v2[2] - v1[2] * v2[1];
-    double ny = v1[2] * v2[0] - v1[0] * v2[2];
-    double nz = v1[0] * v2[1] - v1[1] * v2[0];
-    
-    // Normalize
-    double length = sqrt(nx*nx + ny*ny + nz*nz);
-    if (length < 1e-14) {
-        std::cerr << "Degenerate face in faceNormal\n";
-        exit(-1);
-    }
-    
-    return Point<3>(nx/length, ny/length, nz/length);
 }
 
 inline double faceArea(const BoundaryCell<2>& face) {
@@ -188,14 +163,6 @@ inline double faceArea(const BoundaryCell<2>& face) {
     double nz = v1[0] * v2[1] - v1[1] * v2[0];
     
     return 0.5 * sqrt(nx*nx + ny*ny + nz*nz);
-}
-
-inline void getShapeFunctions2D(double xi, double eta, std::vector<double>& phi) {
-    // Linear 2D shape functions for triangle in barycentric coordinates
-    phi.resize(3);
-    phi[0] = 1.0 - xi - eta;  // shape function for node 0
-    phi[1] = xi;              // shape function for node 1
-    phi[2] = eta;             // shape function for node 2
 }
 
 
