@@ -111,52 +111,29 @@ Point<3> Cell<3>::barycentricGradient(int i) const {
     // Standard formula: grad(λᵢ) = (face_normal_opposite_to_i) / (6*volume)
     // For tetrahedron ABCD, the gradient of λᵢ is the outward normal to face opposite node i
     const Cell<3>& cell = *this;
-    const Point<3>& A = cell[0];
-    const Point<3>& B = cell[1]; 
-    const Point<3>& C = cell[2];
-    const Point<3>& D = cell[3];
-
-    if (i == 0) {
-        // grad(λ₀): normal to face BCD (opposite to A)
-        Point<3> BC = C - B;
-        Point<3> BD = D - B;
-        Point<3> normal = Point<3>{
-            BC[1]*BD[2] - BC[2]*BD[1],
-            BC[2]*BD[0] - BC[0]*BD[2],
-            BC[0]*BD[1] - BC[1]*BD[0]
-        };
-        return Point<3>(std::vector<double>{normal[0]/detT, normal[1]/detT, normal[2]/detT});
-    } else if (i == 1) {
-        // grad(λ₁): normal to face ACD (opposite to B)
-        Point<3> AC = C - A;
-        Point<3> AD = D - A;
-        Point<3> normal = Point<3>{
-            AD[1]*AC[2] - AD[2]*AC[1],  // Note: AD × AC (reversed for correct orientation)
-            AD[2]*AC[0] - AD[0]*AC[2],
-            AD[0]*AC[1] - AD[1]*AC[0]
-        };
-        return Point<3>(std::vector<double>{normal[0]/detT, normal[1]/detT, normal[2]/detT});
-    } else if (i == 2) {
-        // grad(λ₂): normal to face ABD (opposite to C)
-        Point<3> AB = B - A;
-        Point<3> AD = D - A;
-        Point<3> normal = Point<3>{
-            AB[1]*AD[2] - AB[2]*AD[1],
-            AB[2]*AD[0] - AB[0]*AD[2],
-            AB[0]*AD[1] - AB[1]*AD[0]
-        };
-        return Point<3>(std::vector<double>{normal[0]/detT, normal[1]/detT, normal[2]/detT});
-    } else if (i == 3) {
-        // grad(λ₃): normal to face ABC (opposite to D)
-        Point<3> AB = B - A;
-        Point<3> AC = C - A;
-        Point<3> normal = Point<3>{
-            AC[1]*AB[2] - AC[2]*AB[1],  // Note: AC × AB (reversed for correct orientation)
-            AC[2]*AB[0] - AC[0]*AB[2],
-            AC[0]*AB[1] - AC[1]*AB[0]
-        };
-        return Point<3>(std::vector<double>{normal[0]/detT, normal[1]/detT, normal[2]/detT});
-    }
+    
+    // Define the three vertices of the face opposite to node i
+    int face_nodes[4][3] = {
+        {1, 2, 3},  // Face opposite to node 0: nodes 1,2,3 (BCD)
+        {0, 3, 2},  // Face opposite to node 1: nodes 0,3,2 (ADC) - reversed for orientation
+        {0, 1, 3},  // Face opposite to node 2: nodes 0,1,3 (ABD)
+        {0, 2, 1}   // Face opposite to node 3: nodes 0,2,1 (ACB) - reversed for orientation
+    };
+    
+    const Point<3>& P = cell[face_nodes[i][0]];
+    const Point<3>& Q = cell[face_nodes[i][1]];
+    const Point<3>& R = cell[face_nodes[i][2]];
+    
+    // Compute face normal as (Q-P) × (R-P)
+    Point<3> PQ = Q - P;
+    Point<3> PR = R - P;
+    Point<3> normal = Point<3>{
+        PQ[1]*PR[2] - PQ[2]*PR[1],
+        PQ[2]*PR[0] - PQ[0]*PR[2],
+        PQ[0]*PR[1] - PQ[1]*PR[0]
+    };
+    
+    return Point<3>(std::vector<double>{normal[0]/detT, normal[1]/detT, normal[2]/detT});
     std::cerr << "Shape function index " << i << " invalid in barycentricGradient (3D)\n";
     exit(-1);
 }
