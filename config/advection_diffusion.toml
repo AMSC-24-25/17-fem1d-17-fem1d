@@ -9,7 +9,8 @@ type = "order2"
 [equation]
 # Equazione di advezione-diffusione con coefficienti variabili
 diffusion_function = "1.0 + 0.5*sin(pi*x)*cos(pi*y)"
-transport_function = "x*y"
+transport_function_x = "x*y"
+transport_coefficient_y = 0.0
 reaction_function = "0.1*(x*x + y*y)"
 forcing_function = "exp(-((x-0.5)*(x-0.5) + (y-0.5)*(y-0.5))/0.1)"
 

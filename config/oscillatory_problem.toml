@@ -9,7 +9,8 @@ type = "order2"
 [equation]
 # Problema con comportamento oscillatorio
 diffusion_function = "1.0 + 0.5*sin(4*pi*x)*sin(4*pi*y)"
-transport_function = "cos(pi*x)*sin(pi*y)"
+transport_function_x = "cos(pi*x)*sin(pi*y)"
+transport_coefficient_y = 0.0
 reaction_function = "0.5 + 0.3*sin(6*pi*x)*cos(6*pi*y)"
 forcing_function = "sin(2*pi*x)*sin(2*pi*y) + 3*cos(pi*(x+y))"
 

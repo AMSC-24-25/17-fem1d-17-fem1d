@@ -9,7 +9,8 @@ type = "order2"
 [equation]
 # Funzioni costanti semplici per debug
 diffusion_function = "1"
-transport_function = "0"
+transport_function_x = "0"
+transport_function_y = "0"
 reaction_function = "0"  
 forcing_function = "1"
 

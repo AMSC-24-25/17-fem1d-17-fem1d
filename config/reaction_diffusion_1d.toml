@@ -10,7 +10,7 @@ type = "order2"
 [equation]
 # Problema 1D di reazione-diffusione
 diffusion_function = "1.0 + 0.5*sin(pi*x)"
-transport_function = "0.1*x*(1-x)"
+transport_function_x = "0.1*x*(1-x)"
 reaction_function = "x*x*(1-x)*(1-x)"
 forcing_function = "exp(-10*(x-0.3)*(x-0.3)) + 2*exp(-20*(x-0.7)*(x-0.7))"
 

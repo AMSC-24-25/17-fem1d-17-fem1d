@@ -9,7 +9,8 @@ type = "order2"
 [equation]
 # Problema di conduzione del calore con sorgente localizzata
 diffusion_function = "0.5 + 0.3*cos(2*pi*x)*cos(2*pi*y)"
-transport_function = "0.0"
+transport_coefficient_x = 0.0
+transport_coefficient_y = 0.0
 reaction_function = "-0.2*x*y"
 forcing_function = "100*exp(-50*((x-0.25)*(x-0.25) + (y-0.75)*(y-0.75))) + 50*exp(-30*((x-0.75)*(x-0.75) + (y-0.25)*(y-0.25)))"
 
