@@ -221,9 +221,6 @@ int main(int argc, char *argv[])
             return 0.0;  // u(x,y,z,0) = 0
         }));
 
-        // 7. Pre-assemble time-invariant matrices
-        femtd.assemble_time_invariant();
-
         // 8. Time stepping parameters
         const double T = 1.0;     // final time (smaller for 3D)
         const double dt = 1e-2;   // time step

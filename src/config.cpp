@@ -1,20 +1,4 @@
 #include "config.hpp"
-#include "toml.hpp"  //         config.equation.forcing_function = toml::find_or(equation, "forcing_function", std::string("0.0"));
-        
-        // Parse boundary conditions (arrays) - much more elegant!rary (local)
-#include "exprtk.hpp"  // exprtk library (local)
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <stdexcept>
-#include <map>
-#include <algorithm>
-#include <cmath>
-#include <vector>
-#include <memory>
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -168,7 +152,7 @@ void Config::print() const {
     std::cout << "===================" << std::endl;
 }
 
-ThreadExpressionPool::ThreadExpressionPool(const std::string& expr_string, unsigned int dimension, int num_threads, bool time_dependent = false) 
+ThreadExpressionPool::ThreadExpressionPool(const std::string& expr_string, unsigned int dimension, int num_threads, bool time_dependent) 
   : x_vals(num_threads, 0.0),
     y_vals(num_threads, 0.0),
     z_vals(num_threads, 0.0),
@@ -429,7 +413,8 @@ std::unique_ptr<QuadratureRule<2>> Config::createQuadrature<2>() const {
 template<>
 std::unique_ptr<QuadratureRule<3>> Config::createQuadrature<3>() const {
     if (quadrature.type == "order4") {
-        throw std::runtime_error("OrderFourQuadrature<3> is not implemented.");
+        std::cerr << "OrderFourQuadrature<3> is not implemented." << std::endl;
+        exit(-1);
     }
     return std::make_unique<OrderTwoQuadrature<3>>();
 }

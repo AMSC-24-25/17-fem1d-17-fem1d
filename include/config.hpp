@@ -1,14 +1,23 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include <string>
-#include <vector>
 #include "grid1D.hpp"
 #include "grid.hpp"
 #include "function.hpp"
 #include "boundary_conditions.hpp"
 #include "boundary_conditions_td.hpp"
+#include "toml.hpp"  // toml11 library (local)
+#include "exprtk.hpp"  // exprtk library (local)
+#include <iostream>
+#include <string>
+#include <stdexcept>
+#include <algorithm>
+#include <cmath>
+#include <vector>
 #include <memory>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 // Structure for problem configuration
 struct ProblemConfig {
@@ -101,9 +110,9 @@ struct Config {
     template<unsigned int dim> Function<dim,1> createInitialConditionFunction() const;
 };
 
-typedef exprtk::symbol_table<double> symbol_table_t;
-typedef exprtk::expression<double> expression_t;
-typedef exprtk::parser<double> parser_t;
+using symbol_table_t = exprtk::symbol_table<double>;
+using expression_t = exprtk::expression<double>;
+using parser_t = exprtk::parser<double>;
 
 // Unified thread-safe expression pool for both simple and time-dependent functions
 struct ThreadExpressionPool {
