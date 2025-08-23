@@ -13,8 +13,11 @@ Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusi
     transport_term(transport), reaction_term(reaction),
     boundaryConditions(boundaryConditions), quadrature(quadrature)
 {
-// Modern constructor with BoundaryConditions
-    // Inizializza matrici
+#ifdef _OPENMP
+    // Ensure Eigen uses OpenMP if available
+    Eigen::setNbThreads(omp_get_max_threads());
+#endif
+
     // Initialize matrices
     int numNodes = mesh.getNumNodes();
     A.resize(numNodes, numNodes);
