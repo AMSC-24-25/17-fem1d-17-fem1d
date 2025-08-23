@@ -25,14 +25,14 @@ forcing_function_td = "sin(2.0 * pi * (x + y)) * 2.0 * pi * cos(2.0 * pi*t) - ((
 
 # Mixed boundary conditions
 [[boundary_conditions]]
-type = "dirichlet"
+type = "neumann"
 tag = 0
-time_function = "sin(2.0 * pi * (x + y)) * sin(2.0 * pi*t)"  # time-dependent Dirichlet
+time_function = "-2.0 * pi * cos(2.0 * pi * (x + y)) * sin(2.0 * pi*t)"  # -d/dx of Dirichlet function
 
 [[boundary_conditions]]
-type = "dirichlet"
+type = "neumann"
 tag = 1
-time_function = "sin(2.0 * pi * (x + y)) * sin(2.0 * pi*t)"  # time-dependent Dirichlet
+time_function = "2.0 * pi * cos(2.0 * pi * (x + y)) * sin(2.0 * pi * t)"  # d/dx of Dirichlet function
 
 [[boundary_conditions]]
 type = "dirichlet"

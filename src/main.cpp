@@ -96,6 +96,13 @@ int main(int argc, char *argv[])
         cout << "  Tag 2: Dirichlet u = 0.0" << endl;
         cout << "  Tag 3: Dirichlet u = 0.0" << endl;
 
+        /* square
+        0 sinistra
+        1 destra
+        2 sotto
+        3 sopra
+        */
+
         Grid<2> grid;
         grid.parseFromMsh(argv[2]);
         

@@ -10,9 +10,9 @@ void BoundaryConditions_td<3, 1>::applyNeumann(
     // Get boundary faces with the specified physical tag
     //from auto to std::vector<BoundaryCell<2>>
     std::vector<BoundaryCell<2>> boundaryFaces = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
-    std::cout << "  Applicando condizione di Neumann 3D su tag " << bc.getBoundaryId()
-              << " (" << boundaryFaces.size() << " facce)" << std::endl;
-    
+    std::cout << "  Applying Neumann condition on tag " << bc.getBoundaryId()
+              << " (" << boundaryFaces.size() << " faces)" << std::endl;
+
     // Initialize 2D quadrature for triangular faces
     GaussLegendre2D quadrature;
     
@@ -42,29 +42,24 @@ void BoundaryConditions_td<2, 1>::applyNeumann(
     // Get boundary edges with the specified physical tag
     //from auto to std::vector<BoundaryCell<1>>
     std::vector<BoundaryCell<1>> boundaryEdges = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
-    std::cout << "  Applicando condizione di Neumann su tag " << bc.getBoundaryId()
+    std::cout << "  Applying Neumann condition on tag " << bc.getBoundaryId()
               << " (" << boundaryEdges.size() << " edge)" << std::endl;
     
     // Initialize 1D quadrature
     GaussLegendre1D quadrature;
     
     // Iterate over all boundary edges with this tag
-    //from const auto& to const BoundaryCell<1>&
     for (const BoundaryCell<1>& edge : boundaryEdges) {
-    // Compute the contributions to the edge nodes using quadrature
+        // Compute the contributions to the edge nodes using quadrature
         std::vector<double> contributions;
         quadrature.integrateShapeFunctions(edge, bc.getBoundaryFunction(t), contributions);
         
-    // Add the contributions to the RHS vector
-    //from const auto& to const std::vector<unsigned int>&
+        // Add the contributions to the RHS vector
         const std::vector<unsigned int>& nodeIndices = edge.getNodeIndexes();
         for (size_t i = 0; i < nodeIndices.size(); ++i) {
             int globalNodeIndex = nodeIndices[i];
             rhs[globalNodeIndex] += contributions[i];
         }
-        
-    std::cout << "    Edge with nodes [" << nodeIndices[0] << ", " << nodeIndices[1] 
-         << "] - contributions: [" << contributions[0] << ", " << contributions[1] << "]" << std::endl;
     }
 }
 
@@ -78,7 +73,7 @@ void BoundaryConditions_td<1,1>::applyNeumann(
 {
     const std::vector<BoundaryCell<0>> bcs = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
     if (bcs.empty()) {
-        std::cerr << "Neumann 1D: nessun boundary cell per tag "
+        std::cerr << "Neumann 1D: no boundary cell for tag "
                   << bc.getBoundaryId() << "\n";
         return;
     }
@@ -89,9 +84,4 @@ void BoundaryConditions_td<1,1>::applyNeumann(
 
     const double g = bc.getBoundaryFunction(t).value(X); // g = μ ∂u/∂n (flusso uscente)
     rhs[d] += g;
-
-    // DEBUG
-    std::cout << "[Neumann 1D] tag=" << bc.getBoundaryId()
-              << " node=" << d << " x=" << X[0]
-              << "  add g=" << g << "\n";
 }
