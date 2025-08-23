@@ -67,6 +67,23 @@ OrderTwoQuadrature<2>::OrderTwoQuadrature() {
     // Weights sum to 1
     w = {1/3.0, 1/3.0, 1/3.0};
 }
+template<>
+OrderFourQuadrature<2>::OrderFourQuadrature() {
+    // Six-point quadrature rule for triangle (degree 4 exact, symmetric)
+    barycPoints = {
+        {5.0/11.0, 5.0/11.0, 1.0/11.0},
+        {5.0/11.0, 1.0/11.0, 5.0/11.0},
+        {1.0/11.0, 5.0/11.0, 5.0/11.0},
+        {1.0/11.0, 1.0/11.0, 9.0/11.0},
+        {1.0/11.0, 9.0/11.0, 1.0/11.0},
+        {9.0/11.0, 1.0/11.0, 1.0/11.0}
+    };
+    // Weights sum to 1
+    w = {
+        2.0/9.0, 2.0/9.0, 2.0/9.0,
+        1.0/9.0, 1.0/9.0, 1.0/9.0
+    };
+}
 
 template<unsigned int dim>
 void QuadratureRule<dim>::getQuadratureData(
