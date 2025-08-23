@@ -131,7 +131,6 @@ int main(int argc, char *argv[])
 
     // 2. Configure boundary conditions BEFORE mesh parsing
         BoundaryConditions<3,1> boundary_conditions;
-        
 
     // Configuration: Dirichlet on all faces except the top (tag 5), Neumann on tag 5
     boundary_conditions.addDirichlet(0, 0.0);

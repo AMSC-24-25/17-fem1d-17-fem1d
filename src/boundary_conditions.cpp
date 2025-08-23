@@ -62,9 +62,6 @@ void BoundaryConditions<2, 1>::applyNeumann(
             int globalNodeIndex = nodeIndices[i];
             rhs[globalNodeIndex] += contributions[i];
         }
-        
-    std::cout << "    Edge with nodes [" << nodeIndices[0] << ", " << nodeIndices[1] 
-         << "] - contributions: [" << contributions[0] << ", " << contributions[1] << "]" << std::endl;
     }
 }
 
@@ -89,9 +86,4 @@ void BoundaryConditions<1,1>::applyNeumann(
 
     const double g = bc.getBoundaryFunction().value(X); // g = μ ∂u/∂n (flusso uscente)
     rhs[d] += g;
-
-    // DEBUG
-    std::cout << "[Neumann 1D] tag=" << bc.getBoundaryId()
-              << " node=" << d << " x=" << X[0]
-              << "  add g=" << g << "\n";
 }
