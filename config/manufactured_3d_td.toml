@@ -63,8 +63,3 @@ type = "neumann"
 tag = 5
 function = "0.0"
 time_function = "2*pi*x*y*cos(2*pi*x*y*z) * t"  # du/dz for face z=const
-
-[solver]
-tolerance = 1e-10
-max_iterations = 1000
-method = "direct"

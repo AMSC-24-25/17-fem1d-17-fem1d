@@ -24,8 +24,3 @@ function = "0.0"
 type = "neumann"
 tag = 1
 function = "2*pi*sin(2*pi*x)"
-
-[solver]
-tolerance = 1e-10
-max_iterations = 500
-method = "direct"

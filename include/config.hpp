@@ -52,13 +52,6 @@ struct TimeDependentConfig {
     std::string forcing_function_td = "";  // f(x,y,z,t) - time dependent forcing
 };
 
-// Structure for solver configuration
-struct SolverConfig {
-    double tolerance;
-    int max_iterations;
-    std::string method;
-};
-
 struct QuadratureCfg {
     std::string type = "order2";
 };
@@ -68,7 +61,6 @@ struct Config {
     ProblemConfig problem;
     EquationConfig equation;
     std::vector<BCConfig> boundary_conditions;
-    SolverConfig solver;
     TimeDependentConfig time_dependent;  // NEW: time-dependent settings
     int quadrature_order = 2;
     template<int dim>

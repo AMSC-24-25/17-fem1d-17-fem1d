@@ -36,9 +36,4 @@ time_function = "0.0"  # u(0,t) = 0
 type = "dirichlet"
 tag = 1
 function = "0.0"  # fallback static
-time_function = "0.0"  # u(1,t) = sin(t)
-
-[solver]
-tolerance = 1e-10
-max_iterations = 500
-method = "direct"
+time_function = "sin(t)"  # u(1,t) = sin(t)

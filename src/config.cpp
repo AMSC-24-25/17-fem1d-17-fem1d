@@ -1,5 +1,7 @@
 #include "config.hpp"
-#include "toml.hpp"  // toml11 library (local)
+#include "toml.hpp"  //         config.equation.forcing_function = toml::find_or(equation, "forcing_function", std::string("0.0"));
+        
+        // Parse boundary conditions (arrays) - much more elegant!rary (local)
 #include "exprtk.hpp"  // exprtk library (local)
 #include <iostream>
 #include <fstream>
@@ -46,13 +48,6 @@ Config Config::loadFromFile(const std::string& filename) {
         config.equation.reaction_function = toml::find_or(equation, "reaction_function", 
             toml::find_or(equation, "reaction_coefficient", std::string("0.0")));
         config.equation.forcing_function = toml::find_or(equation, "forcing_function", std::string("0.0"));
-        
-    // Parse solver section
-        //from const auto& to const toml::value&
-        const toml::value& solver = toml::find(data, "solver");
-        config.solver.tolerance = toml::find_or(solver, "tolerance", 1e-12);
-        config.solver.max_iterations = toml::find_or(solver, "max_iterations", 1000);
-        config.solver.method = toml::find_or(solver, "method", std::string("direct"));
         
         // Parse boundary conditions (arrays) - much more elegant!
         if (data.contains("boundary_conditions")) {
@@ -114,18 +109,6 @@ bool Config::validate() const {
         return false;
     }
     
-    // Validate solver method
-    if (solver.method != "direct" && solver.method != "iterative") {
-        std::cerr << "Error: solver method must be 'direct' or 'iterative'" << std::endl;
-        return false;
-    }
-    
-    // Validate tolerance
-    if (solver.tolerance <= 0) {
-        std::cerr << "Error: tolerance must be positive" << std::endl;
-        return false;
-    }
-    
     // Validate boundary conditions
     if (boundary_conditions.empty()) {
         std::cerr << "Warning: no boundary conditions specified" << std::endl;
@@ -153,11 +136,6 @@ void Config::print() const {
     std::cout << "  Transport function (z): " << equation.transport_function_z << std::endl;
     std::cout << "  Reaction function: " << equation.reaction_function << std::endl;
     std::cout << "  Forcing function: " << equation.forcing_function << std::endl;
-    
-    std::cout << "Solver:" << std::endl;
-    std::cout << "  Tolerance: " << solver.tolerance << std::endl;
-    std::cout << "  Max iterations: " << solver.max_iterations << std::endl;
-    std::cout << "  Method: " << solver.method << std::endl;
     
     std::cout << "Boundary Conditions:" << std::endl;
     for (size_t i = 0; i < boundary_conditions.size(); ++i) {
