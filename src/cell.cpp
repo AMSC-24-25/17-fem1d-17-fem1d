@@ -108,24 +108,32 @@ Point<3> Cell<3>::barycentricGradient(int i) const {
         return Point<3>(0,0,0);
     }
 
-    // Gradient of lambda_i (opposite to node i)
+    // Standard formula: grad(λᵢ) = (face_normal_opposite_to_i) / (6*volume)
+    // For tetrahedron ABCD, the gradient of λᵢ is the outward normal to face opposite node i
     const Cell<3>& cell = *this;
-    if (i >= 0 && i < 4) {
-    // Indices of the nodes opposite to i
-        int idx[3];
-        int count = 0;
-        for (int j = 0; j < 4; ++j) {
-            if (j != i) idx[count++] = j;
-        }
-        const Point<3>& P = cell[idx[0]];
-        const Point<3>& Q = cell[idx[1]];
-        const Point<3>& R = cell[idx[2]];
-
-        double a = (P[1]*(Q[2]-R[2]) + Q[1]*(R[2]-P[2]) + R[1]*(P[2]-Q[2]));
-        double b = (P[0]*(R[2]-Q[2]) + Q[0]*(P[2]-R[2]) + R[0]*(Q[2]-P[2]));
-        double c = (P[0]*(Q[1]-R[1]) + Q[0]*(R[1]-P[1]) + R[0]*(P[1]-Q[1]));
-        return Point<3>(std::vector<double>{a/detT, b/detT, c/detT});
-    }
+    
+    // Define the three vertices of the face opposite to node i
+    int face_nodes[4][3] = {
+        {1, 2, 3},  // Face opposite to node 0: nodes 1,2,3 (BCD)
+        {0, 3, 2},  // Face opposite to node 1: nodes 0,3,2 (ADC) - reversed for orientation
+        {0, 1, 3},  // Face opposite to node 2: nodes 0,1,3 (ABD)
+        {0, 2, 1}   // Face opposite to node 3: nodes 0,2,1 (ACB) - reversed for orientation
+    };
+    
+    const Point<3>& P = cell[face_nodes[i][0]];
+    const Point<3>& Q = cell[face_nodes[i][1]];
+    const Point<3>& R = cell[face_nodes[i][2]];
+    
+    // Compute face normal as (Q-P) × (R-P)
+    Point<3> PQ = Q - P;
+    Point<3> PR = R - P;
+    Point<3> normal = Point<3>{
+        PQ[1]*PR[2] - PQ[2]*PR[1],
+        PQ[2]*PR[0] - PQ[0]*PR[2],
+        PQ[0]*PR[1] - PQ[1]*PR[0]
+    };
+    
+    return Point<3>(std::vector<double>{normal[0]/detT, normal[1]/detT, normal[2]/detT});
     std::cerr << "Shape function index " << i << " invalid in barycentricGradient (3D)\n";
     exit(-1);
 }
