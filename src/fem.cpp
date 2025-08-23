@@ -147,7 +147,8 @@ void Fem<dim>::solve() {
 
     // Risolvi il sistema Ax = b usando SparseLU
     // Solve the system Ax = b using SparseLU
-    if(A.nonZeros() < 1e4) {
+    if(A.nonZeros() < 4e3) {
+        std::cout << "[TD] Solving small system (" << A.nonZeros() << ") with SparseLU\n";
         Eigen::SparseLU<SparseMat> solver;
         solver.analyzePattern(A);
         solver.factorize(A);
@@ -164,6 +165,7 @@ void Fem<dim>::solve() {
     }
     else{
         // Lighter iterative solver (BiCGSTAB)
+        std::cout << "[TD] Solving large system (" << A.nonZeros() << ") with BiCGSTAB\n";
         Eigen::BiCGSTAB<SparseMat, Eigen::IncompleteLUT<double>> solver;
         solver.setMaxIterations(1000);
         solver.setTolerance(1e-8);

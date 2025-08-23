@@ -198,38 +198,38 @@ Function<dim,1> parseSimpleFunction(const std::string& expression) {
     if (expression == "1" || expression == "1.0") {
         return Function<dim,1>([](Point<dim> p) -> double { return 1.0; });
     }
-    
-    // For all other expressions, use exprtk directly
+
     typedef exprtk::symbol_table<double> symbol_table_t;
     typedef exprtk::expression<double> expression_t;
     typedef exprtk::parser<double> parser_t;
-    
-    return Function<dim,1>([expression](Point<dim> p) -> double {
-        symbol_table_t symbol_table;
-        expression_t expr;
-        parser_t parser;
-        
-        // Register variables based on dimension
-        double x = (dim >= 1) ? p[0] : 0.0;
-        double y = (dim >= 2) ? p[1] : 0.0;
-        double z = (dim >= 3) ? p[2] : 0.0;
-        
-        symbol_table.add_variable("x", x);
-        if (dim >= 2) symbol_table.add_variable("y", y);
-        if (dim >= 3) symbol_table.add_variable("z", z);
-        
-        // Add common constants
-        symbol_table.add_constant("pi", M_PI);
-        symbol_table.add_constant("e", M_E);
-        
-        expr.register_symbol_table(symbol_table);
-        
-        if (parser.compile(expression, expr)) {
-            return expr.value();
-        } else {
-            std::cerr << "Error parsing expression '" << expression << "': " << parser.error() << std::endl;
-            return 0.0;
-        }
+
+    // Use shared_ptr for variables to avoid dangling references
+    std::shared_ptr<double> x = std::make_shared<double>(0.0);
+    std::shared_ptr<double> y = std::make_shared<double>(0.0);
+    std::shared_ptr<double> z = std::make_shared<double>(0.0);
+
+    std::shared_ptr<symbol_table_t> symbol_table = std::make_shared<symbol_table_t>();
+    symbol_table->add_variable("x", *x);
+    if (dim >= 2) symbol_table->add_variable("y", *y);
+    if (dim >= 3) symbol_table->add_variable("z", *z);
+    symbol_table->add_constant("pi", M_PI);
+    symbol_table->add_constant("e", M_E);
+
+    std::shared_ptr<expression_t> expr = std::make_shared<expression_t>();
+    expr->register_symbol_table(*symbol_table);
+
+    parser_t parser;
+    if (!parser.compile(expression, *expr)) {
+        std::cerr << "Error parsing expression '" << expression << "': " << parser.error() << std::endl;
+        return Function<dim,1>([](Point<dim>){ return 0.0; });
+    }
+
+    // Capture shared_ptrs by value
+    return Function<dim,1>([x, y, z, expr](Point<dim> p) -> double {
+        *x = (dim >= 1) ? p[0] : 0.0;
+        *y = (dim >= 2) ? p[1] : 0.0;
+        *z = (dim >= 3) ? p[2] : 0.0;
+        return expr->value();
     });
 }
 
@@ -237,42 +237,43 @@ Function<dim,1> parseSimpleFunction(const std::string& expression) {
 template<unsigned int dim>
 std::function<double(const Point<dim>&, double)> parseTimeDependentFunction(const std::string& expression) {
     if (expression.empty() || expression == "0" || expression == "0.0") {
-        return [](const Point<dim>& p, double t) -> double { return 0.0; };
+        return [](const Point<dim>&, double) -> double { return 0.0; };
     }
-    
+
     typedef exprtk::symbol_table<double> symbol_table_t;
     typedef exprtk::expression<double> expression_t;
     typedef exprtk::parser<double> parser_t;
-    
-    return [expression](const Point<dim>& p, double t) -> double {
-        symbol_table_t symbol_table;
-        expression_t expr;
-        parser_t parser;
-        
-        // Register variables based on dimension
-        double x = (dim >= 1) ? p[0] : 0.0;
-        double y = (dim >= 2) ? p[1] : 0.0;
-        double z = (dim >= 3) ? p[2] : 0.0;
-        double time = t;
-        
-        symbol_table.add_variable("x", x);
-        if (dim >= 2) symbol_table.add_variable("y", y);
-        if (dim >= 3) symbol_table.add_variable("z", z);
-        symbol_table.add_variable("t", time);
-        symbol_table.add_variable("time", time);
-        
-        // Add common constants
-        symbol_table.add_constant("pi", M_PI);
-        symbol_table.add_constant("e", M_E);
-        
-        expr.register_symbol_table(symbol_table);
-        
-        if (parser.compile(expression, expr)) {
-            return expr.value();
-        } else {
-            std::cerr << "Error parsing time-dependent expression '" << expression << "': " << parser.error() << std::endl;
-            return 0.0;
-        }
+
+    std::shared_ptr<double> x = std::make_shared<double>(0.0);
+    std::shared_ptr<double> y = std::make_shared<double>(0.0);
+    std::shared_ptr<double> z = std::make_shared<double>(0.0);
+    std::shared_ptr<double> time = std::make_shared<double>(0.0);
+
+    std::shared_ptr<symbol_table_t> symbol_table = std::make_shared<symbol_table_t>();
+    symbol_table->add_variable("x", *x);
+    if (dim >= 2) symbol_table->add_variable("y", *y);
+    if (dim >= 3) symbol_table->add_variable("z", *z);
+    symbol_table->add_variable("t", *time);
+    symbol_table->add_variable("time", *time);
+    symbol_table->add_constant("pi", M_PI);
+    symbol_table->add_constant("e", M_E);
+
+    std::shared_ptr<expression_t> expr = std::make_shared<expression_t>();
+    expr->register_symbol_table(*symbol_table);
+
+    parser_t parser;
+    if (!parser.compile(expression, *expr)) {
+        std::cerr << "Error parsing time-dependent expression '" << expression << "': " << parser.error() << std::endl;
+        return [](const Point<dim>&, double){ return 0.0; };
+    }
+
+    // Capture shared_ptrs by value
+    return [x, y, z, time, expr](const Point<dim>& p, double t) -> double {
+        *x = (dim >= 1) ? p[0] : 0.0;
+        *y = (dim >= 2) ? p[1] : 0.0;
+        *z = (dim >= 3) ? p[2] : 0.0;
+        *time = t;
+        return expr->value();
     };
 }
 

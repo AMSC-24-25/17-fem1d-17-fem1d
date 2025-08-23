@@ -176,15 +176,15 @@ double FemTD<dim>::step(double t_new, double dt, double theta) {
     bc_.apply(mesh_, A_, rhs_, t_new);
 
     // solve
-    if (A_.nonZeros() < 10000) {
-        std::cout << "[TD] Solving small system with SparseLU\n";
+    if (A_.nonZeros() < 4e3) {
+        std::cout << "[TD] Solving small system (" << A_.nonZeros() << ") with SparseLU\n";
         Eigen::SparseLU<SparseMat> solver;
         solver.analyzePattern(A_);
         solver.factorize(A_);
         u_ = solver.solve(rhs_);
     } else {
+        std::cout << "[TD] Solving large system (" << A_.nonZeros() << ") with BiCGSTAB\n";
         Eigen::BiCGSTAB<SparseMat, Eigen::IncompleteLUT<double>> solver;
-        std::cout << "[TD] Solving large system with BiCGSTAB\n";
         solver.setMaxIterations(10000);
         solver.setTolerance(1e-8);
         solver.compute(A_);
