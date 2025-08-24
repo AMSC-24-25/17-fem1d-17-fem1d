@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
         fem.assemble();
         fem.solve();
 
-        std::string csvFilePath = "../sol1d.csv";
+        std::string csvFilePath = "output/sol1d.csv";
         std::string vtuFilePath = "output/sol1d.vtu";
         fem.outputCsv(csvFilePath);
         fem.outputVtu(vtuFilePath);
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
         fem.assemble();
         fem.solve();
 
-        std::string csvFilePath = "../sol2d.csv";
+        std::string csvFilePath = "output/sol2d.csv";
         std::string vtuFilePath = "output/sol2d.vtu";
         fem.outputCsv(csvFilePath);
         fem.outputVtu(vtuFilePath);
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
         Fem<3> fem3d(grid, forcing, diffusion, transport, reaction, boundary_conditions, OrderTwoQuadrature<3>());
 
         cout << "=== Risoluzione problema FEM 3D ===" << endl;
-        std::string csvFilePath = "../sol3d.csv";
+        std::string csvFilePath = "output/sol3d.csv";
         std::string vtuFilePath = "output/sol3d.vtu";
         fem3d.assemble();
         fem3d.solve();

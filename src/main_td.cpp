@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
         const double theta = 1; // 0=Esplicito, 1=Implicit Euler, 0.5=Crank–Nicolson
 
         // Output file prefix (facoltativi)
-        femtd.run(T, dt, theta, /*vtu_prefix*/ "output/u", /*csv_prefix*/ "");
+        femtd.run(T, dt, theta, /*vtu_prefix*/ "output/u1d", /*csv_prefix*/ "");
         // system("python ../scripts/plot_sol.py");
     }
     else if (argv[1][0] == '2') {
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
         const double theta = 1.0; // 0=Esplicito, 1=Implicit Euler, 0.5=Crank–Nicolson
 
         // Output file prefix (facoltativi)
-        femtd.run(T, dt, theta, /*vtu_prefix*/ "output/u", /*csv_prefix*/ "");
+        femtd.run(T, dt, theta, /*vtu_prefix*/ "output/u2d", /*csv_prefix*/ "");
     }
     else if (argv[1][0] == '3'){
         // 3D time-dependent case
