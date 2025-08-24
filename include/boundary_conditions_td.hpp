@@ -4,10 +4,11 @@
 #include "function.hpp"
 #include "bctype.hpp"
 #include "point.hpp"
-#include "grid1D.hpp"
 #include "grid.hpp"
+#include "quadrature.hpp"
 #include <Eigen/Sparse>
 #include <vector>
+#include <iostream>
 
 using Eigen::VectorXd;
 using SparseMat = Eigen::SparseMatrix<double, Eigen::RowMajor>;
@@ -21,10 +22,10 @@ private:
     fun_td<dim, returnDim> boundaryFunction; // Function defining the condition
 
 public:
-    // Constructor
+    // Constructor on one boundary condition
     BoundaryCondition_td(int tag, BCType bcType, fun_td<dim, returnDim> func) 
         : boundaryId(tag), type(bcType), boundaryFunction(func) {}
-    
+
     // Constructor for constant value (for convenience)
     BoundaryCondition_td(int tag, BCType bcType, double value) 
         : boundaryId(tag), type(bcType), 
@@ -49,7 +50,10 @@ class BoundaryConditions_td {
 public:
     // Constructors
     BoundaryConditions_td() = default;
-    BoundaryConditions_td(const std::vector<BoundaryCondition_td<dim, returnDim>>& conditions);
+
+    // Constructor on multiple boundary conditions
+    BoundaryConditions_td(const std::vector<BoundaryCondition_td<dim, returnDim>>& conditions) 
+        : conditions(conditions) {}
 
     // Methods to add conditions
     void addDirichlet(int boundaryId, fun_td<dim, returnDim> func) {
@@ -66,18 +70,16 @@ public:
     }
 
     // Application of boundary conditions
-    void apply(const Grid<dim>& mesh, SparseMat& A, VectorXd& rhs, double t);
+    void apply(const Grid<dim>& mesh, SparseMat& A, VectorXd& rhs, double t) const;
 
 private:
     std::vector<BoundaryCondition_td<dim, returnDim>> conditions;
 
     // Helper methods for application
     void applyDirichlet(const BoundaryCondition_td<dim, returnDim>& bc, const Grid<dim>& mesh, 
-                       SparseMat& A, VectorXd& rhs, double t);
+                       SparseMat& A, VectorXd& rhs, double t) const;
     void applyNeumann(const BoundaryCondition_td<dim, returnDim>& bc, const Grid<dim>& mesh, 
-                     SparseMat& A, VectorXd& rhs, double t);
+                     SparseMat& A, VectorXd& rhs, double t) const;
 };
-
-#include "boundary_conditions_td.tpp"
 
 #endif // BOUNDARY_CONDITIONS_HPP

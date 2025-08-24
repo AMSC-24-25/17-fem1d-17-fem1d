@@ -4,10 +4,11 @@
 #include "function.hpp"
 #include "point.hpp"
 #include "bctype.hpp"
-#include "grid1D.hpp"
 #include "grid.hpp"
+#include "quadrature.hpp"
 #include <Eigen/Sparse>
 #include <vector>
+#include <iostream>
 
 using Eigen::VectorXd;
 using SparseMat = Eigen::SparseMatrix<double, Eigen::RowMajor>;
@@ -44,7 +45,10 @@ class BoundaryConditions {
 public:
     // Constructors
     BoundaryConditions() = default;
-    BoundaryConditions(const std::vector<BoundaryCondition<dim, returnDim>>& conditions);
+
+    // Constructor for multiple boundary conditions
+    BoundaryConditions(const std::vector<BoundaryCondition<dim, returnDim>>& conditions) 
+        : conditions(conditions) {}
 
     // Methods to add conditions
     void addDirichlet(int boundaryId, Function<dim, returnDim> func) {
@@ -61,28 +65,16 @@ public:
     }
 
     // Application of boundary conditions
-    void apply(const Grid<dim>& mesh, SparseMat& A, VectorXd& rhs);
+    void apply(const Grid<dim>& mesh, SparseMat& A, VectorXd& rhs) const;
 
 private:
     std::vector<BoundaryCondition<dim, returnDim>> conditions;
 
     // Helper methods for application
     void applyDirichlet(const BoundaryCondition<dim, returnDim>& bc, const Grid<dim>& mesh, 
-                       SparseMat& A, VectorXd& rhs);
+                       SparseMat& A, VectorXd& rhs) const;
     void applyNeumann(const BoundaryCondition<dim, returnDim>& bc, const Grid<dim>& mesh, 
-                     SparseMat& A, VectorXd& rhs);
+                     SparseMat& A, VectorXd& rhs) const;
 };
-
-
-    // void applyNeumann(const BoundaryCondition<1,1>& bc,
-    //                 const Grid<1>& mesh,
-    //                 Eigen::SparseMatrix<double, Eigen::RowMajor>& /*A*/,
-    //                 Eigen::VectorXd& rhs);
-
-// =============================================================================
-// TEMPLATE IMPLEMENTATION
-// =============================================================================
-
-#include "boundary_conditions.tpp"
 
 #endif // BOUNDARY_CONDITIONS_HPP
