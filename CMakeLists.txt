@@ -77,7 +77,12 @@ add_custom_target(empty_output_dir ALL
         "output/*.vtu"
         COMMENT "Removing all .pvtu and .vtu files from the build directory" 
 ) 
-add_dependencies(17_fem1d_17_fem1d create_output_dir empty_output_dir)
+add_dependencies(17_fem1d_17_fem1d create_output_dir)
+add_dependencies(17_fem1d_17_fem1d_td create_output_dir)
+add_dependencies(TomlMain create_output_dir)
+if(OpenMP_CXX_FOUND)
+    add_dependencies(sequentialTomlMain create_output_dir)
+endif()
 
 # -------testing----
 
