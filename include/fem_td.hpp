@@ -66,6 +66,13 @@ private:
     VectorXd  u_, u_old_;
 
 private:
+    // The following attributes are saved at object level for improved memory efficiency
+#ifdef _OPENMP
+    std::vector<VectorXd> F_threads;
+    std::vector<std::vector<Triplet>> tripletM_thr, tripletK_thr;
+#endif
+    std::vector<Triplet> tripletM, tripletK;
+
     void assemble_time_invariant();
     void assemble_M_and_K_element(int elem,
                                   std::vector<Triplet>& tripM,

@@ -32,6 +32,22 @@ FemTD<dim>::FemTD(Grid<dim> grid,
     rhs_.resize(N); rhs_.setZero();
     u_.resize(N);   u_.setZero();
     u_old_.resize(N); u_old_.setZero();
+
+    // The following are preallocated for improved memory efficiency
+
+    const unsigned int expPerElem = (dim + 1) * (dim + 1);
+    tripletM.reserve(expPerElem * mesh_.getNumElements());
+    tripletK.reserve(expPerElem * mesh_.getNumElements());
+#ifdef _OPENMP
+    int nthreads = omp_get_max_threads();
+    F_threads.resize(nthreads, VectorXd::Zero(F.size()));
+    tripletM_thr.resize(nthreads);
+    tripletK_thr.resize(nthreads);
+    for (int i = 0; i < nthreads; ++i) {
+        tripletM_thr[i].reserve(expPerElem * (numElements/nthreads + 1));
+        tripletK_thr[i].reserve(expPerElem * (numElements/nthreads + 1));
+    }
+#endif
 }
 
 template<unsigned int dim>
@@ -45,29 +61,25 @@ template<unsigned int dim>
 void FemTD<dim>::assemble_time_invariant() {
     const int numElements = mesh_.getNumElements();
     const unsigned matSize = dim + 1;
-    const unsigned expPerElem = matSize * matSize;
+    tripletM.clear();
+    tripletK.clear();
 
 #ifdef _OPENMP
     int nthreads = omp_get_max_threads();
-    std::vector<std::vector<Triplet>> tripletM_thr(nthreads), tripletK_thr(nthreads);
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
         std::vector<Triplet>& tM = tripletM_thr[tid];
         std::vector<Triplet>& tK = tripletK_thr[tid];
-        tM.reserve(expPerElem * (numElements/nthreads + 1));
-        tK.reserve(expPerElem * (numElements/nthreads + 1));
+        tM.clear();
+        tK.clear();
 
         #pragma omp for schedule(static)
         for (int e=0; e < numElements; ++e) assemble_M_and_K_element(e, tM, tK);
     }
-    std::vector<Triplet> tripletM, tripletK;
     for (std::vector<Triplet>& v: tripletM_thr) tripletM.insert(tripletM.end(), v.begin(), v.end());
     for (std::vector<Triplet>& v: tripletK_thr) tripletK.insert(tripletK.end(), v.begin(), v.end());
 #else
-    std::vector<Triplet> tripletM, tripletK;
-    tripletM.reserve(expPerElem * numElements);
-    tripletK.reserve(expPerElem * numElements);
     for (int e=0; e<numElements; ++e) assemble_M_and_K_element(e, tripletM, tripletK);
 #endif
 
@@ -133,13 +145,11 @@ void FemTD<dim>::build_load(VectorXd& F, double t) const {
     const int numElements = mesh_.getNumElements();
 
 #ifdef _OPENMP
-    int nthreads = omp_get_max_threads();
-    std::vector<VectorXd> F_threads(nthreads, VectorXd::Zero(F.size()));
-
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
         VectorXd& F_local = F_threads[tid];
+        F_local.setZero();
 
         #pragma omp for schedule(static)
         for (int i = 0; i < numElements; ++i) {
@@ -163,6 +173,7 @@ void FemTD<dim>::build_load(VectorXd& F, double t) const {
     }
     
     // Sum all thread-local vectors
+    int nthreads = omp_get_max_threads();
     for (int tid = 0; tid < nthreads; ++tid) {
         F += F_threads[tid];
     }

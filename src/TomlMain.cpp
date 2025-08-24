@@ -4,6 +4,9 @@
 #include <iostream>
 #include <filesystem>
 #include <fstream>
+#ifdef _OPENMP
+    #include <omp.h>
+#endif
 
 // Forward declarations
 template<unsigned int dim>
@@ -19,9 +22,9 @@ int main(int argc, char* argv[]) {
 
 #ifdef _OPENMP
     //Output OpenMP info (max threads, parameters, etc.)
-    int max_threads = omp_get_max_threads();
     std::cout << "OpenMP is enabled." << std::endl;
-    std::cout << "Max threads: " << max_threads << std::endl;
+    std::cout << "Max threads: " << omp_get_max_threads() << std::endl;
+    std::cout << "Num threads: " << omp_get_num_threads() << std::endl;
 #else
     std::cout << "OpenMP is not enabled. Running sequentially." << std::endl;
 #endif
