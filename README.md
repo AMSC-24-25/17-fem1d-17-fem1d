@@ -1,8 +1,6 @@
 # Multi-Dimensional Finite Element Method (FEM)
 C++ implementation for solving PDEs in 1D, 2D, and 3D
 
----
-
 **Authors**: Federico Quartieri, Alessandro Ruzza, Daniele Salvi \
 **Professor**: Luca Formaggia \
 **Course**: Advanced Methods for Scientific Computing (2024/25)\
