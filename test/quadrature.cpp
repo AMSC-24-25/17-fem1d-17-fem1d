@@ -23,12 +23,12 @@ TEST(QuadratureTest, OrderTwo_WeightsAndLinearExactness) {
 
     quad.getQuadratureData(tri, grad_phi, qp, phi, w);
 
-    ASSERT_EQ(w.size(), 3u);
-    ASSERT_EQ(qp.size(), 3u);
+    ASSERT_EQ(w.size(), 3u) << "Expected 3 quadrature weights for order 2 rule";
+    ASSERT_EQ(qp.size(), 3u) << "Expected 3 quadrature points for order 2 rule";
 
     // La somma dei pesi deve dare l'area
     double sumw = std::accumulate(w.begin(), w.end(), 0.0);
-    EXPECT_NEAR(sumw, 0.5, 1e-12);
+    EXPECT_NEAR(sumw, 0.5, 1e-12) << "Sum of weights should equal triangle area (0.5), got: " << sumw;
 
     // Esattezza su funzione lineare f(x,y)=x+y -> integrale su triangolo unitario = 1/3
     auto f = [](const Point<2>& P) { return P[0] + P[1]; };
@@ -36,7 +36,7 @@ TEST(QuadratureTest, OrderTwo_WeightsAndLinearExactness) {
     for (size_t i = 0; i < qp.size(); ++i) {
         approx += w[i] * f(qp[i]);
     }
-    EXPECT_NEAR(approx, 1.0 / 3.0, 1e-12);
+    EXPECT_NEAR(approx, 1.0 / 3.0, 1e-12) << "Linear function integration failed. Expected: 0.333..., got: " << approx;
 }
 
 TEST(QuadratureTest, OrderFour_WeightsAndLinearExactness) {
@@ -55,12 +55,12 @@ TEST(QuadratureTest, OrderFour_WeightsAndLinearExactness) {
 
     quad.getQuadratureData(tri, grad_phi, qp, phi, w);
 
-    ASSERT_EQ(w.size(), 4u);
-    ASSERT_EQ(qp.size(), 4u);
+    ASSERT_EQ(w.size(), 6u) << "Expected 6 quadrature weights for order 4 rule";
+    ASSERT_EQ(qp.size(), 6u) << "Expected 6 quadrature points for order 4 rule";
 
     // Somma pesi = area
     double sumw = std::accumulate(w.begin(), w.end(), 0.0);
-    EXPECT_NEAR(sumw, 0.5, 1e-12);
+    EXPECT_NEAR(sumw, 0.5, 1e-12) << "Sum of weights should equal triangle area (0.5), got: " << sumw;
 
     // Esatta su f(x,y)=x+y -> integrale su triangolo unitario = 1/3
     auto f = [](const Point<2>& P) { return P[0] + P[1]; };
@@ -68,7 +68,7 @@ TEST(QuadratureTest, OrderFour_WeightsAndLinearExactness) {
     for (size_t i = 0; i < qp.size(); ++i) {
         approx += w[i] * f(qp[i]);
     }
-    EXPECT_NEAR(approx, 1.0 / 3.0, 1e-12);
+    EXPECT_NEAR(approx, 1.0 / 3.0, 1e-12) << "Linear function integration failed. Expected: 0.333..., got: " << approx;
 }
 
 
