@@ -19,7 +19,7 @@ constexpr double PI = EIGEN_PI;
  * Usage: ./fem 1d L N  or  ./fem 2d mesh.msh
  */
 
- 
+
 int main(int argc, char *argv[])
 {
     cout << "-------------17-FEM1D PROJECT-----------" << endl;
@@ -38,12 +38,12 @@ int main(int argc, char *argv[])
     #ifdef _OPENMP
         omp_set_dynamic(0);
         if (argv[1][0] == '1'){
-            if (argc >= 4) {
+            if (argc >= 5) {
                 int nThreads = std::atoi(argv[4]);
                 omp_set_num_threads(nThreads);
             }
         } else {
-            if (argc >= 3){
+            if (argc >= 4){
                 int nThreads = std::atoi(argv[3]);
                 omp_set_num_threads(nThreads);
             } 
