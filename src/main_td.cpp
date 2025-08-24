@@ -20,30 +20,29 @@ constexpr double PI = EIGEN_PI;
  */
 int main(int argc, char *argv[])
 {
-#ifdef _OPENMP
-    omp_set_dynamic(0);    // Disable dynamic adjustment of threads
-#endif
     cout << "-------------17-FEM1D PROJECT-----------" << endl;
     if(argc < 3){
         cout << "Usage: " << argv[0] << " [1d L N] or [2d mesh.msh] or [3d mesh.msh]" << endl;
+        cout << "Optionally, pass num_threads as last argument." << endl;
         cout << "Examples:" << endl;
         cout << "  " << argv[0] << " 1d 5 20" << endl;
         cout << "  " << argv[0] << " 2d square.msh" << endl;
         cout << "  " << argv[0] << " 3d cube.msh" << endl;
+        cout << "  " << argv[0] << " 1d 5 20 4       (4 threads)" << endl;
+        cout << "  " << argv[0] << " 3d cube.msh 8   (8 threads)" << endl;
         return -1;
     }
 
     #ifdef _OPENMP
+        omp_set_dynamic(0);
         if (argv[1][0] == '1'){
             if (argc >= 4) {
                 int nThreads = std::atoi(argv[4]);
-                omp_set_dynamic(0);
                 omp_set_num_threads(nThreads);
             }
         } else {
             if (argc >= 3){
                 int nThreads = std::atoi(argv[3]);
-                omp_set_dynamic(0);
                 omp_set_num_threads(nThreads);
             } 
         }
