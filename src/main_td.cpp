@@ -20,6 +20,9 @@ constexpr double PI = EIGEN_PI;
  */
 int main(int argc, char *argv[])
 {
+#ifdef _OPENMP
+    omp_set_dynamic(0);    // Disable dynamic adjustment of threads
+#endif
     cout << "-------------17-FEM1D PROJECT-----------" << endl;
     if(argc < 3){
         cout << "Usage: " << argv[0] << " [1d L N] or [2d mesh.msh] or [3d mesh.msh]" << endl;

@@ -22,7 +22,8 @@ FemTD<dim>::FemTD(Grid<dim> grid,
 {
 #ifdef _OPENMP
     // Ensure Eigen uses OpenMP if available
-    Eigen::setNbThreads(omp_get_max_threads());
+    nthreads = omp_get_max_threads();
+    Eigen::setNbThreads(nthreads);
 #endif
 
     const int N = mesh_.getNumNodes();
@@ -42,7 +43,6 @@ FemTD<dim>::FemTD(Grid<dim> grid,
     tripletM.reserve(expPerElem * numElements);
     tripletK.reserve(expPerElem * numElements);
 #ifdef _OPENMP
-    int nthreads = omp_get_max_threads();
     F_threads.resize(nthreads, VectorXd::Zero(N));
     tripletM_thr.resize(nthreads);
     tripletK_thr.resize(nthreads);
@@ -68,7 +68,6 @@ void FemTD<dim>::assemble_time_invariant() {
     tripletK.clear();
 
 #ifdef _OPENMP
-    int nthreads = omp_get_max_threads();
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
@@ -176,7 +175,6 @@ void FemTD<dim>::build_load(double t) {
     }
     
     // Sum all thread-local vectors
-    int nthreads = omp_get_max_threads();
     for (int tid = 0; tid < nthreads; ++tid) {
         f_new += F_threads[tid];
     }

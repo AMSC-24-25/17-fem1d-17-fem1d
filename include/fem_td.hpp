@@ -70,6 +70,7 @@ private:
 #ifdef _OPENMP
     std::vector<VectorXd> F_threads;
     std::vector<std::vector<Triplet>> tripletM_thr, tripletK_thr;
+    int nthreads;
 #endif
     std::vector<Triplet> tripletM, tripletK;
     VectorXd f_new, f_old;

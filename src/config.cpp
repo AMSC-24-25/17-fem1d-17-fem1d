@@ -201,13 +201,13 @@ Function<dim,1> parseSimpleFunction(const std::string& expression) {
 
     // Thread pool approach: create one expression per potential thread
 #ifdef _OPENMP
-    const int max_threads = omp_get_max_threads();
+    const int num_threads = omp_get_max_threads();
 #else
-    const int max_threads = 1;
+    const int num_threads = 1;
 #endif
 
     std::shared_ptr<ThreadExpressionPool> pool = std::make_shared<ThreadExpressionPool>(
-                expression, dim, max_threads, false // false = not time-dependent
+                expression, dim, num_threads, false // false = not time-dependent
     );
 
     // Return thread-safe function using thread pool
@@ -238,13 +238,13 @@ std::function<double(const Point<dim>&, double)> parseTimeDependentFunction(cons
 
     // Thread pool approach: create one expression per potential thread
 #ifdef _OPENMP
-    const int max_threads = omp_get_max_threads();
+    const int num_threads = omp_get_max_threads();
 #else
-    const int max_threads = 1;
+    const int num_threads = 1;
 #endif
 
     std::shared_ptr<ThreadExpressionPool> pool = std::make_shared<ThreadExpressionPool>(
-                expression, dim, max_threads, true // true = time-dependent
+                expression, dim, num_threads, true // true = time-dependent
     ); 
 
     // Return thread-safe function using thread pool

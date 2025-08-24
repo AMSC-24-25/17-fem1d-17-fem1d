@@ -78,13 +78,13 @@ void BoundaryConditions_td<dim, returnDim>::applyNeumann(
     // Iterate over all boundary cells with this tag
 #ifdef _OPENMP
     int nthreads = omp_get_max_threads();
-    std::vector<VectorXd> rhs_threads(nthreads, VectorXd::Zero(rhs.size()));
-    
+    static std::vector<VectorXd> rhs_threads(nthreads, VectorXd::Zero(rhs.size()));
+
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
         VectorXd& rhs_local = rhs_threads[tid];
-        
+        rhs_local.setZero();
         #pragma omp for schedule(static)
         for (int c = 0; c < boundaryCells.size(); ++c) {
             const BoundaryCell<dim-1>& cell = boundaryCells[c];
