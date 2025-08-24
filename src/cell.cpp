@@ -137,3 +137,30 @@ Point<3> Cell<3>::barycentricGradient(int i) const {
     std::cerr << "Shape function index " << i << " invalid in barycentricGradient (3D)\n";
     exit(-1);
 }
+
+template<>
+double BoundaryCell<2>::measure() const {
+    // Computes the area of the triangular face
+    const Point<3>& p1 = this->getNode(0);
+    const Point<3>& p2 = this->getNode(1);
+    const Point<3>& p3 = this->getNode(2);
+
+    // Two vectors on the sides of the triangle
+    Point<3> v1(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
+    Point<3> v2(p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]);
+    
+    // Norm of the cross product / 2
+    double nx = v1[1] * v2[2] - v1[2] * v2[1];
+    double ny = v1[2] * v2[0] - v1[0] * v2[2];
+    double nz = v1[0] * v2[1] - v1[1] * v2[0];
+    
+    return 0.5 * sqrt(nx*nx + ny*ny + nz*nz);
+}
+
+template<>
+double BoundaryCell<1>::measure() const {
+    // Computes the length of the edge
+    const Point<2>& p1 = this->getNode(0);
+    const Point<2>& p2 = this->getNode(1);
+    return p2.distance(p1);
+}

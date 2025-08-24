@@ -46,6 +46,17 @@ struct Cell {
     const NodeIndexes& getNodeIndexes() const {
         return nodeIndices;
     }
+
+    inline Point<dim> mapToGlobal(const Point<dim+1>& barycentricCoords) const {
+        const Cell<dim>& cell = *this;
+        std::array<double, dim> pCoords;
+        for (size_t i = 0; i < dim; i++){
+            pCoords[i] = 0;
+            for (size_t j = 0; j < dim + 1; j++)
+                pCoords[i] += barycentricCoords[j] * cell[j][i];
+        }
+        return Point<dim>(pCoords);
+    }
     
     // Returns gradient of i-th barycentric shape function (constant on tetrahedra)
     Point<dim> barycentricGradient(int i) const;
@@ -66,104 +77,20 @@ struct BoundaryCell : public Cell<dim+1> {
     unsigned int getBoundaryId() const {
         return boundary_id;
     }
+
+    inline Point<dim+1> mapToGlobal(const Point<dim+1>& barycentricCoords) const {
+        const BoundaryCell<dim>& cell = *this;
+        std::array<double, dim+1> result;
+        for (unsigned int i = 0; i < dim+1; ++i) {
+            result[i] = 0.0;
+            for (unsigned int j = 0; j < dim+1; ++j) {
+                result[i] += barycentricCoords[j] * cell[j][i];
+            }
+        }
+        return Point<dim+1>(result);
+    }
+
+    double measure() const;
 };
-
-// Returns barycentric coordinates of p with respect to triangle cell (2D)
-inline std::array<double, 3> barycentricCoordinates(const Cell<2>& cell, const Point<2>& p) {
-    const Point<2>& A = cell[0];
-    const Point<2>& B = cell[1];
-    const Point<2>& C = cell[2];
-    double x = p[0], y = p[1];
-    double xA = A[0], yA = A[1];
-    double xB = B[0], yB = B[1];
-    double xC = C[0], yC = C[1];
-
-    double detT = (xB - xA)*(yC - yA) - (xC - xA)*(yB - yA);
-    if (std::abs(detT) < 1e-14) {
-        std::cerr << "Degenerate triangle in barycentricCoordinates\n";
-        exit(-1);
-    }
-    double l1 = ((xB - x)*(yC - y) - (xC - x)*(yB - y)) / detT;
-    double l2 = ((xC - x)*(yA - y) - (xA - x)*(yC - y)) / detT;
-    double l3 = 1.0 - l1 - l2;
-    return {l1, l2, l3};
-}
-
-// ============= GEOMETRY FOR BOUNDARY CELLS (EDGE) =============
-
-inline Point<2> mapToGlobalEdge(const BoundaryCell<1>& edge, double xi) {
-    // Maps from local coordinate xi ∈ [0, 1] to global coordinates
-    const Point<2>& p1 = edge[0];
-    const Point<2>& p2 = edge[1];
-    double x = (1.0 - xi) * p1[0] + xi * p2[0];
-    double y = (1.0 - xi) * p1[1] + xi * p2[1];
-    return Point<2>(x, y);
-}
-
-inline Point<2> edgeNormal(const BoundaryCell<1>& edge) {
-    // Computes the unit normal vector to the segment (outward normal)
-    const Point<2>& p1 = edge[0];
-    const Point<2>& p2 = edge[1];
-    
-    // Tangent vector
-    double dx = p2[0] - p1[0];
-    double dy = p2[1] - p1[1];
-    
-    // Normal vector (rotated 90° clockwise: (dx,dy) -> (dy,-dx))
-    // This gives the outward normal for meshes with counterclockwise orientation
-    double nx = dy;
-    double ny = -dx;
-    
-    // Normalize
-    double length = sqrt(nx*nx + ny*ny);
-    if (length < 1e-14) {
-        std::cerr << "Degenerate edge in edgeNormal\n";
-        exit(-1);
-    }
-    
-    return Point<2>(nx/length, ny/length);
-}
-
-inline void getShapeFunctions1D(double xi, std::vector<double>& phi) {
-    // Linear 1D shape functions in [0, 1]
-    phi.resize(2);
-    phi[0] = 1.0 - xi;  // shape function for node 0
-    phi[1] = xi;        // shape function for node 1
-}
-
-// ============= GEOMETRY FOR BOUNDARY CELLS (3D FACES) =============
-
-inline Point<3> mapToGlobalFace(const BoundaryCell<2>& face, Point<3> barycentricCoords) {
-    // Maps from full barycentric coordinates to global coordinates for a triangular face
-    // Barycentric coordinates: (lambda1, lambda2, lambda3) where lambda1 + lambda2 + lambda3 = 1
-    const Point<3>& p1 = face[0];
-    const Point<3>& p2 = face[1];
-    const Point<3>& p3 = face[2];
-
-    double x = barycentricCoords[0] * p1[0] + barycentricCoords[1] * p2[0] + barycentricCoords[2] * p3[0];
-    double y = barycentricCoords[0] * p1[1] + barycentricCoords[1] * p2[1] + barycentricCoords[2] * p3[1];
-    double z = barycentricCoords[0] * p1[2] + barycentricCoords[1] * p2[2] + barycentricCoords[2] * p3[2];
-    
-    return Point<3>(x, y, z);
-}
-
-inline double faceArea(const BoundaryCell<2>& face) {
-    // Computes the area of the triangular face
-    const Point<3>& p1 = face[0];
-    const Point<3>& p2 = face[1];
-    const Point<3>& p3 = face[2];
-    
-    // Two vectors on the sides of the triangle
-    Point<3> v1(p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2]);
-    Point<3> v2(p3[0] - p1[0], p3[1] - p1[1], p3[2] - p1[2]);
-    
-    // Norm of the cross product / 2
-    double nx = v1[1] * v2[2] - v1[2] * v2[1];
-    double ny = v1[2] * v2[0] - v1[0] * v2[2];
-    double nz = v1[0] * v2[1] - v1[1] * v2[0];
-    
-    return 0.5 * sqrt(nx*nx + ny*ny + nz*nz);
-}
-
 
 #endif
