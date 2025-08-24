@@ -18,12 +18,17 @@ constexpr double PI = EIGEN_PI;
  * Simple FEM solver for 1D and 2D problems
  * Usage: ./fem 1d L N  or  ./fem 2d mesh.msh
  */
+
+
+
 int main(int argc, char *argv[])
 {
 #ifdef _OPENMP
     omp_set_dynamic(0);    // Disable dynamic adjustment of threads
 #endif
     cout << "-------------17-FEM1D PROJECT-----------" << endl;
+
+
     if(argc < 3){
         cout << "Usage: " << argv[0] << " [1d L N] or [2d mesh.msh] or [3d mesh.msh]" << endl;
         cout << "Examples:" << endl;
@@ -55,7 +60,6 @@ int main(int argc, char *argv[])
     #else
         std::cout << "OpenMP is not enabled. Running sequentially." << std::endl;
     #endif
-
 
     if (argv[1][0] == '1') {
     // 1D case: fix argument parsing

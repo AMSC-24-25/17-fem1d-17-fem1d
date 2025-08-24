@@ -4,55 +4,55 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def last_int(s: str):
-    """Estrae l'ultimo intero nel nome (per ordinare le mesh). Ritorna None se assente."""
+    """Extract last integer in a string (used to order meshes)."""
     m = re.search(r'(\d+)(?!.*\d)', s)
     return int(m.group(1)) if m else None
 
 def main(csv_path: str = "speedup_results.csv", out_png: str = "speedup_plot.png"):
-    # Carica il CSV
-    df = pd.read_csv(csv_path)
+    # Load CSV and drop junk rows (e.g., trailing 'f' line)
+    df = pd.read_csv(csv_path, dtype=str, keep_default_na=False)
+    needed = {"config_key","mode","threads","mean"}
+    df = df[[c for c in df.columns if c in needed]].copy()
+    # Coerce numerics; drop bad rows
+    df["threads"] = pd.to_numeric(df["threads"], errors="coerce")
+    df["mean"]    = pd.to_numeric(df["mean"],    errors="coerce")
+    df = df.dropna(subset=["config_key","mode","threads","mean"])
 
-    # Normalizza: usa solo il basename della config (nel caso il CSV contenesse path interi)
-    df["config"] = df["config"].apply(os.path.basename)
+    # Normalize config basename and mesh name
+    df["config"] = df["config_key"].apply(os.path.basename)
+    df["mesh"]   = df["config"].str.replace(".toml", "", regex=False)
 
-    # Pulisci tempi: elimina righe con 'NA' o non numeriche
-    df = df[pd.to_numeric(df["elapsed_s"], errors="coerce").notna()].copy()
-    df["elapsed_s"] = df["elapsed_s"].astype(float)
-
-    # Crea label per la curva (mode + threads). Tratta il sequenziale come 1 thread.
+    # Build label "sequential (1)" or "openmp (N)"
     def mk_label(row):
-        if str(row["mode"]).lower() == "sequential":
+        m = str(row["mode"]).strip().lower()
+        if m == "sequential":
             return "sequential (1)"
         return f"openmp ({int(row['threads'])})"
-
     df["label"] = df.apply(mk_label, axis=1)
 
-    # Estrai un nome mesh più corto (senza .toml)
-    df["mesh"] = df["config"].str.replace(".toml", "", regex=False)
-
-    # Media per (mesh, label)
+    # Average in case there are multiple lines for the same (mesh, label)
     agg = (
-        df.groupby(["mesh", "label"], as_index=False)["elapsed_s"]
+        df.groupby(["mesh","label"], as_index=False)["mean"]
           .mean()
-          .rename(columns={"elapsed_s": "elapsed_mean"})
+          .rename(columns={"mean":"elapsed_mean"})
     )
 
-    # Ordina le mesh usando l’ultimo numero nel nome, fallback alfabetico
-    order_key = []
-    for m in agg["mesh"].unique():
+    # Order meshes by the last integer in the name; fallback alphabetical
+    unique_meshes = agg["mesh"].unique()
+    sort_map = {}
+    for m in unique_meshes:
         n = last_int(m)
-        order_key.append((m, (0, n) if n is not None else (1, m)))
-    sort_map = {m: k for m, k in order_key}
+        sort_map[m] = (0, n) if n is not None else (1, m)
     agg["sort_key"] = agg["mesh"].map(sort_map)
-    agg = agg.sort_values(["sort_key", "label"]).drop(columns=["sort_key"])
+    agg = agg.sort_values(["sort_key","label"]).drop(columns=["sort_key"])
 
-    # Pivot per avere colonne = label (curve)
+    # Pivot to have one curve per label
     pivot = agg.pivot(index="mesh", columns="label", values="elapsed_mean")
 
     # Plot
     plt.figure(figsize=(10, 5))
     for col in pivot.columns:
-        plt.plot(pivot.index, pivot[col], marker="o", label=col)  # niente colori espliciti
+        plt.plot(pivot.index, pivot[col], marker="o", label=col)
 
     plt.xlabel("mesh (config)")
     plt.ylabel("elapsed time [s]")
@@ -65,7 +65,6 @@ def main(csv_path: str = "speedup_results.csv", out_png: str = "speedup_plot.png
     try:
         plt.show()
     except Exception:
-        # in ambienti senza display, semplicemente non mostra
         pass
 
 if __name__ == "__main__":
