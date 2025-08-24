@@ -74,9 +74,9 @@ int main(int argc, char *argv[])
     else if (argv[1][0] == '2') {
         // 2D case
         BoundaryConditions_td<2,1> boundary_conditions;
-        Function<2,1> diffusion([](Point<2> p) { return 1.0; });
-        Function<2,1> reaction([](Point<2> p) { return 1.0; });
-        Function<2,2> transport([](Point<2> p) { return Point<2>(-0.0, -0.0); });
+        Function<2,1> diffusion([](Point<2> p) { return 3.0; });
+        Function<2,1> reaction([](Point<2> p) { return 2.0; });
+        Function<2,2> transport([](Point<2> p) { return Point<2>(-2.0, -3.0); });
 
         // 2. Configurazione delle condizioni al contorno PRIMA del parsing
 
@@ -88,15 +88,15 @@ int main(int argc, char *argv[])
 
         // Configurazione con mix di Dirichlet e Neumann
         boundary_conditions.addDirichlet(0, exactFunc);
-        boundary_conditions.addDirichlet(1, exactFunc);
+        boundary_conditions.addNeumann(1, 2.0);
         boundary_conditions.addDirichlet(2, exactFunc);
-        boundary_conditions.addDirichlet(3, exactFunc);
+        boundary_conditions.addNeumann(3, 2.0);
 
         cout << "Boundary conditions:" << endl;
         cout << "  Tag 0: Dirichlet u = exact" << endl;
-        cout << "  Tag 1: Dirichlet u = exact" << endl;
+        cout << "  Tag 1: Neumann g = 2.0" << endl;
         cout << "  Tag 2: Dirichlet u = exact" << endl;
-        cout << "  Tag 3: Dirichlet u = exact" << endl;
+        cout << "  Tag 3: Neumann g = 2.0" << endl;
 
         Grid<2> grid;
         grid.parseFromMsh(argv[2]);
@@ -104,14 +104,22 @@ int main(int argc, char *argv[])
         FemTD<2> femtd(grid, diffusion, transport, reaction, boundary_conditions, quadrature);
 
         femtd.set_forcing([](const Point<2>& p, double t) -> double {
-            double factor = 2.0 * M_PI;
-            double timeFact = sin(factor*t);
-            double timeFactD1 = factor * cos(factor*t);
-            double exact = std::sin(factor * (p[0] + p[1])) * timeFact;
-            double exactDT = std::sin(factor * (p[0] + p[1])) * timeFactD1;
-            double exactD2_X = -factor*factor*std::sin(factor * (p[0] + p[1])) * timeFact;
-            double exactD2_Y = -factor*factor*std::sin(factor * (p[0] + p[1])) * timeFact;
-            return exactDT - (exactD2_X + exactD2_Y) + exact;
+            double k = 2.0 * M_PI;
+            double S  = std::sin(k * (p[0] + p[1]));
+            double C  = std::cos(k * (p[0] + p[1]));
+            double T  = std::sin(k * t);
+            double Ct = std::cos(k * t);
+
+            // derivate
+            double ut  = S * k * Ct;
+            double ux  = k * C * T;
+            double uy  = k * C * T;
+            double uxx = -k*k * S * T;
+            double uyy = -k*k * S * T;
+
+            // parametri: mu=3.0, b=(-2,-3), sigma=2.0
+            return ut - 3.0*(uxx + uyy) + (-2.0)*ux + (-3.0)*uy + 2.0*(S*T);
+
         });
 
         femtd.set_initial_condition(Function<2,1>([](const Point<2>&){
@@ -120,7 +128,7 @@ int main(int argc, char *argv[])
 
         const double T = 1.0;     // tempo finale
         const double dt = 0.01;   // passo
-        const double theta = 0.5; // 0=Esplicito, 1=Implicit Euler, 0.5=Crank–Nicolson
+        const double theta = 1.0; // 0=Esplicito, 1=Implicit Euler, 0.5=Crank–Nicolson
 
         // Output file prefix (facoltativi)
         femtd.run(T, dt, theta, /*vtu_prefix*/ "output/u", /*csv_prefix*/ "");
@@ -244,4 +252,3 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-//alias v='valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --log-file=valgrind-out.txt ./fem1d.exe 5 20'

@@ -1,0 +1,58 @@
+# 2D TD diffusion: expanding Gaussian ring centered at (0.5,0.5)
+# u(x,y,t) = exp( -a * (r^2 - R(t)^2)^2 ), r^2=(x-0.5)^2+(y-0.5)^2, R(t)=0.20 + 0.25 t
+# a = 156.25, mu = 3.0
+
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-h0.012500_gmsh22.msh"
+output_file = "output/ring_center_05_05"
+time_dependent = true
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_coefficient = 3.0
+transport_coefficient_x = 0.0
+transport_coefficient_y = 0.0
+reaction_coefficient = 0.0
+
+[time_dependent]
+final_time = 1.0
+time_step = 0.01
+theta = 0.5
+
+# shorthand: r2 = (x-0.5)^2 + (y-0.5)^2, R = 0.20 + 0.25*t, S = r2 - R^2
+# IC: u(x,y,0) = exp( -a * (r2 - R0^2)^2 ) con R0=0.20
+initial_condition = "exp( -156.25 * pow( ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) - pow(0.20, 2), 2 ) )"
+
+# Forcing: f = u_t - mu * Δu
+# Con S=r2-R^2, u_t = (4 a c R S) u,  Δu = [16 a^2 r2 S^2 + 8 a (R^2 - 2 r2)] u
+# Numeri: a=156.25 → 4ac = 156.25, 16 a^2 = 390625.0, 8 a = 1250.0, mu=3.0
+forcing_function_td = "exp( -156.25 * pow( ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) - pow(0.20 + 0.25*t, 2), 2 ) ) * ( 156.25 * (0.20 + 0.25*t) * ( ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) - pow(0.20 + 0.25*t, 2) ) - 3.0 * ( 390625.0 * ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) * pow( ( ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) - pow(0.20 + 0.25*t, 2) ), 2 ) + 1250.0 * ( pow(0.20 + 0.25*t, 2) - 2.0 * ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) ) ) )"
+
+# Dirichlet = soluzione esatta su tutti i lati (mostra il cerchio che avanza)
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+time_function = "exp( -156.25 * pow( ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) - pow(0.20 + 0.25*t, 2), 2 ) )"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+time_function = "exp( -156.25 * pow( ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) - pow(0.20 + 0.25*t, 2), 2 ) )"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+time_function = "exp( -156.25 * pow( ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) - pow(0.20 + 0.25*t, 2), 2 ) )"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3
+time_function = "exp( -156.25 * pow( ( (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5) ) - pow(0.20 + 0.25*t, 2), 2 ) )"
+
+[solver]
+tolerance = 1e-12
+max_iterations = 1000
+method = "direct"
