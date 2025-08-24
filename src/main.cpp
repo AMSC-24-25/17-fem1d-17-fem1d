@@ -20,12 +20,8 @@ constexpr double PI = EIGEN_PI;
  */
 
 
-
 int main(int argc, char *argv[])
 {
-#ifdef _OPENMP
-    omp_set_dynamic(0);    // Disable dynamic adjustment of threads
-#endif
     cout << "-------------17-FEM1D PROJECT-----------" << endl;
 
 
