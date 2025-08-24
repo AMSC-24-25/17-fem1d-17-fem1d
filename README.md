@@ -11,6 +11,13 @@ C++ implementation for solving PDEs in 1D, 2D, and 3D
 
 ## How to run
 
+To clone the repository, run the following:
+```bash
+$ git clone https://github.com/AMSC-24-25/17-fem1d-17-fem1d.git
+$ cd 17-fem1d-17-fem1d
+$ git submodule update --init --recursive
+```
+
 To compile, run the following:
 ```bash
 $ mkdir build     # if build directory does not exist
