@@ -116,9 +116,7 @@ using parser_t = exprtk::parser<double>;
 
 // Unified thread-safe expression pool for both simple and time-dependent functions
 struct ThreadExpressionPool {
-    std::vector<double> x_vals;
-    std::vector<double> y_vals;
-    std::vector<double> z_vals;
+    std::vector<double> x_vals, y_vals, z_vals;
     std::vector<double> time_vals;  // Only used for time-dependent expressions
     std::vector<symbol_table_t> symbol_tables;
     std::vector<expression_t> expressions;
