@@ -33,6 +33,28 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    #ifdef _OPENMP
+        if (argv[1][0] == '1'){
+            if (argc >= 4) {
+                int nThreads = std::atoi(argv[4]);
+                omp_set_dynamic(0);
+                omp_set_num_threads(nThreads);
+            }
+        } else {
+            if (argc >= 3){
+                int nThreads = std::atoi(argv[3]);
+                omp_set_dynamic(0);
+                omp_set_num_threads(nThreads);
+            } 
+        }
+
+        //Output OpenMP info (max threads, parameters, etc.)
+        std::cout << "OpenMP is enabled." << std::endl;
+        std::cout << "Max threads: " << omp_get_max_threads() << std::endl;
+    #else
+        std::cout << "OpenMP is not enabled. Running sequentially." << std::endl;
+    #endif
+
 
     if (argv[1][0] == '1') {
     // 1D case: fix argument parsing
