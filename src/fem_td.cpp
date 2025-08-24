@@ -32,15 +32,18 @@ FemTD<dim>::FemTD(Grid<dim> grid,
     rhs_.resize(N); rhs_.setZero();
     u_.resize(N);   u_.setZero();
     u_old_.resize(N); u_old_.setZero();
+    f_new.resize(N); f_new.setZero();
+    f_old.resize(N); f_old.setZero();
 
     // The following are preallocated for improved memory efficiency
 
     const unsigned int expPerElem = (dim + 1) * (dim + 1);
-    tripletM.reserve(expPerElem * mesh_.getNumElements());
-    tripletK.reserve(expPerElem * mesh_.getNumElements());
+    const unsigned int numElements = mesh_.getNumElements();
+    tripletM.reserve(expPerElem * numElements);
+    tripletK.reserve(expPerElem * numElements);
 #ifdef _OPENMP
     int nthreads = omp_get_max_threads();
-    F_threads.resize(nthreads, VectorXd::Zero(F.size()));
+    F_threads.resize(nthreads, VectorXd::Zero(N));
     tripletM_thr.resize(nthreads);
     tripletK_thr.resize(nthreads);
     for (int i = 0; i < nthreads; ++i) {
@@ -138,8 +141,8 @@ void FemTD<dim>::assemble_M_and_K_element(int elem,
 
 // ===== RHS load =====
 template<unsigned int dim>
-void FemTD<dim>::build_load(VectorXd& F, double t) const {
-    F.setZero();
+void FemTD<dim>::build_load(double t) {
+    f_new.setZero();
     
     const unsigned matSize = dim + 1;
     const int numElements = mesh_.getNumElements();
@@ -175,7 +178,7 @@ void FemTD<dim>::build_load(VectorXd& F, double t) const {
     // Sum all thread-local vectors
     int nthreads = omp_get_max_threads();
     for (int tid = 0; tid < nthreads; ++tid) {
-        F += F_threads[tid];
+        f_new += F_threads[tid];
     }
 #else
     for (int i = 0; i < numElements; ++i) {
@@ -192,7 +195,7 @@ void FemTD<dim>::build_load(VectorXd& F, double t) const {
             const double weight = weights[q];
             for (unsigned j=0; j<matSize; ++j) {
                 const int jGlobal = cell.getNodeIndex(j);
-                F[jGlobal] += weight * forcingVal * phi[q][j];
+                f_new[jGlobal] += weight * forcingVal * phi[q][j];
             }
         }
     }
@@ -215,9 +218,8 @@ template<unsigned int dim>
 double FemTD<dim>::step(double t_new, double dt, double theta) {
     const int N = mesh_.getNumNodes();
 
-    VectorXd f_new(N), f_old(N);
-    build_load(f_new, t_new);
-    build_load(f_old, t_new - dt);
+    f_old = f_new; // Save the previous time step forcing vector
+    build_load(t_new); // Build f_new for this time step
 
     rhs_ = ( (1.0/dt) * (M_ * u_old_) )
          - ( (1.0 - theta) * (K_ * u_old_) )

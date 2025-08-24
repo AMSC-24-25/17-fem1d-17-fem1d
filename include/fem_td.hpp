@@ -72,12 +72,13 @@ private:
     std::vector<std::vector<Triplet>> tripletM_thr, tripletK_thr;
 #endif
     std::vector<Triplet> tripletM, tripletK;
+    VectorXd f_new, f_old;
 
     void assemble_time_invariant();
     void assemble_M_and_K_element(int elem,
                                   std::vector<Triplet>& tripM,
                                   std::vector<Triplet>& tripK);
-    void build_load(VectorXd& F, double t) const; // ∫ f(x,t) φ_i
+    void build_load(double t); // ∫ f(x,t) φ_i
 
     void apply_initial_condition();
 };
