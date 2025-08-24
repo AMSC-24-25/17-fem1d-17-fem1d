@@ -118,6 +118,35 @@ void QuadratureRule<dim>::getQuadratureData(
 // ============= GaussLegendre general implementations ======
 
 template<unsigned int dim>
+void GaussLegendre<dim>::getQuadratureData(const BoundaryCell<dim>& boundary,
+                                          std::vector<Point<dim+1>>& quadrature_points,
+                                          std::vector<std::vector<double>>& phi,
+                                          std::vector<double>& weights) const {
+    // Geometric properties 
+    double measure = boundary.measure();
+    
+    // Initialize output vectors
+    quadrature_points.clear();
+    phi.clear();
+    weights.clear();
+    quadrature_points.reserve(points.size());
+    phi.reserve(points.size());
+    weights.reserve(points.size());
+    
+    // Iterate over quadrature points
+    for (size_t q = 0; q < points.size(); ++q) {
+        Point<dim+1> globalPoint = boundary.mapToGlobal(points[q]);
+        quadrature_points.push_back(globalPoint);
+        
+        // Shape functions at the quadrature point (barycentric coordinates)
+        phi.push_back(points[q]);
+        
+        // Physical weight, scaled by cell measure
+        weights.push_back(w[q] * measure);
+    }
+}
+
+template<unsigned int dim>
 double GaussLegendre<dim>::integrate(const BoundaryCell<dim>& edge, 
                                  const Function<dim+1,1>& func) const {
     std::vector<Point<dim+1>> quadrature_points;
@@ -158,7 +187,8 @@ void GaussLegendre<dim>::integrateShapeFunctions(const BoundaryCell<dim>& edge,
     }
 }
 
-// ============= GaussLegendre1D IMPLEMENTATION =============
+// ============= GaussLegendre specialized constructors =============
+
 template<>
 GaussLegendre<1>::GaussLegendre() {
     double x1 = 0.5 - 0.5/std::sqrt(3.0);
@@ -169,39 +199,6 @@ GaussLegendre<1>::GaussLegendre() {
     };
     w = {0.5, 0.5};
 }
-template<>
-void GaussLegendre<1>::getQuadratureData(const BoundaryCell<1>& edge,
-                                        std::vector<Point<2>>& quadrature_points,
-                                        std::vector<std::vector<double>>& phi,
-                                        std::vector<double>& weights) const {
-    // Geometric properties of the edge
-    double length = edge.measure();
-    double jacobian = length;  // |J| = length for transformation [0,1] -> edge
-
-    // Initialize output vectors
-    quadrature_points.clear();
-    phi.clear();
-    weights.clear();
-    quadrature_points.reserve(points.size());
-    phi.reserve(points.size());
-    weights.reserve(points.size());
-    
-    // Iterate over quadrature points
-    for (size_t q = 0; q < points.size(); ++q) {
-    // Global quadrature point
-        Point<2> globalPoint = edge.mapToGlobal(points[q]);
-        quadrature_points.push_back(globalPoint);
-        
-    // Shape functions at the quadrature point
-        std::vector<double> phi_q;
-        phi.push_back(points[q]);
-        
-    // Physical weight
-        weights.push_back(w[q] * jacobian);
-    }
-}
-
-// ============= GaussLegendre2D IMPLEMENTATION =============
 
 template<>
 GaussLegendre<2>::GaussLegendre() {
@@ -213,39 +210,6 @@ GaussLegendre<2>::GaussLegendre() {
     };
     // Weights sum to 1
     w = {1/3.0, 1/3.0, 1/3.0};
-}
-
-template<>
-void GaussLegendre<2>::getQuadratureData(const BoundaryCell<2>& face,
-                                        std::vector<Point<3>>& quadrature_points,
-                                        std::vector<std::vector<double>>& phi,
-                                        std::vector<double>& weights) const {
-    // Area of the triangular face
-    double area = face.measure();
-    
-    // Initialize output vectors
-    quadrature_points.clear();
-    phi.clear();
-    weights.clear();
-    quadrature_points.reserve(points.size());
-    phi.reserve(points.size());
-    weights.reserve(points.size());
-    
-    // Iterate over quadrature points
-    for (size_t q = 0; q < points.size(); ++q) {
-        // Convert vector to Point<3> for barycentric coordinates
-        Point<3> baryCoords(points[q]);
-        
-        // Global quadrature point on face using full barycentric coordinates
-        Point<3> globalPoint = face.mapToGlobal(baryCoords);
-        quadrature_points.push_back(globalPoint);
-        
-        // Shape functions at the quadrature point (using barycentric coordinates)
-        phi.push_back(points[q]);
-        
-        // Physical weight (weight * face area)
-        weights.push_back(w[q] * area);
-    }
 }
 
 template class GaussLegendre<1>;
