@@ -123,5 +123,6 @@ void solveTimeDependentProblem(const Config& config) {
     femtd.run(config.time_dependent.final_time, 
                 config.time_dependent.time_step, 
                 config.time_dependent.theta,
-                config.problem.output_file);
+                config.problem.output_file, config.problem.output_file);
+                // VTU prefix               // CSV prefix
 }

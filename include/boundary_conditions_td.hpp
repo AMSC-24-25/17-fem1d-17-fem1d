@@ -12,16 +12,6 @@
 using Eigen::VectorXd;
 using SparseMat = Eigen::SparseMatrix<double, Eigen::RowMajor>;
 
-// =============================================================================
-// ENUMS AND BASIC STRUCTURES
-// =============================================================================
-
-/// Forward declaration for Enum for the type of boundary condition
-enum class BCType;
-
-template<unsigned int dim, unsigned int returnDim>
-using fun_td = std::function<Point<returnDim>(const Point<dim>&, double)>;
-
 // Single boundary condition
 template<unsigned int dim, unsigned int returnDim>
 class BoundaryCondition_td {
@@ -44,9 +34,10 @@ public:
     int getBoundaryId() const { return boundaryId; }
     BCType getType() const { return type; }
     Function<dim, returnDim> getBoundaryFunction(double t) const { 
-        return Function<dim, returnDim>(
-            [this, t](Point<dim> p) -> Point<returnDim> { return boundaryFunction(p, t); }
-        );
+        return castToSteadyFunction(boundaryFunction, t);
+    }
+    fun_td<dim, returnDim> getBoundaryFunction() const {
+        return boundaryFunction;
     }
 };
 
@@ -86,11 +77,6 @@ private:
     void applyNeumann(const BoundaryCondition_td<dim, returnDim>& bc, const Grid<dim>& mesh, 
                      SparseMat& A, VectorXd& rhs, double t);
 };
-
-
-// =============================================================================
-// TEMPLATE IMPLEMENTATION
-// =============================================================================
 
 #include "boundary_conditions_td.tpp"
 

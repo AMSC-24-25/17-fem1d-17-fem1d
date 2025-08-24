@@ -6,6 +6,9 @@
 #include <vector>
 #include "point.hpp"
 
+template<unsigned int dim, unsigned int returnDim>
+using fun_td = std::function<Point<returnDim>(const Point<dim>&, double)>;
+
 template <unsigned int dim, unsigned int returnDim>
 class Function
 {
@@ -41,7 +44,19 @@ public:
         return function(p);
     }
 
+    operator fun_td<dim, returnDim>() const {
+        return [f = this->function](const Point<dim>& p, double) -> Point<returnDim> {
+            return f(p);
+        };
+    }
 };
+
+template<unsigned int dim, unsigned int returnDim>
+inline Function<dim, returnDim> castToSteadyFunction(const fun_td<dim, returnDim>& f_td, double t) {
+    return Function<dim, returnDim>([f_td, t](const Point<dim>& p) -> Point<returnDim> {
+        return f_td(p, t);
+    });
+}
 
 template<unsigned dim>
 class Function<dim, 1>{
