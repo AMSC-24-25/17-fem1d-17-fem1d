@@ -73,9 +73,9 @@ add_custom_target(create_output_dir ALL
 ) 
 add_custom_target(empty_output_dir ALL 
         COMMAND ${CMAKE_COMMAND} -E remove
-        "output/*.pvtu"
         "output/*.vtu"
-        COMMENT "Removing all .pvtu and .vtu files from the build directory" 
+        "output/*.csv"
+        COMMENT "Removing all .vtu and .csv files from the output directory" 
 ) 
 add_dependencies(17_fem1d_17_fem1d create_output_dir)
 add_dependencies(17_fem1d_17_fem1d_td create_output_dir)
