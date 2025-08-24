@@ -7,8 +7,8 @@ template class QuadratureRule<3>;
 template<>
 OrderTwoQuadrature<1>::OrderTwoQuadrature() {
     // Two-point Gauss-Legendre quadrature for interval [0,1]
-    double x1 = 0.5 - 0.5/std::sqrt(3.0);
-    double x2 = 0.5 + 0.5/std::sqrt(3.0);
+    double x1 = 0.7886751346;
+    double x2 = 0.2113248654;
     barycPoints = {
         {x1, 1.0 - x1},
         {x2, 1.0 - x2}
@@ -19,16 +19,13 @@ OrderTwoQuadrature<1>::OrderTwoQuadrature() {
 template<>
 OrderFourQuadrature<1>::OrderFourQuadrature() {
     // Four-point Gauss-Legendre quadrature for interval [0,1]
-    double sqrt_30 = std::sqrt(30.0);
-    double x1 = 0.5 - 0.5 * std::sqrt((3.0 + 2.0 * sqrt_30 / 5.0) / 7.0);
-    double x2 = 0.5 - 0.5 * std::sqrt((3.0 - 2.0 * sqrt_30 / 5.0) / 7.0);
-    double x3 = 0.5 + 0.5 * std::sqrt((3.0 - 2.0 * sqrt_30 / 5.0) / 7.0);
-    double x4 = 0.5 + 0.5 * std::sqrt((3.0 + 2.0 * sqrt_30 / 5.0) / 7.0);
+    double x1 = 0.9305681558;
+    double x2 = 0.6699905218;
+    double x3 = 0.3300094782;
+    double x4 = 0.0694318442;
 
-    double w1 = (18.0 - sqrt_30) / 36.0;
-    double w2 = (18.0 + sqrt_30) / 36.0;
-    double w3 = w2;
-    double w4 = w1;
+    double w1 = 0.1739274226;
+    double w2 = 0.3260725774;
 
     barycPoints = {
         {x1, 1.0 - x1},
@@ -36,22 +33,22 @@ OrderFourQuadrature<1>::OrderFourQuadrature() {
         {x3, 1.0 - x3},
         {x4, 1.0 - x4}
     };
-    w = {w1, w2, w3, w4};
+    w = {w1, w2, w2, w1};
 }
 
 template<>
 OrderTwoQuadrature<3>::OrderTwoQuadrature() {
     // Four-point quadrature rule for tetrahedron (degree 2 exact)
     double sqrt5 = std::sqrt(5.0);
-    double a = (5.0 + 3.0 * sqrt5) / 20.0; 
-    double b = (5.0 - sqrt5) / 20.0;        
+    double a = 0.5854101966; 
+    double b = 0.1381966011; 
     
     // Barycentric coordinates and weights:
     barycPoints = {
-        {a, b, b, b},
         {b, a, b, b},
-        {b, b, a, b},
-        {b, b, b, a}
+        {a, b, b, b},
+        {b, b, b, a},
+        {b, b, a, b}
     };
     // Weights sum to 1
     w = {1.0/4.0, 1.0/4.0, 1.0/4.0, 1.0/4.0};
@@ -69,20 +66,30 @@ OrderTwoQuadrature<2>::OrderTwoQuadrature() {
 }
 template<>
 OrderFourQuadrature<2>::OrderFourQuadrature() {
+    double a = 0.4459484909;
+    double b = 0.0915762135;
+    double c = 0.1081030182;
+    double d = 0.8168475730;
     // Six-point quadrature rule for triangle (degree 4 exact, symmetric)
     barycPoints = {
-        {5.0/11.0, 5.0/11.0, 1.0/11.0},
-        {5.0/11.0, 1.0/11.0, 5.0/11.0},
-        {1.0/11.0, 5.0/11.0, 5.0/11.0},
-        {1.0/11.0, 1.0/11.0, 9.0/11.0},
-        {1.0/11.0, 9.0/11.0, 1.0/11.0},
-        {9.0/11.0, 1.0/11.0, 1.0/11.0}
+        {a, a, c}, 
+        {b, b, d}, 
+        {a, c, a}, 
+        {b, d, b}, 
+        {c, a, a}, 
+        {d, b, b}
     };
+
     // Weights sum to 1
-    w = {
-        2.0/9.0, 2.0/9.0, 2.0/9.0,
-        1.0/9.0, 1.0/9.0, 1.0/9.0
+    double w1 = 0.1116907948;
+    double w2 = 0.0549758718;
+    w = {   
+        w1, w2, w1, 
+        w2, w1, w2
     };
+    for (size_t i = 0; i < w.size(); ++i) {
+        w[i] = w[i] * 2.0; // Area of reference triangle is 1
+    }
 }
 
 template<unsigned int dim>
@@ -191,13 +198,22 @@ void GaussLegendre<dim>::integrateShapeFunctions(const BoundaryCell<dim>& edge,
 
 template<>
 GaussLegendre<1>::GaussLegendre() {
-    double x1 = 0.5 - 0.5/std::sqrt(3.0);
-    double x2 = 0.5 + 0.5/std::sqrt(3.0);
+    // Four-point Gauss-Legendre quadrature for interval [0,1]
+    double x1 = 0.9305681558;
+    double x2 = 0.6699905218;
+    double x3 = 0.3300094782;
+    double x4 = 0.0694318442;
+
+    double w1 = 0.1739274226;
+    double w2 = 0.3260725774;
+
     points = {
         {x1, 1.0 - x1},
-        {x2, 1.0 - x2}
+        {x2, 1.0 - x2},
+        {x3, 1.0 - x3},
+        {x4, 1.0 - x4}
     };
-    w = {0.5, 0.5};
+    w = {w1, w2, w2, w1};
 }
 
 template<>

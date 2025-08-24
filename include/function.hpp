@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+#include <stdexcept>
 #include "point.hpp"
 
 template<unsigned int dim, unsigned int returnDim>
@@ -62,6 +63,7 @@ template<unsigned dim>
 class Function<dim, 1>{
 
     using fun = std::function<Point<1>(const Point<dim> &)>;
+    using fun_dd = std::function<Point<dim>(const Point<dim> &)>;
 
     static const inline fun zeroFun = [](const Point<dim> &p) -> Point<1>
     { return Point<1>::zero(); };
@@ -71,7 +73,7 @@ class Function<dim, 1>{
 
 private:
     fun function;
-    std::vector<fun> gradient;
+    fun_dd gradient;
 
 public:
     // Public constructors: necessary to create functions from lambda/callable
@@ -80,25 +82,10 @@ public:
 
 
     // f(x), grad = 0
-    explicit Function(fun f) : function(f), gradient{zeroFun} {}
-
-    // 1D: f(x), f_x
-    explicit Function(fun f, fun gx) : function(f), gradient{gx} {
-        static_assert(dim >= 1, "Function ctor with 1 derivative requires dim>=1");
-    }
-
-    // 2D: f(x,y), (f_x, f_y)
-    explicit Function(fun f, fun gx, fun gy) : function(f), gradient{gx, gy} {
-        static_assert(dim >= 2, "Function ctor with 2 derivatives requires dim>=2");
-    }
-
-    // 3D: f(x,y,z), (f_x, f_y, f_z)
-    explicit Function(fun f, fun gx, fun gy, fun gz) : function(f), gradient{gx, gy, gz} {
-        static_assert(dim >= 3, "Function ctor with 3 derivatives requires dim>=3");
-    }
+    explicit Function(fun f) : function(f), gradient{Function<dim,dim>::zeroFun} {}
+    explicit Function(fun f, fun_dd g) : function(f), gradient{g} {}
 
 public: 
-
 
     Function<dim, 1> operator+(const Function<dim, 1> &f) const;
     Function<dim, 1> operator*(const Function<dim, 1> &f) const;
@@ -116,30 +103,25 @@ public:
     }
 
     inline double dx_value(Point<dim> p) const {
-        return gradient[0](p);
+        return gradient(p)[0];
     }
 
     inline double dy_value(Point<dim> p) const {
-        return gradient[1](p);
+        return gradient(p)[1];
     }
 
     inline double dz_value(Point<dim> p) const {
-        return gradient[2](p);
+        return gradient(p)[2];
     }
 
-    inline std::vector<double> getGradValues(Point<dim> p) const {
-        std::vector<double> out;
-        out.reserve(gradient.size());
-        for (const fun &g : gradient)
-            out.push_back(g(p));
-        return out;
+    inline Point<dim> getGradValues(Point<dim> p) const {
+        return gradient(p);
     }
 
-    Function<dim, dim> getGrad() const;
+    inline Function<dim, dim> getGrad() const {
+        return Function<dim, dim>(gradient);
+    }
 };
-
-
-#include "function.tpp"
 
 template <unsigned int dim, unsigned int returnDim>
 class ZeroFunction : public Function<dim, returnDim>
@@ -168,5 +150,7 @@ public:
 
     OneFunction() : Function<dim, returnDim>(oneFun, zeroFun) {}
 };
+
+#include "function.tpp"
 
 #endif // FUNCTION

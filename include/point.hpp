@@ -84,20 +84,12 @@ public:
         return result;
     }
     Point<dim> operator *(double scalar) const {
-        Point<dim> result(*this);
+        Point<dim> result(coords);
         for (unsigned int i = 0; i < dim; ++i) {
-            result[i] *= scalar;
+            result.coords[i] *= scalar;
         }
         return result;
     }
-
-    // Point<dim> operator *(double scalar) const {
-    //     Point<dim> result(*this);
-    //     for (unsigned int i = 0; i < dim; ++i) {
-    //         result[i] *= scalar;
-    //     }
-    //     return result;
-    // }
 
     double x() const {
         static_assert(dim >= 1, "Point is not 1D");
@@ -115,29 +107,6 @@ public:
     }
 
 };
-
-
-// template<unsigned int dim>
-//  class one : public Point<dim> {
-// public:
-//     one() : Point<dim>() {
-//         for (unsigned int i = 0; i < dim; ++i) {
-//             this->coords.push_back(1.0);
-//         }
-//     }
-// };
-
-
-
-// template<unsigned int dim>
-//  class zero : public Point<dim> {
-// public:
-//     zero() : Point<dim>() {
-//         for (unsigned int i = 0; i < dim; ++i) {
-//             this->coords.push_back(0.0);
-//         }
-//     }
-// };
 
 // Product between points of different dimensions
 template<unsigned int dim1, unsigned int dim2>
