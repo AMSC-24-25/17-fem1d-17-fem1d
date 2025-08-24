@@ -122,7 +122,7 @@ void FemTD<dim>::assemble_M_and_K_element(int elem,
 
                 // K = μ ∇φ_i·∇φ_j + (b·∇φ_i) φ_j + r φ_i φ_j
                 const double diff_c = mu * (grad_phi[i] * grad_phi[j]);
-                const double adv_c  = (b * grad_phi[i]) * phi[q][j];
+                const double adv_c  = (b * grad_phi[j]) * phi[q][i];
                 const double reac_c = r * phi[q][i] * phi[q][j];
                 K_local(i,j) += weight * (diff_c + adv_c + reac_c);
             }
