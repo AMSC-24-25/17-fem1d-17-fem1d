@@ -14,13 +14,23 @@ void solveSteadyStateProblem(const Config& config);
 template<unsigned int dim>
 void solveTimeDependentProblem(const Config& config);
 
+
 int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <config.toml>" << std::endl;
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <config.toml>";
+    #ifdef _OPENMP
+        std::cerr << " [nThreads]"; 
+    #endif
+        std::cerr << std::endl;
         return 1;
     }
 
 #ifdef _OPENMP
+    if (argc >= 3) {
+        int nThreads = std::atoi(argv[2]);
+        omp_set_num_threads(nThreads); // <-- usa questa funzione
+        omp_set_max_threads(nThreads);
+    }
     //Output OpenMP info (max threads, parameters, etc.)
     std::cout << "OpenMP is enabled." << std::endl;
     std::cout << "Max threads: " << omp_get_max_threads() << std::endl;
@@ -28,6 +38,7 @@ int main(int argc, char* argv[]) {
 #else
     std::cout << "OpenMP is not enabled. Running sequentially." << std::endl;
 #endif
+
 
     try {
         Config config = Config::loadFromFile(argv[1]);

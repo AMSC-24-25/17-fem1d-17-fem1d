@@ -1,0 +1,58 @@
+# 3D time-dependent convection–diffusion–reaction
+# Exact solution: u(x,y,z,t) = (x + y + z) * sin(2*pi*t)
+
+[problem]
+dimension      = 3
+mesh_file      = "../../mesh/mesh-cube-20_gmsh22.msh"  
+output_file    = "output/analysis/cube-20"
+time_dependent = true
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_coefficient   = 3.5     # mu
+transport_coefficient_x = 1.5     # b_x
+transport_coefficient_y = -0.25   # b_y
+transport_coefficient_z = 2.0     # b_z
+reaction_coefficient    = 4.0     # sigma
+
+[time_dependent]
+final_time        = 1.0
+time_step         = 0.01
+theta             = 0.5             # Crank–Nicolson
+initial_condition = "0.0"
+
+# f = (x+y+z)*2*pi*cos(2*pi*t) + (1.5 - 0.25 + 2.0)*sin(2*pi*t) + 4.0*(x+y+z)*sin(2*pi*t)
+forcing_function_td = "(x + y + z) * 2.0*pi*cos(2.0*pi*t) + 3.25 * sin(2.0*pi*t) + 4.0 * (x + y + z) * sin(2.0*pi*t)"
+
+# Dirichlet = exact su tutte le 6 facce (più semplice per validare)
+[[boundary_conditions]]
+type = "dirichlet"
+tag  = 0
+time_function = "(x + y + z) * sin(2.0*pi*t)"
+[[boundary_conditions]]
+type = "dirichlet"
+tag  = 1
+time_function = "(x + y + z) * sin(2.0*pi*t)"
+[[boundary_conditions]]
+type = "dirichlet"
+tag  = 2
+time_function = "(x + y + z) * sin(2.0*pi*t)"
+[[boundary_conditions]]
+type = "dirichlet"
+tag  = 3
+time_function = "(x + y + z) * sin(2.0*pi*t)"
+[[boundary_conditions]]
+type = "dirichlet"
+tag  = 4
+time_function = "(x + y + z) * sin(2.0*pi*t)"
+[[boundary_conditions]]
+type = "dirichlet"
+tag  = 5
+time_function = "(x + y + z) * sin(2.0*pi*t)"
+
+[solver]
+tolerance      = 1e-12
+max_iterations = 1000
+method         = "direct"

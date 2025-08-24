@@ -63,3 +63,5 @@ ExtractMatPlot
 
 #build
 build/
+
+config/speedup-analysis/*.log
