@@ -28,8 +28,9 @@ int main(int argc, char* argv[]) {
 #ifdef _OPENMP
     if (argc >= 3) {
         int nThreads = std::atoi(argv[2]);
-        omp_set_num_threads(nThreads); // <-- usa questa funzione
-        omp_set_max_threads(nThreads);
+        omp_set_dynamic(0);
+        omp_set_num_threads(nThreads);
+
     }
     //Output OpenMP info (max threads, parameters, etc.)
     std::cout << "OpenMP is enabled." << std::endl;

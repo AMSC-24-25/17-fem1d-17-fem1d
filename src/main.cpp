@@ -2,7 +2,7 @@
 #include <fstream>
 #include "fem.hpp"
 #include "grid.hpp"
-#include "grid1d.hpp"
+#include "grid1D.hpp"
 #include "boundary_conditions.hpp"
 
 using std::cout;

@@ -7,6 +7,11 @@
 #   THREADS="2 4 8 12 16"
 #   REPEAT=1
 
+
+
+# REPEAT=3 bash ../run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_results.csv ./sequentialTomlMain
+
+
 set -uo pipefail  # (niente -e: non fermarti al primo errore)
 
 OMP_BIN="${1:-./TomlMain}"
