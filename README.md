@@ -1,95 +1,216 @@
-# Fem1d
-1D Finite Element
+# Multi-Dimensional Finite Element Method (FEM)
+C++ implementation for solving PDEs in 1D, 2D, and 3D
+
+---
+
+**Authors**: Federico Quartieri, Alessandro Ruzza, Daniele Salvi \
+**Professor**: Luca Formaggia \
+**Course**: Advanced Methods for Scientific Computing (2024/25)\
+**Institution**: Politecnico di Milano  \
+**License**: MIT License
 
 ## How to run
 
-```
+To compile, run the following:
+```bash
 $ mkdir build     # if build directory does not exist
 $ cd build
 $ cmake ..
-$ make 
-$ ./17_fem1d_17_fem1d <Length of domain> <Number of nodes>
+$ make [-j N]      # -j flag enables parallel compilation
+```
+
+To execute, run one of the following after compiling:
+```bash
+# Time-dependent and Static problems with TOML configuration  
+# (Num_Threads parameter is optional, defaults to max)
+$ ./TomlMain ../config/<config_file>.toml [Num_Threads]
+
+# Direct mesh-based steady execution
+$ ./17_fem1d_17_fem1d [2-3]d <path to .msh file>
+
+# Direct mesh-based time-dependend execution
+$ ./17_fem1d_17_fem1d_td [2-3]d <path to .msh file>
+
+# Run tests
+$ ctest
 ```
 
 ## What is it?
 
-The Finite Element Method (FEM) is a numerical method used to solve partial differential equations in problems ranging from one-dimensional to multi-dimensional. 
+This is a comprehensive C++ implementation of the Finite Element Method (FEM) capable of solving partial differential equations in 1D, 2D, and 3D domains. The implementation supports both time-dependent and steady-state problems with flexible boundary conditions.
 
-FEM works by dividing the system into small parts, called finite elements, and discretizing the space using a mesh. This converts a boundary value problem into a system of algebraic equations. The method estimates the unknown function over the domain by assembling equations for the finite elements into a larger system that represents the entire problem. FEM then finds an approximate solution by minimizing an associated error function using the calculus of variations.
+**Key Features:**
+- **Multi-dimensional support**: 1D segments, 2D triangular meshes, 3D tetrahedral meshes
+- **Time-dependent problems**: Theta method
+- **Parallel computing**: OpenMP support 
+- **Flexible configuration**: TOML-based problem specification (at runtime)
+- **Advanced quadrature**: Multiple integration orders for flexible assembly
+- **Mixed boundary conditions**: Dirichlet, Neumann, and time-dependent conditions
+
+## Architecture Overview
+
+The project follows a modular, template-based design that enables compile-time optimization and dimensional flexibility.
+
+### Core Classes
+
+#### **Point<dim>**
+Template class representing points in dim-dimensional space. Supports vector operations and coordinate access with compile-time dimension checking.
+
+#### **Cell<dim>** 
+Represents finite elements (intervals, triangles, tetrahedra) with:
+- Barycentric coordinate transformations
+- Jacobian computation for integration
+- Shape function gradient calculation
+- Volume/area/length measurement
+
+#### **Grid<dim>**
+Manages the computational mesh:
+- Reads GMSH format files (.msh)
+- Stores connectivity information
+- Provides element and boundary access
+- Supports mixed element types
+
+#### **Function<dim, returnDim>**
+Template-based function representation with:
+- Analytical and numerical function support
+- Automatic gradient computation
+- Operator overloading for function arithmetic
+- Time-dependent function support via `fun_td<dim, returnDim>`
+
+#### **BoundaryConditions\<dim\>**
+Comprehensive boundary condition handling system:
+- **Dirichlet conditions**: Specify exact function values on boundary
+- **Neumann conditions**: Specify exact flux values on boundary 
+- **Time-dependent conditions**: Boundary values that vary with both space and time
+- **Mixed conditions**: Combinations of Dirichlet and Neumann on different boundaries
+- **Tag-based assignment**: GMSH physical tag integration for complex geometries
+
+### Finite Element Solvers
+
+#### **Fem\<dim\>** (Static Problems)
+Solves steady-state PDEs of the form:
+```
+-∇·(D∇u) + b·∇u + cu = f
+```
+- **Assembly**: Builds stiffness matrix and load vector
+- **Quadrature**: High-order Gaussian integration
+- **Solving**: Direct (SparseLU) and iterative (BiCGSTAB) solvers
+- **Parallelization**: OpenMP-accelerated assembly
+
+#### **FemTD\<dim>** (Time-Dependent Problems)  
+Solves parabolic PDEs:
+```
+∂u/∂t - ∇·(D∇u) + b·∇u + cu = f(x,t)
+```
+- **Time stepping**: θ-method (implicit Euler, Crank-Nicolson)
+- **Mass matrix**: Consistent mass formulation
+- **Stability**: Adaptive time stepping support
+- **Thread safety**: Thread-local expression pools for parallel assembly
+
+### Advanced Features
+
+#### **Quadrature System**
+Template-based numerical integration:
+- **OrderTwoQuadrature**: 3-point barycentric rules for triangles/tetrahedra
+- **OrderFourQuadrature**: 6-point barycentric rules for higher accuracy
+- **GaussLegendre**: 1D and 2D quadrature for boundary integrals
+- **Adaptive**: Future support for higher-order quadratures.
+
+#### **Expression Parsing**
+Mathematical expression evaluation using `exprtk`:
+- **ThreadExpressionPool**: Thread-safe expression evaluation
+- **TOML integration**: Configuration-driven problem setup
+- **Runtime flexibility**: Change coefficients without recompilation
+
+#### **Parallel Computing**
+OpenMP-based parallelization:
+- **Matrix assembly**: Parallel loop over elements
+- **Thread-local storage**: Eliminates race conditions
+- **Load balancing**: Dynamic scheduling for irregular meshes
+- **Scalability**: Tested up to 16 threads with good efficiency
+
+## Configuration System
+
+Problems are specified using TOML configuration files located in the `config/` directory:
+
+### Example: 2D Time-Dependent Diffusion-Reaction
+```toml
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-h0.050000_gmsh22.msh"
+time_dependent = true
+
+[equation]
+diffusion_coefficient = 1.0
+reaction_coefficient = 1.0
+
+[time_dependent]
+final_time = 1.0
+time_step = 0.01
+theta = 0.5  # Crank-Nicolson
+initial_condition = "sin(2.0 * pi * (x + y))"
+forcing_function_td = "sin(2.0 * pi * (x + y)) * 2.0 * pi * cos(2.0 * pi*t)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+time_function = "sin(2.0 * pi * (x + y)) * sin(2.0 * pi*t)"
+```
+
+### Available Test Cases
+- **Heat equation**: `heat_equation_1d_td.toml`
+- **Advection-diffusion**: `advection_diffusion.toml`  
+- **Reaction-diffusion**: `reaction_diffusion_1d.toml`
+- **Poisson problems**: `poisson.toml`
+- **3D manufactured solutions**: `manufactured_3d_td.toml`
 
 
-## How does it work?
+<!--
+## Performance & Validation
+### Numerical Accuracy
+- **Spatial convergence**: O(h²) for linear elements
+- **Temporal convergence**: O(dt) for implicit Euler, O(dt²) for Crank-Nicolson
+- **Manufactured solutions**: Machine precision for polynomial exact solutions
+- **Complex geometries**: Consistent accuracy on unstructured meshes
 
-We implemented a program capable of solving partial differential equations problems in one dimension.
+### Parallel Performance  
+- **OpenMP scaling**: Near-linear speedup up to 8 cores
+- **Thread safety**: Lock-free assembly using thread-local storage
+- **Memory efficiency**: Sparse matrix formats (COO → CSR conversion)
+- **Cache optimization**: Element-wise loop blocking
 
-#### BOUNDARY_COND 
+### Validation Results
+- **Method of manufactured solutions**: Verified convergence rates
+- **Benchmark problems**: Agreement with analytical solutions
+- **Stability analysis**: CFL condition respected for explicit schemes
+- **Energy conservation**: Verified for conservative problems
+-->
 
-This class abstracts the boundary condition on a domain element. For the 1d case, it corresponds to the condition on a single extremal point. It is constructed via a boolean to distinguish the type of condition (true for Neumann, false for Dirichlet), and the corresponding function representing the condition. Notice that for a 1d problem these are numerical values, but we implemented them as functions for greater flexibilities looking at future implementations.
-It exposes only the basic getter methods.
+## Dependencies
+### External Dependencies
 
-#### FUNCTION
-All the functions of the program are implemented using a specific class characterized by two attributes: one for the function itself and one for its gradient (defined as std functions). Then there are two constructors: the first one needs both the attributes while the second one requires only the function because the gradient is defaulted to zero (i.e. the zero function). The second constructor is used when we do not need to specify the gradient (e.g. for the quadratures). Subsequently, there are two simple functions just to obtain the value of the function and the gradient in a specific position. We specified also 4 operators respectively for defining the sum and the multiplication.
+- **C++20**: Modern language features and concepts
+- **Eigen3**: Linear algebra and sparse matrix operations  
+- **OpenMP**: Parallel computing support
 
-#### FEM1D 
-The most important class is fem1d. It is responsible of handling all the data of the problem, building the algebraic linear system associated to the analytical PDE through finite element method. This is done through
-<ul>
-    <li>Constructor: takes all input data for the problem.
-    In particular, it takes already instantiated objects for attributes mesh, forcing_term, reaction_term, diffusion_term and transport term. Also a couple of boolean value and Function object is taken for the 2 extremal points of the 1d domain, specifying the type of boundary condition (true for Neumann, false for Dirichlet) and its value, and instantiating the corresponding BoundaryCond objects (in an array of size 2).
-    </li>
-    <li>Assemble method: actually computes the matrix and rhs of the system, by applying fem and by using quadrature method to compute numerically the integrals.</li>
-    <li>Solve method: implements Thomas algorithm to solve the linear system defined by the computed matrix and rhs.
-    It has 2 overloads, one version without parameters and another one with an ofstream input. The latter executes the former, and subsequently writes the solution in a file in CSV format, listing x points and corresponding computed values of the approximated solution.</li>
-    <li>GetSolution method: getter to retrive the computed solution.</li>
-</ul>
+### Dependencies included in this repository
+- **GoogleTest**: Unit testing framework
+- **TOML11**: Configuration file parsing
+- **exprtk**: Mathematical expression evaluation
 
+### Dependency for custom mesh generation
+- **GMSH**: Mesh generation and I/O
+## Future Development
 
-#### GRID1D 
-This class abstract the mesh in 1d. The domain is described by the 2 extrema (start, end) and the number of nodes in which to divide it. The constructor of the class computes and stores the mesh size (h).
-Besides the basic getters, it exposes an overload of the call operator, which returns value of the k-th node.
-There is also the getPhiFunctions method, which returns a vector of the basis functions of fem for the grid, in the order of the corresponding nodes.
+### Possible future Extensions
+- **Higher-order elements**: Quadratic and cubic shape functions
+- **Adaptive mesh refinement**: Error-driven h-refinement
+- **Domain decomposition**: MPI-based parallel computing
+- **Multigrid solvers**: Efficient solution of large systems
+- **Nonlinear problems**: Newton-Raphson iteration
+- **Fluid dynamics**: Navier-Stokes equations
 
-#### PHI_FUNCTION
-A specialization of Function that only takes the Grid and the node index. 
-Defines the basis function of FEM with grade 1 (linear) around the given node index. 
+<!--
+## Results Gallery
+-->
 
-#### QUADRATURE
-We implemented this class using inerithance with the aim of defining four different types of quadrature (MidPoint, Trapezoidal, Simpson and TwoPoints) just overriding the same method ("integrate") that just requires the two extrema of the interval we want to integrate on. The only attribute of the class is the function used for the integration and is the only parameter passed to the constructor for building an instance of this class.
-
-#### THOMAS
-This class is implemented to solve the problem with the Thomas algorithm. The constructor is the default one because it doesn't need any attributes.
-In solve, Thomas algorithm is implemented by splitting the problem in forward and backward substitution, both implemented and used as private in the class.
-
-## What to do next?
-
-- Modify the program in order to solve PDE problems also in  2D or 3D.
-- Generalize some classes like Function, BoundaryCond
-- Parallelize the program by changing Thomas algorithm or through domain decomposition.
-
-## Our results 
-### Dirichlet problems, u(0)=u(1)=0
-Forcing = $sin(2 \pi x)$ <br>
-Diffusion term = 1 <br>
-Transport term = 0 <br>
-Reaction term = 0 <br>
-<img src="./imgs/Sin2PIX_zero_transport-reaction.jpg">
-
-<br><br>
-Forcing = $sin(2 \pi x)$ <br>
-Diffusion term = 1 <br>
-Transport term = 100 <br>
-Reaction term = -100 <br>
-<img src="./imgs/Sin2PIX_high_transport-reaction.jpg">
-
-### Dirichlet-Neumann u(0)=0 , u'(1)=0
-Forcing = +1 <br>
-Diffusion term = 1 <br>
-Transport term = 0 <br>
-Reaction term = 0 <br>
-<img src="./imgs/Neumann_forcing1.png">
-
-<br><br>
-Forcing = -1 <br>
-Diffusion term = 1 <br>
-Transport term = 0 <br>
-Reaction term = 0 <br>
-<img src="./imgs/Neumann_forcing-1.png">
