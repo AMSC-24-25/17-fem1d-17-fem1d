@@ -11,9 +11,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-EXECUTABLE="./TomlMain"
-CONFIG_DIR="../config/good-examples"
-OUTPUT_DIR="./output/good_examples"
+EXECUTABLE="./build/TomlMain"
+CONFIG_DIR="./config/good-examples"
+OUTPUT_DIR="./build/output/good_examples"
 
 # Check if executable exists
 if [ ! -f "$EXECUTABLE" ]; then
@@ -58,7 +58,7 @@ for config_file in "$CONFIG_DIR"/*.toml; do
         else
             echo -e "${RED}✗ Failed${NC}"
             failed_runs=$((failed_runs + 1))
-            echo "  Check log: ./build/$OUTPUT_DIR/${name_without_ext}.log"
+            echo "  Check log: $OUTPUT_DIR/${name_without_ext}.log"
         fi
         
         echo ""
@@ -79,7 +79,9 @@ mkdir -p $OUTPUT_DIR/log
 mv $OUTPUT_DIR/*.log $OUTPUT_DIR/log/
 mv $OUTPUT_DIR/*.csv $OUTPUT_DIR/csv/
 
-echo "Output files and logs saved to: $OUTPUT_DIR"
+echo "Output vtu saved to: $OUTPUT_DIR"
+echo "Output csv saved to: $OUTPUT_DIR/csv"
+echo "Output log saved to: $OUTPUT_DIR/log"
 echo ""
 
 if [ $failed_runs -eq 0 ]; then
