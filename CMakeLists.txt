@@ -13,8 +13,18 @@ enable_testing()
 include_directories(include)
 include_directories(include/external)  # For toml.hpp and exprtk.hpp
 
-set(CMAKE_PREFIX_PATH "/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/eigen/3.3.9/share/eigen3/cmake/")
-find_package(Eigen3 3.3 REQUIRED)
+# Try to find Eigen3 using standard CMake mechanisms first
+find_package(Eigen3 3.3 QUIET)
+if(NOT Eigen3_FOUND)
+    # If not found, try with a specific path (for cluster environments)
+    if(EXISTS "/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/eigen/3.3.9/share/eigen3/cmake/")
+        list(APPEND CMAKE_PREFIX_PATH "/u/sw/toolchains/gcc-glibc/11.2.0/pkgs/eigen/3.3.9/share/eigen3/cmake/")
+        find_package(Eigen3 3.3 REQUIRED)
+    else()
+        message(FATAL_ERROR "Eigen3 not found. Please install Eigen3 or set CMAKE_PREFIX_PATH to point to Eigen3 installation.")
+    endif()
+endif()
+
 include_directories(${mkEigenInc})
 
 # OpenMP support (optional)
