@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # parsecsv.py
 
-# python3 parsecsv.py -i ../speedup_result -o parsed_results.csv 
+# python3 parsecsv.py -i ../speedup_results.csv -o parsed_results.csv 
 
 import argparse
 import os

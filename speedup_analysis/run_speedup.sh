@@ -2,14 +2,11 @@
 # Usage:
 #   bash ../speedup_analysis/run_speedup.sh <omp_bin> <config_dir> <out_csv> [sequential_bin]
 # Example (from build folder):
-#   bash ../speedup_analysis/run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_result ./sequentialTomlMain
+#   bash ../speedup_analysis/run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_results.csv ./sequentialTomlMain
 # Optional env vars:
 #   THREADS="2 4 8 12 16"
 #   REPEAT=1
-
 # REPEAT=3 bash ../speedup_analysis/run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_results.csv ./sequentialTomlMain
-
-# Or combined
 # REPEAT=3 THREADS="4 8 16" bash ../speedup_analysis/run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_results.csv ./sequentialTomlMain
 
 set -uo pipefail  # (don't stop at errors)
