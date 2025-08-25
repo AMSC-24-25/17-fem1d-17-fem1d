@@ -80,6 +80,7 @@ target_link_libraries(17_fem1d_17_fem1d_td fem1d_lib)
 # ---- Output preparation ----
 add_custom_target(create_output_dir ALL
     COMMAND ${CMAKE_COMMAND} -E make_directory output
+    COMMAND ${CMAKE_COMMAND} -E make_directory output/good_examples
 ) 
 add_custom_target(empty_output_dir ALL 
         COMMAND ${CMAKE_COMMAND} -E remove

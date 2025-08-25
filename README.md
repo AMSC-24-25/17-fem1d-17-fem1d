@@ -147,39 +147,86 @@ OpenMP-based parallelization:
 
 Problems are specified using TOML configuration files located in the `config/` directory:
 
-### Example: 2D Time-Dependent Diffusion-Reaction
+### Example: Complete Time-Dependent Configuration
 ```toml
+# Complete Time-Dependent Example - showcases all available TOML options with mixed boundary conditions on a 2D square domain
+# Exact solution: u(x,y,t) = x*y*t
+
 [problem]
-dimension = 2
-mesh_file = "../mesh/mesh-square-h0.050000_gmsh22.msh"
-time_dependent = true
+dimension = 2                                           # Spatial dimension (1, 2, or 3)
+mesh_file = "../mesh/mesh-square-h0.050000_gmsh22.msh"  # Path to GMSH mesh file
+output_file = "output/complete_example_td"              # Output file prefix
+time_dependent = true                                   # Enable time-dependent solver
+# For 1D problems, you can also specify:
+# 1d_start = 0.0                                # 1D grid start coordinate
+# 1d_end = 1.0                                  # 1D grid end coordinate  
+# 1d_size = 100                                 # Number of 1D grid points
+
+[quadrature]
+type = "order2"                                 # Quadrature rule: "order2" or "order4"
 
 [equation]
-diffusion_coefficient = 1.0
-reaction_coefficient = 1.0
+# PDE coefficients as mathematical expressions (support x, y, z, pi, e)
+# NOTE: the quotes "" are important and must always be used
+diffusion_function = "1.0"                      # Diffusion coefficient D(x,y,z)
+transport_function_x = "0.0"                    # x-component of transport b_x(x,y,z)
+transport_function_y = "0.0"                    # y-component of transport b_y(x,y,z)
+transport_function_z = "0.0"                    # z-component of transport b_z(x,y,z)
+reaction_function = "x"                         # Reaction coefficient c(x,y,z)
+forcing_function = "0"                          # Static forcing (ignored for TD problems)
 
 [time_dependent]
-final_time = 1.0
-time_step = 0.01
-theta = 0.5  # Crank-Nicolson
-initial_condition = "sin(2.0 * pi * (x + y))"
-forcing_function_td = "sin(2.0 * pi * (x + y)) * 2.0 * pi * cos(2.0 * pi*t)"
+final_time = 1.0                                # Simulation end time
+time_step = 0.01                                # Time step dt
+theta = 0.5                                     # Theta-method: 0=Explicit, 0.5=Crank-Nicolson, 1=Implicit
+initial_condition = "0.0"                       # u0(x,y,z) = 0 at t=0
+forcing_function_td = "x*y + x*x*y*t"           # Time-dependent forcing term f(x,y,z,t)
+
+# Boundary conditions (can have multiple, mixed types)
+# Exact solution: u(x,y,t) = x*y*t
+[[boundary_conditions]]
+type = "neumann"                              # Dirichlet: specify u = g
+tag = 0                                         # Boundary tag from mesh (x=0)
+function = "0.0"                                # Fallback static function
+time_function = "-y*t"                          # (-du/dx)             
+
+[[boundary_conditions]]  
+type = "dirichlet"                              # Dirichlet: specify u = g
+tag = 1                                         # Different boundary tag (x=1)
+function = "0.0"                                # Fallback static function
+time_function = "x*y*t"                         # Exact solution: u(x,y,t) = x*y*t
 
 [[boundary_conditions]]
-type = "dirichlet"
-tag = 0
-time_function = "sin(2.0 * pi * (x + y)) * sin(2.0 * pi*t)"
+type = "dirichlet"                              # Another Dirichlet condition
+tag = 2                                         # Another boundary tag (y=0)
+function = "0.0"                                # Fallback static function
+time_function = "0.0"                         # Exact solution: u(x,0,t) = 0
+
+[[boundary_conditions]]
+type = "neumann"                              # Another Dirichlet condition  
+tag = 3                                         # Final boundary tag (y=1)
+function = "0.0"                                # Fallback static function
+time_function = "x*t"                           # (du/dy)    
 ```
 
 ### Available Test Cases
-- **Heat equation**: `heat_equation_1d_td.toml`
+- **Complete example**: `complete_example_td.toml` - Comprehensive time-dependent example with all options
+- **1D Heat equation**: `heat_equation_1d_td.toml`
 - **Advection-diffusion**: `advection_diffusion.toml`  
 - **Reaction-diffusion**: `reaction_diffusion_1d.toml`
 - **Poisson problems**: `poisson.toml`
 - **3D manufactured solutions**: `manufactured_3d_td.toml`
+- **Variable coefficients**: `variable_coefficients.toml`
+- **Oscillatory problems**: `oscillatory_problem.toml`
+- **Transport dominated**: `transport_dominated.toml`
+- **Ring geometry**: `ring_center_05_05.toml`
+- **2D Ring time-dependent**: `ring2d_td_center_00.toml`
+- **Heat conduction**: `heat_conduction.toml`
+- **2D time-dependent diffusion**: `diffusion_2d_td.toml`
+
+See `config/good-examples/` for additional validated test cases with known analytical solutions.
 
 
-<!--
 ## Performance & Validation
 ### Numerical Accuracy
 - **Spatial convergence**: O(h²) for linear elements
@@ -188,17 +235,13 @@ time_function = "sin(2.0 * pi * (x + y)) * sin(2.0 * pi*t)"
 - **Complex geometries**: Consistent accuracy on unstructured meshes
 
 ### Parallel Performance  
-- **OpenMP scaling**: Near-linear speedup up to 8 cores
+- **OpenMP scaling**: speedup evaluated up to 16 cores
 - **Thread safety**: Lock-free assembly using thread-local storage
 - **Memory efficiency**: Sparse matrix formats (COO → CSR conversion)
 - **Cache optimization**: Element-wise loop blocking
 
-### Validation Results
-- **Method of manufactured solutions**: Verified convergence rates
-- **Benchmark problems**: Agreement with analytical solutions
-- **Stability analysis**: CFL condition respected for explicit schemes
-- **Energy conservation**: Verified for conservative problems
--->
+### Result Validation  
+- **Method of manufactured solutions**: Agreement with analytical solutions
 
 ## Dependencies
 ### External Dependencies
@@ -224,7 +267,8 @@ time_function = "sin(2.0 * pi * (x + y)) * sin(2.0 * pi*t)"
 - **Nonlinear problems**: Newton-Raphson iteration
 - **Fluid dynamics**: Navier-Stokes equations
 
-<!--
 ## Results Gallery
--->
+
+### Visualizations and Data
+- [Google Drive Folder](https://drive.google.com/your-folder-link) - Contains simulation results, plots, and speedup data.
 
