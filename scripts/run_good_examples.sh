@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Script to run all TOML configuration files in config/good-examples folder
-# This script executes the FEM solver on all test problems with known exact solutions
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -10,10 +7,19 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Script to run all TOML configuration files in config/good-examples folder
+# This script executes the FEM solver on all test problems with known exact solutions
+if [[ "$(basename $(pwd))" != "scripts" ]]; then
+    echo -e "${RED}This script should be run from the scripts directory.${NC}"
+    exit 1
+fi
+cd "../build"
+
 # Configuration
-EXECUTABLE="./build/TomlMain"
-CONFIG_DIR="./config/good-examples"
-OUTPUT_DIR="./build/output/good_examples"
+EXECUTABLE="./TomlMain"
+CONFIG_DIR="../config/good-examples"
+OUTPUT_DIR="./output/good_examples"
+OUTPUT_PRINT_DIR="../build/output/good_examples"
 
 # Check if executable exists
 if [ ! -f "$EXECUTABLE" ]; then
@@ -58,7 +64,7 @@ for config_file in "$CONFIG_DIR"/*.toml; do
         else
             echo -e "${RED}✗ Failed${NC}"
             failed_runs=$((failed_runs + 1))
-            echo "  Check log: $OUTPUT_DIR/${name_without_ext}.log"
+            echo "  Check log: $OUTPUT_PRINT_DIR/${name_without_ext}.log"
         fi
         
         echo ""
@@ -79,9 +85,9 @@ mkdir -p $OUTPUT_DIR/log
 mv $OUTPUT_DIR/*.log $OUTPUT_DIR/log/
 mv $OUTPUT_DIR/*.csv $OUTPUT_DIR/csv/
 
-echo "Output vtu saved to: $OUTPUT_DIR"
-echo "Output csv saved to: $OUTPUT_DIR/csv"
-echo "Output log saved to: $OUTPUT_DIR/log"
+echo "Output vtu saved to: $OUTPUT_PRINT_DIR"
+echo "Output csv saved to: $OUTPUT_PRINT_DIR/csv"
+echo "Output log saved to: $OUTPUT_PRINT_DIR/log"
 echo ""
 
 if [ $failed_runs -eq 0 ]; then
