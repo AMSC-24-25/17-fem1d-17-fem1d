@@ -18,8 +18,10 @@ Config Config::loadFromFile(const std::string& filename) {
         const toml::value& problem = toml::find(data, "problem");
         config.problem.dimension = toml::find_or(problem, "dimension", 2);
         config.problem.mesh_file = toml::find_or(problem, "mesh_file", std::string("mesh/default.msh"));
+        config.problem.grid1d_start = toml::find_or(problem, "1d_start", 0.0);
+        config.problem.grid1d_end = toml::find_or(problem, "1d_end", 1.0);
+        config.problem.grid1d_size = toml::find_or(problem, "1d_size", 100);
         config.problem.output_file = toml::find_or(problem, "output_file", std::string("output/solution"));
-        config.problem.grid_size = toml::find_or(problem, "grid_size", 100);
         config.problem.time_dependent = toml::find_or(problem, "time_dependent", false);  // NEW
         
     // Parse equation section - unified approach: everything is a function
@@ -188,7 +190,7 @@ ThreadExpressionPool::ThreadExpressionPool(const std::string& expr_string, unsig
     }
 }
 
-// Enhanced function parsing with exprtk - supports any mathematical expression!
+// Function parsing with exprtk supports any mathematical expression
 template<unsigned int dim>
 Function<dim,1> parseSimpleFunction(const std::string& expression) {
     // Optimization for simple constant functions
@@ -226,7 +228,7 @@ Function<dim,1> parseSimpleFunction(const std::string& expression) {
     });
 }
 
-// NEW: Parse time-dependent function f(x,y,z,t)
+// Function parsing with exprtk supports any mathematical expression
 template<unsigned int dim>
 std::function<double(const Point<dim>&, double)> parseTimeDependentFunction(const std::string& expression) {
     if (expression.empty() || expression == "0" || expression == "0.0") {
@@ -273,7 +275,7 @@ Grid<1> Config::createGrid<1>() const {
         std::cerr << "Warning: 1D mesh file loading not implemented, using uniform grid" << std::endl;
     }
     // Create uniform grid from 0 to 1 with grid_size points
-    return Grid1D(0.0, 1.0, problem.grid_size);
+    return Grid1D(problem.grid1d_start, problem.grid1d_end, problem.grid1d_size);
 }
 
 template<>

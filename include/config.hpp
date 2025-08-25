@@ -23,9 +23,11 @@
 struct ProblemConfig {
     unsigned int dimension;
     std::string mesh_file;
+    double grid1d_start;
+    double grid1d_end;
+    unsigned int grid1d_size;
     std::string output_file;
-    int grid_size;  // For 1D uniform grids
-    bool time_dependent = false;  // NEW: flag for time-dependent problems
+    bool time_dependent = false; 
 };
 
 // Structure for equation configuration
