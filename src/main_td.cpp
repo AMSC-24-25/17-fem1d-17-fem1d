@@ -14,12 +14,8 @@ using std::endl;
 
 constexpr double PI = EIGEN_PI;
 
-/**
- * Simple FEM solver for 1D and 2D problems
- * Usage: ./fem 1d L N  or  ./fem 2d mesh.msh
- */
-
-
+// Time-dependent FEM solver main: parse arguments and solve time-dependent PDEs
+// Usage: ./fem_td [1d L N] or [2d mesh.msh] or [3d mesh.msh]
 int main(int argc, char *argv[])
 {
     cout << "-------------17-FEM1D PROJECT-----------" << endl;

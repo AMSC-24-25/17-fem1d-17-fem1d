@@ -7,6 +7,7 @@
 #define M_E 2.71828182845904523536
 #endif
 
+// Load configuration from TOML file: parse all simulation parameters
 Config Config::loadFromFile(const std::string& filename) {
     Config config;
     
@@ -93,6 +94,8 @@ Config Config::loadFromFile(const std::string& filename) {
     return config;
 }
 
+
+// Validate configuration parameters: check dimensions and required fields
 bool Config::validate() const {
     // Validate dimension
     if (problem.dimension < 1 || problem.dimension > 3) {
@@ -118,6 +121,8 @@ bool Config::validate() const {
     return true;
 }
 
+
+// Print configuration to console for verification
 void Config::print() const {
     std::cout << "=== Configuration ===" << std::endl;
     std::cout << "Problem:" << std::endl;
@@ -160,6 +165,8 @@ void Config::print() const {
     std::cout << "===================" << std::endl;
 }
 
+
+// Thread-safe expression pool: initialize per-thread ExprTk expressions
 ThreadExpressionPool::ThreadExpressionPool(const std::string& expr_string, unsigned int dimension, int num_threads, bool time_dependent) 
   : x_vals(num_threads, 0.0),
     y_vals(num_threads, 0.0),
@@ -196,7 +203,8 @@ ThreadExpressionPool::ThreadExpressionPool(const std::string& expr_string, unsig
     }
 }
 
-// Function parsing with exprtk supports any mathematical expression
+
+// Parse mathematical expression f(x,y,z) into thread-safe Function object
 template<unsigned int dim>
 Function<dim,1> parseSimpleFunction(const std::string& expression) {
     // Optimization for simple constant functions
@@ -234,7 +242,8 @@ Function<dim,1> parseSimpleFunction(const std::string& expression) {
     });
 }
 
-// Function parsing with exprtk supports any mathematical expression
+
+// Parse time-dependent expression f(x,y,z,t) into thread-safe function object
 template<unsigned int dim>
 std::function<double(const Point<dim>&, double)> parseTimeDependentFunction(const std::string& expression) {
     if (expression.empty() || expression == "0" || expression == "0.0") {
