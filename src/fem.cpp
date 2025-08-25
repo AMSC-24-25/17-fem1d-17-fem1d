@@ -4,7 +4,7 @@ template class Fem<1>;
 template class Fem<2>;
 template class Fem<3>;
 
-// Costruttore moderno con BoundaryConditions
+// Constructor
 template<unsigned int dim>
 Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
              Function<dim, dim> transport, Function<dim, 1> reaction,
@@ -14,11 +14,9 @@ Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusi
     boundaryConditions(boundaryConditions), quadrature(quadrature)
 {
 #ifdef _OPENMP
-    // Ensure Eigen uses OpenMP if available
     Eigen::setNbThreads(omp_get_max_threads());
 #endif
 
-    // Initialize matrices
     int numNodes = mesh.getNumNodes();
     A.resize(numNodes, numNodes);
     rhs.resize(numNodes);
@@ -32,14 +30,13 @@ template<unsigned int dim>
 void Fem<dim>::assemble() {
     std::cout << "### ASSEMBLE " << dim << "D ###" << std::endl;
 
-    // Inizializzazione
-    // Initialization
     int numNodes = mesh.getNumNodes();
     rhs.setZero();
      
     unsigned int expNonZero = (dim==1) ? 3 : (dim==2) ? 9 : 16;
     int numElements = mesh.getNumElements();
-    // Parallel: each thread has its own triplet vector and rhs vector
+    
+    // Parallel assembly using thread-local storage
 #ifdef _OPENMP
     int nthreads = omp_get_max_threads();
     std::vector<std::vector<Triplet>> triplets_thread(nthreads);
@@ -62,8 +59,8 @@ void Fem<dim>::assemble() {
     for (int t = 0; t < nthreads; ++t) {
         rhs += rhs_thread[t];
     }
-    // Unisci tutti i triplet
-    // Merge all triplet vectors
+    
+    // Merge thread-local contributions
     std::vector<Triplet> triplets;
     for (auto& v : triplets_thread) {
         triplets.insert(triplets.end(), v.begin(), v.end());
@@ -76,14 +73,11 @@ void Fem<dim>::assemble() {
     }
 #endif
     
-    // Global sparse matrix assembly
     A.setFromTriplets(triplets.begin(), triplets.end());
-
-    // Apply boundary conditions
     boundaryConditions.apply(mesh, A, rhs);
 }
 
-// Assemblaggio di un singolo elemento (triangolo)
+// Element assembly
 template<unsigned int dim>
 void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, VectorXd& local_rhs) const {
     const Cell<dim>& cell = mesh.getCell(elemIndex);
@@ -95,16 +89,15 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
     std::vector<std::vector<double>> phi;
     std::vector<double> weights;
     
-    // Get quadrature data
     quadrature.getQuadratureData(cell, grad_phi, quadrature_points, phi, weights);
 
-    // Local matrices for element
-    MatrixXd diff_local = MatrixXd::Zero(matSize, matSize); // Diffusione
-    MatrixXd transport_local = MatrixXd::Zero(matSize, matSize); // Massa/Reazione
-    MatrixXd react_local = MatrixXd::Zero(matSize, matSize); // Massa/Reazione
-    VectorXd forc_local = VectorXd::Zero(matSize); // Termine forzante
+    // Local matrices
+    MatrixXd diff_local = MatrixXd::Zero(matSize, matSize); // Diffusion
+    MatrixXd transport_local = MatrixXd::Zero(matSize, matSize); // Transport
+    MatrixXd react_local = MatrixXd::Zero(matSize, matSize); // Reaction
+    VectorXd forc_local = VectorXd::Zero(matSize); // Forcing
 
-    // Loop on quadrature points (no OpenMP here - quadrature loops are small)
+    // Quadrature loop
     for (int q = 0; q < quadrature_points.size(); ++q) {
         const Point<dim>& p = quadrature_points[q];
         const double w = weights[q];
@@ -125,7 +118,6 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
             const double phi_i = phi_q[i];
             const Point<dim>& grad_phi_i = grad_phi[i];
             
-            // Forcing term (moved inside to improve cache locality)
             forc_local(i) += w_forc * phi_i;
             
             for (int j = 0; j < matSize; ++j) {
@@ -137,7 +129,6 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
                 const double grad_dot = grad_phi_i * grad_phi_j;
                 const double transport_contrib = (transport_val * grad_phi_j) * phi_i;
                 
-                // Combine all contributions in one operation
                 diff_local(i,j) += w_diff * grad_dot;
                 transport_local(i,j) += w * transport_contrib;
                 react_local(i,j) += w_react * phi_i_phi_j;
@@ -145,31 +136,27 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
         }
     }
     
-    // Assembly in global matrix
+    // Global assembly
     for (int i = 0; i < matSize; ++i) {
         int globalI = cell.getNodeIndex(i);
         for (int j = 0; j < matSize; ++j) {
             int globalJ = cell.getNodeIndex(j);
 
-            // Aggiungi alla matrice globale solo se non zero
-        // Add to the global matrix only if not zero
+            // Add to the global matrix only if not zero
             double value = diff_local(i,j) + transport_local(i,j) + react_local(i,j);
             if (std::abs(value) > 1e-14) {
                 triplets.push_back(Triplet(globalI, globalJ, value));
             }
         }
-        // Assembly of RHS
         local_rhs[globalI] += forc_local(i);
     }
 }
 
-// Risoluzione del sistema lineare
+// Linear system solver
 template<unsigned int dim>
 void Fem<dim>::solve() {
     std::cout << "### SOLVE " << dim << "D ###" << std::endl;
 
-    // Risolvi il sistema Ax = b usando SparseLU
-    // Solve the system Ax = b using SparseLU
     if(A.nonZeros() < 4e3) {
         std::cout << "[TD] Solving small system (" << A.nonZeros() << ") with SparseLU\n";
         Eigen::SparseLU<SparseMat> solver;

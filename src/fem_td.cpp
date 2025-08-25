@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cmath>
 
-// ===== ctor / set =====
+// Constructor
 template<unsigned int dim>
 FemTD<dim>::FemTD(Grid<dim> grid,
                   Function<dim,1> diffusion,
@@ -59,7 +59,7 @@ void FemTD<dim>::set_forcing(ForcingTD f_td) { forcing_td_ = std::move(f_td); }
 template<unsigned int dim>
 void FemTD<dim>::set_initial_condition(Function<dim,1> u0) { u0_ = std::move(u0); }
 
-// ===== assemble M & K (time-invariant) =====
+// Assemble time-invariant matrices M and K
 template<unsigned int dim>
 void FemTD<dim>::assemble_time_invariant() {
     const int numElements = mesh_.getNumElements();
@@ -147,7 +147,7 @@ void FemTD<dim>::assemble_M_and_K_element(int elem,
     }
 }
 
-// ===== RHS load =====
+// Build forcing vector for time step
 template<unsigned int dim>
 void FemTD<dim>::build_load(double t) {
     f_new.setZero();
@@ -210,7 +210,7 @@ void FemTD<dim>::build_load(double t) {
 #endif
 }
 
-// ===== IC =====
+// Apply initial condition
 template<unsigned int dim>
 void FemTD<dim>::apply_initial_condition() {
     #pragma omp parallel for
@@ -221,19 +221,18 @@ void FemTD<dim>::apply_initial_condition() {
     u_old_ = u_;
 }
 
-// ===== singolo passo =====
+// Time stepping
 template<unsigned int dim>
 double FemTD<dim>::step(double t_new, double dt, double theta) {
     const int N = mesh_.getNumNodes();
 
-    f_old = f_new; // Save the previous time step forcing vector
-    build_load(t_new); // Build f_new for this time step
+    f_old = f_new;
+    build_load(t_new);
 
     rhs_ = ( (1.0/dt) * (M_ * u_old_) )
          - ( (1.0 - theta) * (K_ * u_old_) )
          + theta * f_new + (1.0 - theta) * f_old;
 
-    // BC al passo
     bc_.apply(mesh_, A_, rhs_, t_new);
 
     // solve
@@ -257,7 +256,7 @@ double FemTD<dim>::step(double t_new, double dt, double theta) {
     return diff;
 }
 
-// ===== run =====
+// Time integration
 template<unsigned int dim>
 void FemTD<dim>::run(double T, double dt, double theta,
                      const std::string& vtu_prefix,
@@ -286,7 +285,7 @@ void FemTD<dim>::run(double T, double dt, double theta,
     }
 }
 
-// ===== output =====
+// Output methods
 template<unsigned int dim>
 void FemTD<dim>::outputCsv(const std::string& filename) const {
     std::ofstream csv(filename);
@@ -336,7 +335,7 @@ void FemTD<dim>::outputVtu(const std::string& filename) const {
     vtu << "</Piece>\n</UnstructuredGrid>\n</VTKFile>\n";
 }
 
-// ===== ISTANZIAZIONI ESPLICITE =====
+// Explicit instantiations
 template class FemTD<1>;
 template class FemTD<2>;
 template class FemTD<3>;

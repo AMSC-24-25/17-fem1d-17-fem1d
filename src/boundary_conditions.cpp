@@ -71,7 +71,6 @@ void BoundaryConditions<dim, returnDim>::applyNeumann(
     SparseMat& A, VectorXd& rhs) const {
     
     // Get boundary faces with the specified physical tag
-    //from auto to std::vector<BoundaryCell<2>>
     std::vector<BoundaryCell<dim-1>> boundaryFaces = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
     std::cout << "  Applying Neumann boundary condition " << dim << "D on tag " << bc.getBoundaryId()
               << " (" << boundaryFaces.size() << " " << (dim == 1 ? "edges" : "faces") << ")" << std::endl;
