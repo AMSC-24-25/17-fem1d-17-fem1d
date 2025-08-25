@@ -2,10 +2,6 @@
 
 template<>
 double Cell<1>::measure() const {
-    // if (getN() != 2) {
-    //     std::cerr << "Cell<1> must be a line\n";
-    //     exit(-1);
-    // }
     const Cell<1>& cell = *this;
     const Point<1>& A = cell[0];
     const Point<1>& B = cell[1];
@@ -39,7 +35,6 @@ double Cell<3>::measure() const {
     Point<3> AC = cell[2] - cell[0]; 
     Point<3> AD = cell[3] - cell[0]; 
 
-    // Cross product AB x AC
     Point<3> cross{
         AB[1] * AC[2] - AB[2] * AC[1],
         AB[2] * AC[0] - AB[0] * AC[2],

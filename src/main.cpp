@@ -52,7 +52,6 @@ int main(int argc, char *argv[])
             } 
         }
 
-        //Output OpenMP info (max threads, parameters, etc.)
         std::cout << "OpenMP is enabled." << std::endl;
         std::cout << "Max threads: " << omp_get_max_threads() << std::endl;
     #else
@@ -101,6 +100,7 @@ int main(int argc, char *argv[])
     }
     else if (argv[1][0] == '2') {
         // 2D case
+
         Function<2,1> forcing([](Point<2> p) { 
             return (-1.0*p[1]) + (-1.0*p[0]) + 1.0*p[0] * p[1];
         });
@@ -110,11 +110,9 @@ int main(int argc, char *argv[])
         Function<2,1> reaction([](Point<2> p) { return 1.0; });
         Function<2,2> transport([](Point<2> p) { return Point<2>(-1.0, -1.0); });
 
-        // 2. Configurazione delle condizioni al contorno PRIMA del parsing
-
         OrderTwoQuadrature<2> quadrature;
 
-        // Configurazione con mix di Dirichlet e Neumann
+        // Mix of Dirichlet and Neumann
         boundary_conditions.addDirichlet(0, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
         boundary_conditions.addNeumann(1, Function<2,1>([](Point<2> p) { return p[1]; }));
         boundary_conditions.addDirichlet(2, Function<2,1>([](Point<2> p) { return p[0] * p[1]; }));
@@ -129,7 +127,6 @@ int main(int argc, char *argv[])
         Grid<2> grid;
         grid.parseFromMsh(argv[2]);
         
-    // 4. Create and solve the FEM problem with BoundaryConditions
         Fem<2> fem(grid, forcing, diffusion, transport, reaction, boundary_conditions, quadrature);
 
         fem.assemble();
@@ -141,10 +138,8 @@ int main(int argc, char *argv[])
         fem.outputVtu(vtuFilePath);
     }
     else if (argv[1][0] == '3'){
-    // 3D case - Problem definition BEFORE mesh parsing
-        cout << "=== Configurazione problema 3D ===" << endl;
+        cout << "=== 3D Problem Configuration ===" << endl;
         
-    // 1. Problem functions definition
         Function<3,1> forcing([](Point<3> p) { 
             return -1.0*p[1]*p[2] -1.0*p[0]*p[2] -1.0*p[0]*p[1] + 1.0*p[0] * p[1] * p[2];
         });
@@ -181,10 +176,9 @@ int main(int argc, char *argv[])
         cout << "  Number of elements: " << grid.getNumElements() << endl;
         cout << "  Number of nodes: " << grid.getNumNodes() << endl;
 
-    // 4. Create and solve the FEM problem with BoundaryConditions
         Fem<3> fem3d(grid, forcing, diffusion, transport, reaction, boundary_conditions, OrderTwoQuadrature<3>());
 
-        cout << "=== Risoluzione problema FEM 3D ===" << endl;
+        cout << "=== Solving 3D FEM problem ===" << endl;
         std::string csvFilePath = "output/sol3d.csv";
         std::string vtuFilePath = "output/sol3d.vtu";
         fem3d.assemble();
