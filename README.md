@@ -44,6 +44,52 @@ $ ./17_fem1d_17_fem1d_td [2-3]d <path to .msh file> [num_threads]
 $ ctest
 ```
 
+### Run the benchmark
+From inside `build/`, run the script on a directory of `.toml` configs (example set lives in `../config/speedup-analysis`). The script times each run, sweeps several thread counts, and writes a CSV one folder up (project root).
+
+
+#### Optional parameters:
+```
+$ export THREADS="2 4 8 12 16" # thread counts to test
+$ export REPEAT=3 # repetitions per (config,threads)
+```
+
+#### Run (from build/):
+```
+$ [Optional parameters] bash ../speedup_analysis/run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_analysis/speedup_results.csv ./sequentialTomlMain
+```
+
+What it does
+- For each `*.toml` in the target directory:
+- Runs `sequentialTomlMain <config>`.
+- Runs `TomlMain <config> <nThreads>` for each value in `$THREADS`.
+- Captures elapsed time.
+- Writes CSV with columns: `config,mode,threads,run,elapsed_s`
+
+
+#### Process results (optional averaging & derived metrics)
+If you ran multiple repetitions (`REPEAT>1`), you can condense to means/std and compute speedup/efficiency:
+
+```
+$ cd speedup_analysis
+$ python3 parsecsv.py -i speedup_results.csv -o speedup_results_agg.csv
+```
+
+#### Plot timings by mesh
+Plots mean elapsed time per mesh, with one curve per (mode,threads). Works on the raw CSV.
+
+```
+$ python3 plot.py speedup_results_agg.csv times_by_mesh.png
+```
+
+#### Plot speedup vs threads
+Plots speedup (relative to the sequential time for each mesh) as a function of threads. Uses the raw CSV (single run per point is fine).
+
+```
+$ python3 plot_speedup_vs_threads.py speedup_results_agg.csv speedup_vs_threads.png
+```
+
+
 ### Scripts
 
 The `scripts/` directory contains helpful scripts for building the project, running all TOML test cases, and executing examples from the `config/good_examples/` folder.
@@ -271,4 +317,5 @@ See `config/good-examples/` for additional validated test cases with known analy
 
 ### Visualizations and Data
 - [Google Drive Folder](https://drive.google.com/your-folder-link) - Contains simulation results, plots, and speedup data.
+
 
