@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 # Configuration
 EXECUTABLE="./TomlMain"
 CONFIG_DIR="../config/good-examples"
-OUTPUT_DIR="./output/good-examples"
+OUTPUT_DIR="./output/good_examples"
 
 # Check if executable exists
 if [ ! -f "$EXECUTABLE" ]; then
@@ -58,7 +58,7 @@ for config_file in "$CONFIG_DIR"/*.toml; do
         else
             echo -e "${RED}✗ Failed${NC}"
             failed_runs=$((failed_runs + 1))
-            echo "  Check log: $OUTPUT_DIR/${name_without_ext}.log"
+            echo "  Check log: ./build/$OUTPUT_DIR/${name_without_ext}.log"
         fi
         
         echo ""
@@ -73,6 +73,12 @@ echo "Total files processed: $total_files"
 echo -e "Successful runs: ${GREEN}$successful_runs${NC}"
 echo -e "Failed runs: ${RED}$failed_runs${NC}"
 echo ""
+
+mkdir -p $OUTPUT_DIR/csv
+mkdir -p $OUTPUT_DIR/log
+mv $OUTPUT_DIR/*.log $OUTPUT_DIR/log/
+mv $OUTPUT_DIR/*.csv $OUTPUT_DIR/csv/
+
 echo "Output files and logs saved to: $OUTPUT_DIR"
 echo ""
 
