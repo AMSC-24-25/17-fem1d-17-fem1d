@@ -1,3 +1,11 @@
+/**
+ * @file fem_td.hpp
+ * @brief Time-dependent finite element solver using Theta-method
+ * 
+ * Implements finite element solution for time-dependent PDEs:
+ * 
+ * Uses Theta-method for time discretization with configurable Theta parameter.
+ */
 #pragma once
 #include <vector>
 #include <string>
@@ -16,8 +24,7 @@ using MatrixXd  = Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>;
 using VectorXd  = Eigen::VectorXd;
 
 /**
- * FEM time-dependent (θ–method) con le tue strutture dati.
- * PDE: u_t - div(μ∇u) + b·∇u + r u = f(x,t)
+ * @brief Time-dependent FEM solver with Theta-method time stepping
  */
 template<unsigned int dim>
 class FemTD {
@@ -31,19 +38,18 @@ public:
           const BoundaryConditions_td<dim,1>& bc,
           QuadratureRule<dim> quadrature);
 
-    // Impostazioni
-    void set_forcing(ForcingTD f_td);                 // f(x,t)
-    void set_initial_condition(Function<dim,1> u0);   // u0(x)
+    // Configuration methods
+    void set_forcing(ForcingTD f_td);                 // Set forcing function f(x,t)
+    void set_initial_condition(Function<dim,1> u0);   // Set initial condition u0(x)
 
-    // Un singolo passo di tempo (costruisce LHS/RHS e risolve)
-    double step(double t_new, double dt, double theta);
+    double step(double t_new, double dt, double theta);  // Single time step
 
-    // Esecuzione completa su [0,T] con passo dt
+    // Complete simulation over time interval [0,T]
     void run(double T, double dt, double theta,
              const std::string& vtu_prefix = "",
              const std::string& csv_prefix = "");
 
-    // Output compatibili con Fem<dim>
+    // Output methods compatible with steady-state Fem<dim>
     void outputCsv(const std::string& filename) const;
     void outputVtu(const std::string& filename) const;
 
@@ -52,34 +58,35 @@ public:
 
 private:
     Grid<dim>                 mesh_;
-    Function<dim,1>           diffusion_;    // μ(x)
-    Function<dim,dim>         transport_;    // b(x)
-    Function<dim,1>           reaction_;     // r(x)
-    BoundaryConditions_td<dim,1> bc_;
-    mutable QuadratureRule<dim>       quad_; // ← Aggiunto mutable qui
+    Function<dim,1>           diffusion_;    // μ(x) - diffusion coefficient
+    Function<dim,dim>         transport_;    // b(x) - transport coefficient vector
+    Function<dim,1>           reaction_;     // r(x) - reaction coefficient
+    BoundaryConditions_td<dim,1> bc_;        // Time-dependent boundary conditions
+    mutable QuadratureRule<dim>       quad_; // Quadrature rule (mutable for const methods)
 
-    ForcingTD                 forcing_td_;   // f(x,t)
-    Function<dim,1>           u0_;           // u0(x)
+    ForcingTD                 forcing_td_;   // f(x,t) - time-dependent forcing
+    Function<dim,1>           u0_;           // u0(x) - initial condition
 
-    SparseMat M_, K_, A_;
-    VectorXd  rhs_;
-    VectorXd  u_, u_old_;
+    SparseMat M_, K_, A_;                    // Mass, stiffness, and system matrices
+    VectorXd  rhs_;                          // Right-hand side vector
+    VectorXd  u_, u_old_;                    // Current and previous solutions
 
 private:
-    // The following attributes are saved at object level for improved memory efficiency
+    // Thread-local storage for OpenMP parallelization
 #ifdef _OPENMP
-    std::vector<VectorXd> F_threads;
-    std::vector<std::vector<Triplet>> tripletM_thr, tripletK_thr;
-    int nthreads;
+    std::vector<VectorXd> F_threads;                              // Per-thread forcing vectors
+    std::vector<std::vector<Triplet>> tripletM_thr, tripletK_thr; // Per-thread triplet storage
+    int nthreads;                                                 // Number of OpenMP threads
 #endif
-    std::vector<Triplet> tripletM, tripletK;
-    VectorXd f_new, f_old;
+    std::vector<Triplet> tripletM, tripletK;           // Matrix assembly triplets
+    VectorXd f_new, f_old;                             // Forcing vectors at current and previous step
 
-    void assemble_time_invariant();
-    void assemble_M_and_K_element(int elem,
+    // Assembly methods
+    void assemble_time_invariant();                     // Assemble mass and stiffness matrices
+    void assemble_M_and_K_element(int elem,             // Helper method
                                   std::vector<Triplet>& tripM,
-                                  std::vector<Triplet>& tripK);
-    void build_load(double t); // ∫ f(x,t) φ_i
+                                  std::vector<Triplet>& tripK); 
+    void build_load(double t);                          // Build forcing_new vector at time t
 
-    void apply_initial_condition();
+    void apply_initial_condition();                     // Apply initial condition u0
 };

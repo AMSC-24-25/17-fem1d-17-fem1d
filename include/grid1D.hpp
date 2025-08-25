@@ -1,3 +1,7 @@
+/**
+ * @file grid1D.hpp
+ * @brief One-dimensional uniform grid implementation
+ */
 #ifndef GRID_1D
 #define GRID_1D
 
@@ -8,6 +12,9 @@
 #include <iostream>
 #include <vector>
 
+/**
+ * @brief Uniform 1D grid with conversion to general Grid<1> format
+ */
 class Grid1D{
     private:
     const double start;
@@ -39,7 +46,7 @@ class Grid1D{
     inline double getH() const noexcept { return h; }
     inline unsigned int getN() const noexcept { return N; }
 
-    // Returns a 1D grid with boundary tags 0, 1
+    // Convert to general Grid<1> format with boundary tags 0,1
     operator Grid<1>() const {
     // Initialize empty vectors instead of preallocating
         std::vector<Cell<1>> cells;

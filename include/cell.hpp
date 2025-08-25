@@ -1,3 +1,7 @@
+/**
+ * @file cell.hpp
+ * @brief Finite element cell definitions for different dimensions
+ */
 #ifndef CELL
 #define CELL
 
@@ -6,6 +10,12 @@
 #include <array>
 #include <vector>
 
+/**
+ * @brief Finite element cell (element) representation
+ * 
+ * Represents a simplex element (line segment, triangle, tetrahedron)
+ * with nodes and their indices in the global mesh.
+ */
 template<unsigned int dim>
 struct Cell {
     using NodeVector = std::vector<Point<dim>>;
@@ -47,6 +57,7 @@ struct Cell {
         return nodeIndices;
     }
 
+    // Map barycentric coordinates to global coordinates
     inline Point<dim> mapToGlobal(const Point<dim+1>& barycentricCoords) const {
         const Cell<dim>& cell = *this;
         std::array<double, dim> pCoords;
@@ -58,11 +69,17 @@ struct Cell {
         return Point<dim>(pCoords);
     }
     
-    // Returns gradient of i-th barycentric shape function (constant on tetrahedra)
+    // Returns gradient of i-th barycentric shape function
     Point<dim> barycentricGradient(int i) const;
+    // Returns cell measure (length/area/volume)
     double measure() const;
 };
 
+/**
+ * @brief Boundary cell representation for boundary conditions
+ * 
+ * Represents a boundary face/edge with associated boundary marker.
+ */
 template<unsigned int dim>
 struct BoundaryCell : public Cell<dim+1> {
     using NodeVector = typename Cell<dim+1>::NodeVector;

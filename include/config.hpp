@@ -1,3 +1,12 @@
+/**
+ * @file config.hpp
+ * @brief Configuration system for FEM problems using TOML files
+ * 
+ * Provides a configuration framework that parses TOML files
+ * to define PDE problems, boundary conditions, and solver parameters.
+ * Supports both steady-state and time-dependent problems with mathematical
+ * expression parsing using exprtk for coefficient functions.
+ */
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
@@ -19,60 +28,63 @@
 #include <omp.h>
 #endif
 
-// Structure for problem configuration
+// Problem configuration: defines mesh, dimension, and problem type
 struct ProblemConfig {
-    unsigned int dimension;
-    std::string mesh_file;
-    double grid1d_start;
-    double grid1d_end;
-    unsigned int grid1d_size;
-    std::string output_file;
-    bool time_dependent = false; 
+    unsigned int dimension;      // Spatial dimension (1D, 2D, 3D)
+    std::string mesh_file;       // Path to mesh file (.msh format)
+    double grid1d_start;         // 1D grid start coordinate
+    double grid1d_end;           // 1D grid end coordinate
+    unsigned int grid1d_size;    // Number of 1D grid points
+    std::string output_file;     // Output file prefix
+    bool time_dependent = false; // Whether problem is time-dependent
 };
 
-// Structure for equation configuration
+// Equation configuration: PDE coefficients as mathematical expressions
 struct EquationConfig {
-    // Unified approach: everything is a function expression
-    std::string diffusion_function;
-    std::string transport_function_x;
-    std::string transport_function_y;
-    std::string transport_function_z;
-    std::string reaction_function;
-    std::string forcing_function;
-    
-    // Scalar coefficients for backward compatibility
-    double diffusion_coefficient = 1.0;
-    double reaction_coefficient = 0.0;
+    // Function expressions (e.g., "sin(x)*cos(y)", "1.0 + 0.1*x")
+    std::string diffusion_function;     // Diffusion coefficient μ(x,y,z)
+    std::string transport_function_x;   // Transport coefficient b_x(x,y,z)
+    std::string transport_function_y;   // Transport coefficient b_y(x,y,z)
+    std::string transport_function_z;   // Transport coefficient b_z(x,y,z)
+    std::string reaction_function;      // Reaction coefficient r(x,y,z)
+    std::string forcing_function;       // Forcing term f(x,y,z)
 };
 
-// Structure for boundary condition configuration
+// Boundary condition configuration
 struct BCConfig {
     enum Type { DIRICHLET, NEUMANN };
-    Type type;
-    unsigned int tag;
-    std::string function;
-    std::string time_function = "";  // NEW: optional time-dependent function "f(x,y,z,t)"
+    Type type;                         // Condition type
+    unsigned int tag;                  // Boundary tag/marker
+    std::string function;              // BC function expression
+    std::string time_function = "";    // Optional time-dependent function f(x,y,z,t)
 };
 
-// NEW: Structure for time-dependent configuration
+// Time-dependent problem configuration
 struct TimeDependentConfig {
-    double final_time = 1.0;
-    double time_step = 0.01;
-    double theta = 0.5;  // 0=Explicit, 0.5=Crank-Nicolson, 1=Implicit
-    std::string initial_condition = "0.0";
-    std::string forcing_function_td = "";  // f(x,y,z,t) - time dependent forcing
+    double final_time = 1.0;               // Simulation end time
+    double time_step = 0.01;               // Time step size
+    double theta = 0.5;                    // Theta-method parameter: 0=Explicit, 0.5=Crank-Nicolson, 1=Implicit
+    std::string initial_condition = "0.0"; // Initial condition u₀(x,y,z)
+    std::string forcing_function_td = "";  // Time-dependent forcing f(x,y,z,t)
 };
 
+// Quadrature rule configuration
 struct QuadratureCfg {
-    std::string type = "order2";
+    std::string type = "order2";  // "order2" or "order4"
 };
 
-// Main configuration structure
+/**
+ * @brief Main configuration container for FEM problems
+ * 
+ * Aggregates all configuration settings and provides factory methods
+ * to create configured objects (grids, functions, boundary conditions).
+ * Supports TOML file parsing with mathematical expression evaluation.
+ */
 struct Config {
     ProblemConfig problem;
     EquationConfig equation;
     std::vector<BCConfig> boundary_conditions;
-    TimeDependentConfig time_dependent;  // NEW: time-dependent settings
+    TimeDependentConfig time_dependent;
     int quadrature_order = 2;
     template<int dim>
     static std::unique_ptr<QuadratureRule<dim>> make_quadrature(int order) {
@@ -87,12 +99,12 @@ struct Config {
     }
     QuadratureCfg quadrature;
 
-    // Loading / validation / printing
+    // Configuration loading and validation
     static Config loadFromFile(const std::string& filename);
     bool validate() const;
     void print() const;
 
-    // Various factories
+    // Factory methods for creating configured objects
     template<unsigned int dim>
     Grid<dim> createGrid() const;
 
@@ -112,17 +124,23 @@ struct Config {
     template<unsigned int dim> Function<dim,1> createInitialConditionFunction() const;
 };
 
+// Expression parsing type aliases
 using symbol_table_t = exprtk::symbol_table<double>;
 using expression_t = exprtk::expression<double>;
 using parser_t = exprtk::parser<double>;
 
-// Unified thread-safe expression pool for both simple and time-dependent functions
+/**
+ * @brief Thread-safe expression pool for parallel mathematical expression evaluation
+ * 
+ * Maintains separate expression instances per thread to avoid race conditions
+ * when evaluating mathematical expressions in parallel OpenMP regions.
+ */
 struct ThreadExpressionPool {
-    std::vector<double> x_vals, y_vals, z_vals;
-    std::vector<double> time_vals;  // Only used for time-dependent expressions
-    std::vector<symbol_table_t> symbol_tables;
-    std::vector<expression_t> expressions;
-    bool is_time_dependent;
+    std::vector<double> x_vals, y_vals, z_vals;        // Spatial coordinates per thread
+    std::vector<double> time_vals;                     // Time values (time-dependent only)
+    std::vector<symbol_table_t> symbol_tables;         // Symbol tables per thread
+    std::vector<expression_t> expressions;             // Compiled expressions per thread
+    bool is_time_dependent;                            // Whether expressions include time
     
     ThreadExpressionPool(const std::string& expr_string, unsigned int dimension, int num_threads, bool time_dependent = false);
 };

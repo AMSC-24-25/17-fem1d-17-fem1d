@@ -1,3 +1,7 @@
+/**
+ * @file boundary_conditions_td.hpp
+ * @brief Boundary condition management for time-dependent FEM problems
+ */
 #ifndef BOUNDARY_CONDITIONS_TD_HPP
 #define BOUNDARY_CONDITIONS_TD_HPP
 
@@ -13,7 +17,9 @@
 using Eigen::VectorXd;
 using SparseMat = Eigen::SparseMatrix<double, Eigen::RowMajor>;
 
-// Single boundary condition
+/**
+ * @brief Single boundary condition for time-dependent problems
+ */
 template<unsigned int dim, unsigned int returnDim>
 class BoundaryCondition_td {
 private:
@@ -42,7 +48,9 @@ public:
     }
 };
 
-// Manages a set of boundary conditions
+/**
+ * @brief Container for multiple time-dependent boundary conditions
+ */
 template <unsigned int dim, unsigned int returnDim>
 class BoundaryConditions_td {
     using IndexVector = std::vector<unsigned int>;
@@ -82,4 +90,4 @@ private:
                      SparseMat& A, VectorXd& rhs, double t) const;
 };
 
-#endif // BOUNDARY_CONDITIONS_HPP
+#endif // BOUNDARY_CONDITIONS_TD_HPP

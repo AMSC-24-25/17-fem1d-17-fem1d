@@ -1,3 +1,7 @@
+/**
+ * @file point.hpp
+ * @brief N-dimensional point class for geometric computations
+ */
 #ifndef POINT
 #define POINT
 
@@ -8,6 +12,9 @@
 
 using CoordinateVector = std::vector<double>;
 
+/**
+ * @brief N-dimensional point with coordinate access and arithmetic operations
+ */
 template<unsigned int dim>
 class Point{
 

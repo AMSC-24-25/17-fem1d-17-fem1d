@@ -1,3 +1,7 @@
+/**
+ * @file fem.hpp
+ * @brief Steady-state finite element solver
+ */
 #ifndef FEM_HPP
 #define FEM_HPP
 
@@ -21,7 +25,9 @@ using Eigen::Vector3d;
 typedef Eigen::SparseMatrix<double, Eigen::RowMajor> SparseMat;
 typedef Eigen::Triplet<double> Triplet;
 
-// Structure for modern boundary conditions
+/**
+ * @brief Finite element solver for steady-state PDEs
+ */
 template<unsigned int dim>
 class Fem {
 private:
@@ -39,27 +45,23 @@ private:
     VectorXd solution;
 
 public:
-    // Modern constructor with BoundaryConditions
+    // Constructor with all PDE coefficients and boundary conditions
     Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
         Function<dim, dim> transport, Function<dim, 1> reaction,
         const BoundaryConditions<dim, 1>& boundaryConditions, QuadratureRule<dim> quadrature);
 
-    // Matrix assembly
-    void assemble();
+    void assemble();  // Assemble system matrix and RHS
+    void solve();     // Solve linear system
     
-    // System solution
-    void solve();
-    
-    // Getter for the solution
     const VectorXd& getSolution() const { return solution; }
 
-    void outputVtu(const std::string& filename) const;
-    void outputCsv(const std::string& filename) const;
+    // Output methods
+    void outputVtu(const std::string& filename) const;  // VTU format for ParaView
+    void outputCsv(const std::string& filename) const;  // CSV format for analysis
 
 private:
-
-    // Helper methods for assembly
+    // Element assembly helper
     void assembleElement(int elemIndex, std::vector<Triplet>& triplets, VectorXd& local_rhs) const;
 };
 
-#endif // FEM2D_HPP
+#endif // FEM_HPP

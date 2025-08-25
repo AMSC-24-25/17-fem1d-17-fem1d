@@ -1,3 +1,7 @@
+/**
+ * @file boundary_conditions.hpp
+ * @brief Boundary condition management for steady-state FEM problems
+ */
 #ifndef BOUNDARY_CONDITIONS_HPP
 #define BOUNDARY_CONDITIONS_HPP
 
@@ -13,7 +17,9 @@
 using Eigen::VectorXd;
 using SparseMat = Eigen::SparseMatrix<double, Eigen::RowMajor>;
 
-// Single boundary condition
+/**
+ * @brief Single boundary condition for steady-state problems
+ */
 template<unsigned int dim, unsigned int returnDim>
 class BoundaryCondition {
 private:
@@ -37,7 +43,12 @@ public:
     Function<dim, returnDim> getBoundaryFunction() const { return boundaryFunction; }
 };
 
-// Manages a set of boundary conditions
+/**
+ * @brief Container for multiple boundary conditions
+ * 
+ * Manages a collection of boundary conditions and provides methods
+ * to apply them to the finite element system matrices.
+ */
 template <unsigned int dim, unsigned int returnDim>
 class BoundaryConditions {
     using IndexVector = std::vector<unsigned int>;

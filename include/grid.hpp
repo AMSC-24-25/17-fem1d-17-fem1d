@@ -1,3 +1,7 @@
+/**
+ * @file grid.hpp
+ * @brief General mesh/grid implementation for finite elements
+ */
 #ifndef GRID_HPP
 #define GRID_HPP
 
@@ -14,6 +18,12 @@
 #define Grid2D Grid<2>
 #define Grid3D Grid<3>
 
+/**
+ * @brief General finite element mesh for arbitrary dimensions
+ * 
+ * Manages cells (elements), nodes, and boundary information.
+ * Supports reading from MSH format files.
+ */
 template<unsigned int dim>
 class Grid{
     using CellVector = typename std::vector<Cell<dim>>;

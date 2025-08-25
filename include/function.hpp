@@ -1,3 +1,7 @@
+/**
+ * @file function.hpp
+ * @brief Function wrapper classes for mathematical expressions in FEM
+ */
 #ifndef FUNCTION
 #define FUNCTION
 
@@ -7,9 +11,16 @@
 #include <stdexcept>
 #include "point.hpp"
 
+// Global type alias for time-dependent functions
 template<unsigned int dim, unsigned int returnDim>
 using fun_td = std::function<Point<returnDim>(const Point<dim>&, double)>;
 
+/**
+ * @brief Function wrapper for mathematical expressions over N-dimensional space
+ * 
+ * Provides arithmetic operations and conversion capabilities for functions
+ * used in finite element formulations.
+ */
 template <unsigned int dim, unsigned int returnDim>
 class Function
 {
