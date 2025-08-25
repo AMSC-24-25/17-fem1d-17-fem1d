@@ -1,0 +1,93 @@
+/**
+ * @file boundary_conditions_td.hpp
+ * @brief Boundary condition management for time-dependent FEM problems
+ */
+#ifndef BOUNDARY_CONDITIONS_TD_HPP
+#define BOUNDARY_CONDITIONS_TD_HPP
+
+#include "function.hpp"
+#include "bctype.hpp"
+#include "point.hpp"
+#include "grid.hpp"
+#include "quadrature.hpp"
+#include <Eigen/Sparse>
+#include <vector>
+#include <iostream>
+
+using Eigen::VectorXd;
+using SparseMat = Eigen::SparseMatrix<double, Eigen::RowMajor>;
+
+/**
+ * @brief Single boundary condition for time-dependent problems
+ */
+template<unsigned int dim, unsigned int returnDim>
+class BoundaryCondition_td {
+private:
+    int boundaryId;                    // Boundary id
+    BCType type;                       // Condition type (Dirichlet/Neumann)
+    fun_td<dim, returnDim> boundaryFunction; // Function defining the condition
+
+public:
+    // Constructor on one boundary condition
+    BoundaryCondition_td(int tag, BCType bcType, fun_td<dim, returnDim> func) 
+        : boundaryId(tag), type(bcType), boundaryFunction(func) {}
+
+    // Constructor for constant value (for convenience)
+    BoundaryCondition_td(int tag, BCType bcType, double value) 
+        : boundaryId(tag), type(bcType), 
+          boundaryFunction([value](Point<dim> p, double t) { return value; }) {}
+
+    // Getters
+    int getBoundaryId() const { return boundaryId; }
+    BCType getType() const { return type; }
+    Function<dim, returnDim> getBoundaryFunction(double t) const { 
+        return castToSteadyFunction(boundaryFunction, t);
+    }
+    fun_td<dim, returnDim> getBoundaryFunction() const {
+        return boundaryFunction;
+    }
+};
+
+/**
+ * @brief Container for multiple time-dependent boundary conditions
+ */
+template <unsigned int dim, unsigned int returnDim>
+class BoundaryConditions_td {
+    using IndexVector = std::vector<unsigned int>;
+
+public:
+    // Constructors
+    BoundaryConditions_td() = default;
+
+    // Constructor on multiple boundary conditions
+    BoundaryConditions_td(const std::vector<BoundaryCondition_td<dim, returnDim>>& conditions) 
+        : conditions(conditions) {}
+
+    // Methods to add conditions
+    void addDirichlet(int boundaryId, fun_td<dim, returnDim> func) {
+        conditions.emplace_back(boundaryId, BCType::DIRICHLET, func);
+    }
+    void addDirichlet(int boundaryId, Point<returnDim> value) {
+        conditions.emplace_back(boundaryId, BCType::DIRICHLET, value);
+    }
+    void addNeumann(int boundaryId, fun_td<dim, returnDim> func) {
+        conditions.emplace_back(boundaryId, BCType::NEUMANN, func);
+    }
+    void addNeumann(int boundaryId, Point<returnDim> value) {
+        conditions.emplace_back(boundaryId, BCType::NEUMANN, value);
+    }
+
+    // Application of boundary conditions
+    void apply(const Grid<dim>& mesh, SparseMat& A, VectorXd& rhs, double t) const;
+
+private:
+    std::vector<BoundaryCondition_td<dim, returnDim>> conditions;
+
+    // Helper methods for application
+    void applyDirichlet(const BoundaryCondition_td<dim, returnDim>& bc, const Grid<dim>& mesh, 
+                       SparseMat& A, VectorXd& rhs, double t) const;
+    void applyNeumann(const BoundaryCondition_td<dim, returnDim>& bc, const Grid<dim>& mesh, 
+                     SparseMat& A, VectorXd& rhs, double t) const;
+};
+
+#endif // BOUNDARY_CONDITIONS_TD_HPP

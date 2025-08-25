@@ -1,0 +1,47 @@
+# 2D Time-Dependent Diffusion: Gaussian Heat Source
+# Problem: u_t - D*Δu = f(x,y,t)
+# Gaussian heat source moving in time
+# Shows 2D time-dependent behavior with clear visualization
+
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-h0.050000_gmsh22.msh"
+output_file = "output/9_gaussian_source_2d_td"
+time_dependent = true
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_coefficient = 0.1
+transport_coefficient_x = 0.0
+transport_coefficient_y = 0.0
+reaction_coefficient = 0.0
+
+[time_dependent]
+final_time = 2.0
+time_step = 0.02
+theta = 0.5
+initial_condition = "0.0"
+forcing_function_td = "10.0*exp(-50.0*((x-0.5-0.3*cos(2*pi*t))*(x-0.5-0.3*cos(2*pi*t)) + (y-0.5-0.3*sin(2*pi*t))*(y-0.5-0.3*sin(2*pi*t))))"
+
+# Homogeneous Dirichlet boundary conditions
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+time_function = "0.0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+time_function = "0.0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+time_function = "0.0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3
+time_function = "0.0"

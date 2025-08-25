@@ -1,0 +1,36 @@
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
+output_file = "output/advection_diffusion"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Equazione di advezione-diffusione con funzioni variabili
+diffusion_function = "1.0 + 0.5*sin(pi*x)*cos(pi*y)"
+transport_function_x = "x*y"
+transport_function_y = "0.0"
+reaction_function = "0.1*(x*x + y*y)"
+forcing_function = "exp(-((x-0.5)*(x-0.5) + (y-0.5)*(y-0.5))/0.1)"
+
+# Condizioni al contorno miste con funzioni
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "sin(pi*y)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 1
+function = "x*x"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "cos(pi*x)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 3
+function = "y*(1-y)"

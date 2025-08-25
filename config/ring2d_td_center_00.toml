@@ -1,0 +1,65 @@
+# Time-dependent 2D diffusion: expanding Gaussian ring (center at (0,0))
+# u(x,y,t) = exp( -a * (r^2 - R(t)^2)^2 ), r^2 = x^2 + y^2, R(t)=R0 + c*t
+
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-h0.012500_gmsh22.msh"
+output_file = "output/ring2d_td_center_00"
+time_dependent = true
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_function = "3.0"
+transport_function_x = "0.0"
+transport_function_y = "0.0"
+reaction_function = "0.0"
+
+[time_dependent]
+final_time = 1.0
+time_step = 0.01
+theta = 0.5
+
+# Parameters: a, R0, c
+# a = 156.25 (=1/0.08^2) -> anello "sottile"; puoi ridurre a=50 per un anello più largo
+# R0 = 0.25, c = 0.5  ==> raggio R(t) in [0.25, 0.75] su t in [0,1]
+# shorthand: r2 = x^2 + y^2, R = R0 + c*t, S = r2 - R^2
+# u = exp(-a*S^2)
+
+# IC: u(x,y,0) = exp(-a * (r2 - R0^2)^2)
+initial_condition = "exp( -156.25 * pow( (x*x + y*y) - pow(0.25,2), 2 ) )"
+
+# Forcing f = u_t - mu * Δu
+# Con S = r2 - R^2, R = 0.25 + 0.5*t, a=156.25, mu=3:
+# u_t = (4*a*c*R*S) * u
+# Δu  = [16*a^2*r2*S^2 + 8*a*(R^2 - 2*r2)] * u
+# => f = u * ( 4*a*c*R*S - mu*(16*a*a*r2*S*S + 8*a*(R*R - 2*r2)) )
+
+forcing_function_td = "exp( -156.25 * pow( (x*x + y*y) - pow(0.25 + 0.5*t, 2), 2 ) ) * ( 4.0*156.25*0.5*(0.25 + 0.5*t)* ( (x*x + y*y) - pow(0.25 + 0.5*t, 2) )  - 3.0*( 16.0*156.25*156.25*(x*x + y*y)*pow( ( (x*x + y*y) - pow(0.25 + 0.5*t, 2) ), 2 ) + 8.0*156.25*( pow(0.25 + 0.5*t, 2) - 2.0*(x*x + y*y) ) ) )"
+
+# Dirichlet su tutti i lati = soluzione esatta
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+time_function = "exp( -156.25 * pow( (x*x + y*y) - pow(0.25 + 0.5*t, 2), 2 ) )"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+time_function = "exp( -156.25 * pow( (x*x + y*y) - pow(0.25 + 0.5*t, 2), 2 ) )"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+time_function = "exp( -156.25 * pow( (x*x + y*y) - pow(0.25 + 0.5*t, 2), 2 ) )"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3
+time_function = "exp( -156.25 * pow( (x*x + y*y) - pow(0.25 + 0.5*t, 2), 2 ) )"
+
+[solver]
+tolerance = 1e-12
+max_iterations = 1000
+method = "direct"
