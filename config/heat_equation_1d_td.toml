@@ -4,7 +4,7 @@
 
 [problem]
 dimension = 1
-grid_size = 100
+1d_size = 100
 output_file = "output/heat_1d_td"
 time_dependent = true
 

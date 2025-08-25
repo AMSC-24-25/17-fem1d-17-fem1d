@@ -1,25 +1,25 @@
 [problem]
 dimension = 1
-1d_size = 1000
-output_file = "output/MY_sinusoidal_1d"
+grid_size = 50
+output_file = "output/good_examples/sinusoidal_1d"
 
 [quadrature]
-type = "order4"
+type = "order2"
 
 [equation]
-# Exact solution: u(x) = sin(2*pi*x)
-diffusion_coefficient = "1.0"
-transport_function_x = "0.0"
-reaction_function = "1.0"
-forcing_function = "40.4784176044 * sin(2*pi*x)"
+# Exact solution: u(x) = sin(pi*x)
+diffusion_coefficient = 1.0
+transport_function_x = 0.5
+reaction_coefficient = 2.0
+forcing_function = "(pi*pi + 2)*sin(pi*x) + 0.5*pi*cos(pi*x)"
 
 # Boundary conditions
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 0
-function = "0"
+function = "sin(pi*x)"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 1
-function = "0"
+function = "sin(pi*x)"

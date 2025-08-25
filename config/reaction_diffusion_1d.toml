@@ -1,7 +1,7 @@
 [problem]
 dimension = 1
 mesh_file = "uniform_grid"
-grid_size = 100
+1d_size = 100
 output_file = "output/reaction_diffusion_1d"
 
 [quadrature]

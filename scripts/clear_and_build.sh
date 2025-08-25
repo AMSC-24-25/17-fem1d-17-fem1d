@@ -16,9 +16,14 @@ if [[ "$(basename $(pwd))" != "scripts" ]]; then
 fi
 
 cd ..
+echo -e "${YELLOW}Removing old build directory...${NC}"
 rm -rf build
-mkdir build
+
+echo -e "${BLUE}Creating new build directory...${NC}"
+mkdir -p build
+
 cd build
+echo -e "${YELLOW}Running cmake...${NC}"
 cmake ..
 make -j$(nproc)
 

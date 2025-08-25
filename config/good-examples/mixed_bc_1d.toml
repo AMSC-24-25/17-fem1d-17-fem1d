@@ -1,6 +1,6 @@
 [problem]
 dimension = 1
-grid_size = 60
+1d_size = 60
 output_file = "output/good_examples/mixed_bc_1d"
 
 [quadrature]

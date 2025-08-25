@@ -1,6 +1,6 @@
 [problem]
 dimension = 1
-grid_size = 100
+1d_size = 100
 output_file = "output/solution_1d"
 
 [quadrature]
