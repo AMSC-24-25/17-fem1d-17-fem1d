@@ -1,0 +1,26 @@
+[problem]
+dimension = 1
+grid_size = 50
+output_file = "output/good_example_sinusoidal_1d"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Exact solution: u(x) = sin(pi*x)
+# PDE coefficients: D=1, b=0.5, r=2
+diffusion_coefficient = 1.0
+transport_function_x = 0.5
+reaction_coefficient = 2.0
+forcing_function = "(pi*pi + 2)*sin(pi*x) + 0.5*pi*cos(pi*x)"
+
+# Boundary conditions
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "sin(pi*x)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "sin(pi*x)"

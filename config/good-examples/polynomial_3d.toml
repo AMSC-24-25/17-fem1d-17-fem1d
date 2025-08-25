@@ -1,0 +1,45 @@
+[problem]
+dimension = 3
+mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
+output_file = "output/polynomial_3d_test"
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_coefficient = 1.0
+transport_coefficient_x = 0.5
+transport_coefficient_y = 0.3
+transport_coefficient_z = 0.2
+reaction_coefficient = 1.0
+forcing_function = "6*x + 2*y + 2*z - 0.5*(3*x^2 + 2*x*y + 2*x*z) - 0.3*(2*x*y + 2*y*z) - 0.2*(2*x*z + 2*y*z) + x^3 + x*y^2 + x*z^2"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "1 + y^2 + z^2"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 2
+function = "0"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 3
+function = "3*x^2 + z^2"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 4
+function = "x^3 + x*y^2"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 5
+function = "2*x*z"

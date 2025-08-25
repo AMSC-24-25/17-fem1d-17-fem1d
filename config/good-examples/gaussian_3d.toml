@@ -1,0 +1,45 @@
+[problem]
+dimension = 3
+mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
+output_file = "output/gaussian_3d_test"
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_coefficient = 1.0
+transport_coefficient_x = 0.2
+transport_coefficient_y = 0.15
+transport_coefficient_z = 0.1
+reaction_coefficient = 0.3
+forcing_function = "exp(-5*((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2)) * (30*((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2) - 15 + 0.2*(-10*(x-0.5)) + 0.15*(-10*(y-0.5)) + 0.1*(-10*(z-0.5)) + 0.3)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "exp(-5*(0.25 + (y-0.5)^2 + (z-0.5)^2))"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "exp(-5*(0.25 + (y-0.5)^2 + (z-0.5)^2))"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "exp(-5*((x-0.5)^2 + 0.25 + (z-0.5)^2))"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3
+function = "exp(-5*((x-0.5)^2 + 0.25 + (z-0.5)^2))"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 4
+function = "exp(-5*((x-0.5)^2 + (y-0.5)^2 + 0.25))"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 5
+function = "exp(-5*((x-0.5)^2 + (y-0.5)^2 + 0.25))"

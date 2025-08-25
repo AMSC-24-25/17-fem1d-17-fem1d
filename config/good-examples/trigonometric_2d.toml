@@ -1,0 +1,38 @@
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-h0.050000_gmsh22.msh"
+output_file = "output/good_example_trigonometric_2d"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Exact solution: u(x,y) = sin(pi*x)sin(pi*y)  
+# PDE coefficients: D=2, b=(1,0.5), r=0.5
+diffusion_function = "2.0"
+transport_function_x = "1.0"
+transport_function_y = "0.5"
+reaction_function = "0.5"
+forcing_function = "sin(pi*x)*sin(pi*y)*(4*pi*pi + 0.5) + pi*cos(pi*x)*sin(pi*y) + 0.5*pi*sin(pi*x)*cos(pi*y)"
+
+# Boundary conditions
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "sin(pi*x)*sin(pi*y)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "sin(pi*x)*sin(pi*y)"
+
+# On boundary y=1: u = sin(pi*x)*sin(pi) = 0
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "sin(pi*x)*sin(pi*y)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 3
+function = "pi*sin(pi*y)"

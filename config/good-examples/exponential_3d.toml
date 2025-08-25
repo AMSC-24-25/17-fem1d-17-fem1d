@@ -1,0 +1,45 @@
+[problem]
+dimension = 3
+mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
+output_file = "output/exponential_3d_test"
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_coefficient = 1.0
+transport_coefficient_x = 2.0
+transport_coefficient_y = 1.5
+transport_coefficient_z = 1.0
+reaction_coefficient = 2.0
+forcing_function = "exp(-x)*cos(pi*y)*cos(pi*z)*(-1 - 2*pi^2 - 2 + 1.5*pi*sin(pi*y)/cos(pi*y) - pi*sin(pi*z)/cos(pi*z) + 2)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "cos(pi*y)*cos(pi*z)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "exp(-1)*cos(pi*y)*cos(pi*z)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "exp(-x)*cos(pi*z)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3
+function = "exp(-x)*cos(pi*z)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 4
+function = "exp(-x)*cos(pi*y)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 5
+function = "exp(-x)*cos(pi*y)"

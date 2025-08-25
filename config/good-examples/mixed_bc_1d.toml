@@ -1,0 +1,26 @@
+[problem]
+dimension = 1
+grid_size = 60
+output_file = "output/good_example_mixed_bc_1d"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Exact solution: u(x) = x(1-x)e^x
+# PDE coefficients: D=0.5, b=1.5, r=1
+diffusion_coefficient = 0.5
+transport_function_x = 1.5
+reaction_coefficient = 1.0
+forcing_function = "exp(x)*(1.5 - x*x)"
+
+# Boundary conditions
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "x*(1-x)*exp(x)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 1
+function = "0.0"

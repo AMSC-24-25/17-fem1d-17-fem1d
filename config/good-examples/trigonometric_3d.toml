@@ -1,0 +1,45 @@
+[problem]
+dimension = 3
+mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
+output_file = "output/trigonometric_3d_test"
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_coefficient = 2.0
+transport_coefficient_x = 1.0
+transport_coefficient_y = 0.5
+transport_coefficient_z = 0.8
+reaction_coefficient = 0.5
+forcing_function = "2*pi^2*(sin(pi*x)*sin(pi*y)*sin(pi*z)) + pi*(cos(pi*x)*sin(pi*y)*sin(pi*z) + 0.5*sin(pi*x)*cos(pi*y)*sin(pi*z) + 0.8*sin(pi*x)*sin(pi*y)*cos(pi*z)) + 0.5*sin(pi*x)*sin(pi*y)*sin(pi*z)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "sin(pi*1)*sin(pi*y)*sin(pi*z)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3
+function = "sin(pi*x)*sin(pi*1)*sin(pi*z)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 4
+function = "0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 5
+function = "sin(pi*x)*sin(pi*y)*sin(pi*1)"

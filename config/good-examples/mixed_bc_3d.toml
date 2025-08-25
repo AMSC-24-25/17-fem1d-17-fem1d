@@ -1,0 +1,45 @@
+[problem]
+dimension = 3
+mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
+output_file = "output/mixed_bc_3d_test"
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_coefficient = 0.5
+transport_coefficient_x = 1.0
+transport_coefficient_y = 0.8
+transport_coefficient_z = 0.6
+reaction_coefficient = 1.5
+forcing_function = "0.5*(-6*x*y*z*(1-x)*(1-y)*(1-z) + 2*y*z*(1-y)*(1-z) + 2*x*z*(1-x)*(1-z) + 2*x*y*(1-x)*(1-y)) + (y*z*(1-y)*(1-z)*(1-2*x) + 0.8*x*z*(1-x)*(1-z)*(1-2*y) + 0.6*x*y*(1-x)*(1-y)*(1-2*z)) + 1.5*x*y*z*(1-x)*(1-y)*(1-z)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "0"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 2
+function = "0.5*z*(1-z)*(1-2*y)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 3
+function = "-0.5*z*(1-z)*(1-2*y)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 4
+function = "0.5*y*(1-y)*(1-2*z)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 5
+function = "-0.5*y*(1-y)*(1-2*z)"
