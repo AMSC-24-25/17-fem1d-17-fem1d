@@ -8,10 +8,10 @@ type = "order2"
 
 [equation]
 # Coefficienti dell'equazione: -div(D*grad(u)) + b*grad(u) + sigma*u = f
-diffusion_coefficient = 1.0
-transport_function_x = 0.0
-transport_function_y = 0.0
-reaction_coefficient = 0.0
+diffusion_coefficient = "1.0"
+transport_function_x = "0.0"
+transport_function_y = "0.0"
+reaction_coefficient = "0.0"
 forcing_function = "0"
 
 # Condizioni di Dirichlet: u = 0 sui bordi 0, 1, 2, 3

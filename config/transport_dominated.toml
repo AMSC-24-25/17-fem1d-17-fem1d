@@ -8,11 +8,11 @@ type = "order2"
 
 [equation]
 # Problema dominato dal trasporto: b >> D
-diffusion_coefficient = 0.01
-transport_coefficient_x = 1.0 # Trasporto forte
-transport_coefficient_y = 1.0
-transport_coefficient_z = 1.0
-reaction_coefficient = 0.0
+diffusion_coefficient = "0.01"
+transport_coefficient_x = "1.0" # Trasporto forte
+transport_coefficient_y = "1.0"
+transport_coefficient_z = "1.0"
+reaction_coefficient = "0.0"
 forcing_function = "1.0"
 
 # Condizioni per evidenziare l'effetto del trasporto

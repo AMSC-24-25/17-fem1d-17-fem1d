@@ -11,10 +11,10 @@ time_dependent = true
 type = "order2"
 
 [equation]
-diffusion_coefficient = 3.0
-transport_coefficient_x = 0.0
-transport_coefficient_y = 0.0
-reaction_coefficient = 0.0
+diffusion_coefficient = "3.0"
+transport_coefficient_x = "0.0"
+transport_coefficient_y = "0.0"
+reaction_coefficient = "0.0"
 
 [time_dependent]
 final_time = 1.0

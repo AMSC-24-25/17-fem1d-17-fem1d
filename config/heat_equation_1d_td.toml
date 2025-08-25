@@ -13,9 +13,9 @@ type = "order2"
 
 [equation]
 # Heat equation coefficients
-diffusion_coefficient = 1.0
-transport_coefficient_x = 0.0
-reaction_coefficient = 0.0
+diffusion_coefficient = "1.0"
+transport_coefficient_x = "0.0"
+reaction_coefficient = "0.0"
 forcing_function = "0"  # will be ignored for TD
 
 [time_dependent]

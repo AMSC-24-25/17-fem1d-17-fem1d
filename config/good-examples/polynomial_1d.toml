@@ -8,10 +8,9 @@ type = "order2"
 
 [equation]
 # Exact solution: u(x) = x^3 - x^2 + x
-# PDE coefficients: D=2, b=1, r=0.5
-diffusion_coefficient = 2.0
-transport_function_x = 1.0
-reaction_coefficient = 0.5
+diffusion_coefficient = "2.0"
+transport_function_x = "1.0"
+reaction_coefficient = "0.5"
 forcing_function = "0.5*x*x*x + 2.5*x*x - 13.5*x + 5"
 
 # Boundary conditions

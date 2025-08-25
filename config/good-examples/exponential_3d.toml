@@ -7,11 +7,11 @@ output_file = "output/good_examples/exponential_3d"
 type = "order2"
 
 [equation]
-diffusion_coefficient = 1.0
-transport_coefficient_x = 2.0
-transport_coefficient_y = 1.5
-transport_coefficient_z = 1.0
-reaction_coefficient = 2.0
+diffusion_coefficient = "1.0"
+transport_coefficient_x = "2.0"
+transport_coefficient_y = "1.5"
+transport_coefficient_z = "1.0"
+reaction_coefficient = "2.0"
 forcing_function = "exp(-x)*cos(pi*y)*cos(pi*z)*(-1 - 2*pi^2 - 2 + 1.5*pi*sin(pi*y)/cos(pi*y) - pi*sin(pi*z)/cos(pi*z) + 2)"
 
 [[boundary_conditions]]

@@ -7,11 +7,11 @@ output_file = "output/good_examples/trigonometric_3d"
 type = "order2"
 
 [equation]
-diffusion_coefficient = 2.0
-transport_coefficient_x = 1.0
-transport_coefficient_y = 0.5
-transport_coefficient_z = 0.8
-reaction_coefficient = 0.5
+diffusion_coefficient = "2.0"
+transport_coefficient_x = "1.0"
+transport_coefficient_y = "0.5"
+transport_coefficient_z = "0.8"
+reaction_coefficient = "0.5"
 forcing_function = "2*pi^2*(sin(pi*x)*sin(pi*y)*sin(pi*z)) + pi*(cos(pi*x)*sin(pi*y)*sin(pi*z) + 0.5*sin(pi*x)*cos(pi*y)*sin(pi*z) + 0.8*sin(pi*x)*sin(pi*y)*cos(pi*z)) + 0.5*sin(pi*x)*sin(pi*y)*sin(pi*z)"
 
 [[boundary_conditions]]

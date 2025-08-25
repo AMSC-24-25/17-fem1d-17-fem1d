@@ -8,7 +8,6 @@ type = "order2"
 
 [equation]
 # Exact solution: u(x,y) = x^2*y*(1-y)
-# With D=1, b=(0.5, 0), r=1
 diffusion_function = "1.0"
 transport_function_x = "0.5"
 transport_function_y = "0.0"

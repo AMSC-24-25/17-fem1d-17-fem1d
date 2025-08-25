@@ -8,10 +8,10 @@ type = "order2"
 
 [equation]
 # Problema semplice
-diffusion_coefficient = 1.0
-transport_coefficient_x = 0.0
-transport_coefficient_y = 0.0
-reaction_coefficient = 0.0
+diffusion_coefficient = "1.0"
+transport_coefficient_x = "0.0"
+transport_coefficient_y = "0.0"
+reaction_coefficient = "0.0"
 forcing_function = "1.0"
 
 # Solo una condizione al contorno
