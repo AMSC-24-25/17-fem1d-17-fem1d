@@ -7,7 +7,7 @@ output_file = "output/nonlinear_coefficients"
 type = "order2"
 
 [equation]
-# Problema con coefficienti che dipendono dalla posizione in modo non lineare
+# Problema con funzioni che dipendono dalla posizione in modo non lineare
 diffusion_function = "1.0/(1.0 + (x-0.5)*(x-0.5) + (y-0.5)*(y-0.5))"
 transport_function_x = "x*y*(2-x)*(2-y)"
 transport_function_y = "x*y"

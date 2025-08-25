@@ -8,7 +8,6 @@ type = "order2"
 
 [equation]
 # Exact solution: u(x,y) = sin(pi*x)sin(pi*y)  
-# PDE coefficients: D=2, b=(1,0.5), r=0.5
 diffusion_function = "2.0"
 transport_function_x = "1.0"
 transport_function_y = "0.5"

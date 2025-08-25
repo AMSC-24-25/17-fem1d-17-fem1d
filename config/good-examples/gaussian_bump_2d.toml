@@ -8,7 +8,6 @@ type = "order2"
 
 [equation]
 # Exact solution: u(x,y) = exp(-((x-0.5)^2 + (y-0.5)^2)/0.1)  
-# PDE coefficients: D=1, b=(0.1,0.1), r=0.1
 diffusion_function = "1.0"
 transport_function_x = "0.1"
 transport_function_y = "0.1"

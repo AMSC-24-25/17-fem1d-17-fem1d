@@ -8,10 +8,9 @@ type = "order2"
 
 [equation]
 # Exact solution: u(x) = x(1-x)e^x
-# PDE coefficients: D=0.5, b=1.5, r=1
-diffusion_coefficient = "0.5"
+diffusion_function = "0.5"
 transport_function_x = "1.5"
-reaction_coefficient = "1.0"
+reaction_function = "1.0"
 forcing_function = "exp(x)*(1.5 - x*x)"
 
 # Boundary conditions

@@ -8,9 +8,9 @@ type = "order2"
 
 [equation]
 # Equazione 1D: -d/dx(D * du/dx) + b * du/dx + sigma*u = f
-diffusion_coefficient = "1.0"
+diffusion_function = "1.0"
 transport_function_x = "0.0"
-reaction_coefficient = "0.0"
+reaction_function = "0.0"
 forcing_function = "4*pi*pi*sin(2*pi*x)"
 
 # u(0) = 0 (Dirichlet al punto sinistro)

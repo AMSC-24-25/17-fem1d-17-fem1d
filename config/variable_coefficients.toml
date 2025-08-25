@@ -7,11 +7,10 @@ output_file = "output/variable_coefficients"
 type = "order2"
 
 [equation]
-# Problema con tutti i coefficienti variabili spazialmente
+# Problema con tutte le funzioni variabili spazialmente
 diffusion_function = "2.0 + x + y"
 transport_function_x = "x"
 transport_function_y = "y"
-transport_coefficient_z = "0.0"
 reaction_function = "x*y*(1-x)*(1-y)"
 forcing_function = "10*exp(-10*((x-0.3)*(x-0.3) + (y-0.7)*(y-0.7)))"
 

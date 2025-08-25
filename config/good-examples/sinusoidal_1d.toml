@@ -8,9 +8,9 @@ type = "order2"
 
 [equation]
 # Exact solution: u(x) = sin(pi*x)
-diffusion_coefficient = 1.0
-transport_function_x = 0.5
-reaction_coefficient = 2.0
+diffusion_function = "1.0"
+transport_function_x = "0.5"
+reaction_function = "2.0"
 forcing_function = "(pi*pi + 2)*sin(pi*x) + 0.5*pi*cos(pi*x)"
 
 # Boundary conditions

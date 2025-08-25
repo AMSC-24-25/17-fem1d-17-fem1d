@@ -28,16 +28,11 @@ Config Config::loadFromFile(const std::string& filename) {
         const toml::value& equation = toml::find(data, "equation");
         
     // Read as functions first, fallback to coefficient values (one is mandatory)
-        config.equation.diffusion_function = toml::find_or(equation, "diffusion_function", 
-            toml::find<std::string>(equation, "diffusion_coefficient"));
-        config.equation.transport_function_x = toml::find_or(equation, "transport_function_x", 
-            toml::find<std::string>(equation, "transport_coefficient_x"));
-        config.equation.transport_function_y = toml::find_or(equation, "transport_function_y", 
-            toml::find<std::string>(equation, "transport_coefficient_y"));
-        config.equation.transport_function_z = toml::find_or(equation, "transport_function_z", 
-            toml::find<std::string>(equation, "transport_coefficient_z"));
-        config.equation.reaction_function = toml::find_or(equation, "reaction_function", 
-            toml::find<std::string>(equation, "reaction_coefficient"));
+        config.equation.diffusion_function = toml::find<std::string>(equation, "diffusion_function");
+        config.equation.transport_function_x = toml::find<std::string>(equation, "transport_function_x");
+        config.equation.transport_function_y = toml::find_or<std::string>(equation, "transport_function_y", "0.0");
+        config.equation.transport_function_z = toml::find_or<std::string>(equation, "transport_function_z", "0.0");
+        config.equation.reaction_function = toml::find<std::string>(equation, "reaction_function");
         config.equation.forcing_function = toml::find<std::string>(equation, "forcing_function");
         
         // Parse boundary conditions (arrays) - much more elegant!

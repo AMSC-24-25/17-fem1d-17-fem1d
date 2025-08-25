@@ -7,11 +7,11 @@ output_file = "output/good_examples/mixed_bc_3d"
 type = "order2"
 
 [equation]
-diffusion_coefficient = "0.5"
-transport_coefficient_x = "1.0"
-transport_coefficient_y = "0.8"
-transport_coefficient_z = "0.6"
-reaction_coefficient = "1.5"
+diffusion_function = "0.5"
+transport_function_x = "1.0"
+transport_function_y = "0.8"
+transport_function_z = "0.6"
+reaction_function = "1.5"
 forcing_function = "0.5*(-6*x*y*z*(1-x)*(1-y)*(1-z) + 2*y*z*(1-y)*(1-z) + 2*x*z*(1-x)*(1-z) + 2*x*y*(1-x)*(1-y)) + (y*z*(1-y)*(1-z)*(1-2*x) + 0.8*x*z*(1-x)*(1-z)*(1-2*y) + 0.6*x*y*(1-x)*(1-y)*(1-2*z)) + 1.5*x*y*z*(1-x)*(1-y)*(1-z)"
 
 [[boundary_conditions]]

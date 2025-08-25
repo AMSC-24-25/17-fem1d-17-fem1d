@@ -8,11 +8,11 @@ type = "order2"
 
 [equation]
 # Problema di Poisson puro: -laplace(u) = f (no transport, no reaction)
-diffusion_coefficient = "1.0"
-transport_coefficient_x = "0.0"
-transport_coefficient_y = "0.0"
-transport_coefficient_z = "0.0"
-reaction_coefficient = "0.0"
+diffusion_function = "1.0"
+transport_function_x = "0.0"
+transport_function_y = "0.0"
+transport_function_z = "0.0"
+reaction_function = "0.0"
 forcing_function = "2*(x + y + z) - 2*(x^2 + y^2 + z^2)"
 
 # Condizioni di Dirichlet omogenee su tutti i bordi
