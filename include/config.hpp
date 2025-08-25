@@ -65,7 +65,7 @@ struct TimeDependentConfig {
     double time_step = 0.01;               // Time step size
     double theta = 0.5;                    // Theta-method parameter: 0=Explicit, 0.5=Crank-Nicolson, 1=Implicit
     std::string initial_condition = "0.0"; // Initial condition u₀(x,y,z)
-    std::string forcing_function_td = "";  // Time-dependent forcing f(x,y,z,t)
+    std::string forcing_function_td;       // Time-dependent forcing f(x,y,z,t)
 };
 
 // Quadrature rule configuration

@@ -22,23 +22,23 @@ Config Config::loadFromFile(const std::string& filename) {
         config.problem.grid1d_end = toml::find_or(problem, "1d_end", 1.0);
         config.problem.grid1d_size = toml::find_or(problem, "1d_size", 100);
         config.problem.output_file = toml::find_or(problem, "output_file", std::string("output/solution"));
-        config.problem.time_dependent = toml::find_or(problem, "time_dependent", false);  // NEW
+        config.problem.time_dependent = toml::find_or(problem, "time_dependent", false); 
         
-    // Parse equation section - unified approach: everything is a function
+    // Parse equation section - functions preferred, coefficients as fallback
         const toml::value& equation = toml::find(data, "equation");
         
-    // Read as functions first, fallback to coefficient values
+    // Read as functions first, fallback to coefficient values (one is mandatory)
         config.equation.diffusion_function = toml::find_or(equation, "diffusion_function", 
-            toml::find_or(equation, "diffusion_coefficient", std::string("1.0")));
+            toml::find<std::string>(equation, "diffusion_coefficient"));
         config.equation.transport_function_x = toml::find_or(equation, "transport_function_x", 
-            toml::find_or(equation, "transport_coefficient_x", std::string("0.0")));
+            toml::find<std::string>(equation, "transport_coefficient_x"));
         config.equation.transport_function_y = toml::find_or(equation, "transport_function_y", 
-            toml::find_or(equation, "transport_coefficient_y", std::string("0.0")));
+            toml::find<std::string>(equation, "transport_coefficient_y"));
         config.equation.transport_function_z = toml::find_or(equation, "transport_function_z", 
-            toml::find_or(equation, "transport_coefficient_z", std::string("0.0")));
+            toml::find<std::string>(equation, "transport_coefficient_z"));
         config.equation.reaction_function = toml::find_or(equation, "reaction_function", 
-            toml::find_or(equation, "reaction_coefficient", std::string("0.0")));
-        config.equation.forcing_function = toml::find_or(equation, "forcing_function", std::string("0.0"));
+            toml::find<std::string>(equation, "reaction_coefficient"));
+        config.equation.forcing_function = toml::find<std::string>(equation, "forcing_function");
         
         // Parse boundary conditions (arrays) - much more elegant!
         if (data.contains("boundary_conditions")) {
@@ -56,15 +56,24 @@ Config Config::loadFromFile(const std::string& filename) {
             }
         }
 
-        // NEW: Parse time-dependent section
+        // Parse time-dependent section
         if (data.contains("time_dependent")) {
+            if(!config.problem.time_dependent) {
+                std::cerr << "Warning: problem.time_dependent is false but '[time_dependent]' section is present in config file. Treating toml as time-dependent." << std::endl;
+                config.problem.time_dependent = true;
+            }
             const toml::value& td = toml::find(data, "time_dependent");
             config.time_dependent.final_time = toml::find_or(td, "final_time", 1.0);
             config.time_dependent.time_step = toml::find_or(td, "time_step", 0.01);
             config.time_dependent.theta = toml::find_or(td, "theta", 0.5);
             config.time_dependent.initial_condition = toml::find_or(td, "initial_condition", std::string("0.0"));
-            config.time_dependent.forcing_function_td = toml::find_or(td, "forcing_function_td", std::string(""));
+            config.time_dependent.forcing_function_td = toml::find<std::string>(td, "forcing_function_td");
         }
+        else if (config.problem.time_dependent) {
+            std::cerr << "Error: problem.time_dependent is true but '[time_dependent]' section is missing in config file." << std::endl;
+            exit(-1);
+        }
+
         if (data.contains("quadrature")) {
             const toml::value& quad = toml::find(data, "quadrature");
             std::string qtype = toml::find_or(quad, "type", std::string("order2"));
@@ -100,7 +109,7 @@ bool Config::validate() const {
     
     // Validate boundary conditions
     if (boundary_conditions.empty()) {
-        std::cerr << "Warning: no boundary conditions specified" << std::endl;
+        std::cerr << "Warning: no boundary conditions specified. Assuming all Neumann=0" << std::endl;
     }
 
     if (!(quadrature.type == "order2" || quadrature.type == "order4")) {
@@ -116,7 +125,7 @@ void Config::print() const {
     std::cout << "  Dimension: " << problem.dimension << std::endl;
     std::cout << "  Mesh file: " << problem.mesh_file << std::endl;
     std::cout << "  Output file: " << problem.output_file << std::endl;
-    std::cout << "  Time-dependent: " << (problem.time_dependent ? "Yes" : "No") << std::endl;  // NEW
+    std::cout << "  Time-dependent: " << (problem.time_dependent ? "Yes" : "No") << std::endl;
     
     std::cout << "Equation:" << std::endl;
     std::cout << "  Diffusion function: " << equation.diffusion_function << std::endl;
@@ -134,21 +143,19 @@ void Config::print() const {
         std::cout << " on tag " << bc.tag;
         std::cout << ", function: " << bc.function;
         if (!bc.time_function.empty()) {
-            std::cout << ", time_function: " << bc.time_function;  // NEW
+            std::cout << ", time_function: " << bc.time_function;
         }
         std::cout << std::endl;
     }
-    
-    // NEW: Print time-dependent config if applicable
+
+    // Print time-dependent config if applicable
     if (problem.time_dependent) {
         std::cout << "Time-Dependent Settings:" << std::endl;
         std::cout << "  Final time: " << time_dependent.final_time << std::endl;
         std::cout << "  Time step: " << time_dependent.time_step << std::endl;
         std::cout << "  Theta: " << time_dependent.theta << std::endl;
         std::cout << "  Initial condition: " << time_dependent.initial_condition << std::endl;
-        if (!time_dependent.forcing_function_td.empty()) {
-            std::cout << "  TD Forcing function: " << time_dependent.forcing_function_td << std::endl;
-        }
+        std::cout << "  TD Forcing function: " << time_dependent.forcing_function_td << std::endl;
     }
     
     std::cout << "===================" << std::endl;
@@ -361,7 +368,7 @@ BoundaryConditions<dim,1> Config::createBoundaryConditions() const {
     return bc;
 }
 
-// NEW: Create time-dependent boundary conditions
+// Create time-dependent boundary conditions
 template<unsigned int dim>
 BoundaryConditions_td<dim,1> Config::createBoundaryConditionsTD() const {
     BoundaryConditions_td<dim,1> bc;
