@@ -19,7 +19,7 @@ cd "../build"
 EXECUTABLE="./TomlMain"
 CONFIG_DIR="../config/good-examples"
 OUTPUT_DIR="./output/good_examples"
-OUTPUT_PRINT_DIR="../build/output/good_examples"
+OUTPUT_PRINT_DIR="./build/output/good_examples"
 
 # Check if executable exists
 if [ ! -f "$EXECUTABLE" ]; then
@@ -36,6 +36,8 @@ fi
 
 # Create output directory if it doesn't exist
 mkdir -p "$OUTPUT_DIR"
+mkdir -p $OUTPUT_DIR/csv
+mkdir -p $OUTPUT_DIR/log
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}Running FEM solver on good examples${NC}"
@@ -58,13 +60,13 @@ for config_file in "$CONFIG_DIR"/*.toml; do
         echo "Config: $config_file"
         
         # Run the FEM solver
-        if "$EXECUTABLE" "$config_file" > "$OUTPUT_DIR/${name_without_ext}.log" 2>&1; then
+        if "$EXECUTABLE" "$config_file" > "$OUTPUT_DIR/log/${name_without_ext}.log" 2>&1; then
             echo -e "${GREEN}✓ Success${NC}"
             successful_runs=$((successful_runs + 1))
         else
             echo -e "${RED}✗ Failed${NC}"
             failed_runs=$((failed_runs + 1))
-            echo "  Check log: $OUTPUT_PRINT_DIR/${name_without_ext}.log"
+            echo "  Check log: $OUTPUT_PRINT_DIR/log/${name_without_ext}.log"
         fi
         
         echo ""
@@ -80,8 +82,6 @@ echo -e "Successful runs: ${GREEN}$successful_runs${NC}"
 echo -e "Failed runs: ${RED}$failed_runs${NC}"
 echo ""
 
-mkdir -p $OUTPUT_DIR/csv
-mkdir -p $OUTPUT_DIR/log
 mv $OUTPUT_DIR/*.log $OUTPUT_DIR/log/
 mv $OUTPUT_DIR/*.csv $OUTPUT_DIR/csv/
 

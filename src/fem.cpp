@@ -62,7 +62,7 @@ void Fem<dim>::assemble() {
     
     // Merge thread-local contributions
     std::vector<Triplet> triplets;
-    for (auto& v : triplets_thread) {
+    for (std::vector<Triplet>& v : triplets_thread) {
         triplets.insert(triplets.end(), v.begin(), v.end());
     }
 #else
@@ -104,7 +104,6 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
         const std::vector<double>& phi_q = phi[q];
         
         // Evaluate parameters on quadrature point (cache these values)
-        
         const double w_diff = diffusion_term.value(p) * w;
         const Point<dim> w_transport = transport_term.value(p) * w;
         const double w_react = reaction_term.value(p) * w;

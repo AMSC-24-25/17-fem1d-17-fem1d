@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
         BoundaryConditions_td<3,1> boundary_conditions;
 
         // Manufactured solution: u(x, y, z, t) = sin(2π x y z) * t
-        auto exact_sol = [](const Point<3>& p, double t) -> double {
+        fun_td<3,1> exact_sol = [](const Point<3>& p, double t) -> double {
             return std::sin(2.0 * M_PI * p[0] * p[1] * p[2]) * t;
         };
 
