@@ -33,8 +33,12 @@ Config Config::loadFromFile(const std::string& filename) {
         config.equation.transport_function_y = toml::find_or<std::string>(equation, "transport_function_y", "0.0");
         config.equation.transport_function_z = toml::find_or<std::string>(equation, "transport_function_z", "0.0");
         config.equation.reaction_function = toml::find<std::string>(equation, "reaction_function");
-        config.equation.forcing_function = toml::find<std::string>(equation, "forcing_function");
         
+        if(config.problem.time_dependent || data.contains("time_dependent"))
+            config.equation.forcing_function = toml::find_or<std::string>(equation, "forcing_function", "0.0");
+        else
+            config.equation.forcing_function = toml::find<std::string>(equation, "forcing_function");
+
         // Parse boundary conditions (arrays) - much more elegant!
         if (data.contains("boundary_conditions")) {
             const toml::array& bcs = toml::find(data, "boundary_conditions").as_array();

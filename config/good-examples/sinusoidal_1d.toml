@@ -7,19 +7,19 @@ output_file = "output/good_examples/sinusoidal_1d"
 type = "order2"
 
 [equation]
-# Exact solution: u(x) = sin(pi*x)
+# Exact solution: u(x) = sin(2*pi*x)
 diffusion_function = "1.0"
 transport_function_x = "0.5"
 reaction_function = "2.0"
-forcing_function = "(pi*pi + 2)*sin(pi*x) + 0.5*pi*cos(pi*x)"
+forcing_function = "(4*pi*pi + 2)*sin(2*pi*x) + 0.5*2*pi*cos(2*pi*x)"
 
 # Boundary conditions
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 0
-function = "sin(pi*x)"
+function = "sin(2*pi*x)"
 
 [[boundary_conditions]]
-type = "dirichlet"
+type = "neumann"
 tag = 1
-function = "sin(pi*x)"
+function = "2*pi*cos(2*pi*x)"
