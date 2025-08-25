@@ -27,18 +27,27 @@ $ make [-j N]      # -j flag enables parallel compilation
 To execute, run one of the following after compiling:
 ```bash
 # Time-dependent and Static problems with TOML configuration  
-# (Num_Threads parameter is optional, defaults to max)
-$ ./TomlMain ../config/<config_file>.toml [Num_Threads]
+# (num_threads parameter is optional, defaults to max)
+$ ./TomlMain ../config/<config_file>.toml [num_threads]
 
+# Direct uniform 1D grid steady execution (grid spans [0-length])
+$ ./17_fem1d_17_fem1d 1d <length> <numNodes> [num_threads]
 # Direct mesh-based steady execution
-$ ./17_fem1d_17_fem1d [2-3]d <path to .msh file>
+$ ./17_fem1d_17_fem1d [2-3]d <path to .msh file> [num_threads]
 
-# Direct mesh-based time-dependend execution
-$ ./17_fem1d_17_fem1d_td [2-3]d <path to .msh file>
+# Direct uniform 1D grid time-dependent execution (grid spans [0-length])
+$ ./17_fem1d_17_fem1d_td 1d <length> <numNodes> [num_threads]
+# Direct mesh-based time-dependent execution
+$ ./17_fem1d_17_fem1d_td [2-3]d <path to .msh file> [num_threads]
 
 # Run tests
 $ ctest
 ```
+
+### Scripts
+
+The `scripts/` directory contains helpful scripts for building the project, running all TOML test cases, and executing examples from the `config/good_examples/` folder.
+It also contains the python script we used to obtain the quadrature point values.
 
 ## What is it?
 
