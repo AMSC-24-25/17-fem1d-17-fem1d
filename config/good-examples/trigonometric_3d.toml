@@ -7,6 +7,7 @@ output_file = "output/good_examples/trigonometric_3d"
 type = "order2"
 
 [equation]
+# Exact solution u(x,y,z) = sin(pi*x)*sin(pi*y)*sin(pi*z)
 diffusion_function = "2.0"
 transport_function_x = "1.0"
 transport_function_y = "0.5"

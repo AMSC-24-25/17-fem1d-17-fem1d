@@ -1,45 +1,53 @@
+# 3D Steady-State Diffusion Problem
+# Problem: -Δu = f(x,y,z) on unit cube
+# Analytical solution: u(x,y,z) = xyz*(1-x)*(1-y)*(1-z)
+# Natural test case for 3D FEM implementation
+
 [problem]
 dimension = 3
 mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
 output_file = "output/good_examples/polynomial_3d"
+time_dependent = false
 
 [quadrature]
 type = "order2"
 
 [equation]
+# Exact solution u(x,y,z) = xyz*(1-x)(1-y)(1-z)
 diffusion_function = "1.0"
-transport_function_x = "0.5"
-transport_function_y = "0.3"
-transport_function_z = "0.2"
-reaction_function = "1.0"
-forcing_function = "6*x + 2*y + 2*z - 0.5*(3*x^2 + 2*x*y + 2*x*z) - 0.3*(2*x*y + 2*y*z) - 0.2*(2*x*z + 2*y*z) + x^3 + x*y^2 + x*z^2"
+transport_function_x = "0.0"
+transport_function_y = "0.0"
+transport_function_z = "0.0"
+reaction_function = "0.0"
+forcing_function = "2.0*y*z*(1-y)*(1-z)*(1-3*x+2*x*x) + 2.0*x*z*(1-x)*(1-z)*(1-3*y+2*y*y) + 2.0*x*y*(1-x)*(1-y)*(1-3*z+2*z*z)"
 
+# Dirichlet boundary conditions: u = 0 on all faces (from analytical solution)
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 0
-function = "x^3 + x*y^2 + x*z^2"
+function = "0.0"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 1
-function = "x^3 + x*y^2 + x*z^2"
+function = "0.0"
 
 [[boundary_conditions]]
-type = "neumann"
+type = "dirichlet"
 tag = 2
-function = "0"
+function = "0.0"
 
 [[boundary_conditions]]
-type = "neumann"
+type = "dirichlet"
 tag = 3
-function = "3*x^2 + z^2"
+function = "0.0"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 4
-function = "x^3 + x*y^2 + x*z^2"
+function = "0.0"
 
 [[boundary_conditions]]
-type = "neumann"
+type = "dirichlet"
 tag = 5
-function = "2*x*z"
+function = "0.0"
