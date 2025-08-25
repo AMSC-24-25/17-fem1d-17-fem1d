@@ -1,0 +1,39 @@
+# Time-dependent 1D heat equation example
+# Exact solution: u(x,t) = sin(2*pi*x)*sin(t)
+# u_t - D * u_xx = f(x,t)
+# u(0,t) = 0, u(1,t) = sin(t)
+
+[problem]
+dimension = 1
+1d_size = 100
+output_file = "output/heat_equation_1d_td"
+time_dependent = true
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Heat equation coefficients
+diffusion_function = "1.0"
+transport_function_x = "0.0"
+reaction_function = "0.0"
+
+[time_dependent]
+final_time = 6.28
+time_step = 0.0628
+theta = 0.5  # Crank-Nicolson
+initial_condition = "1.0/(4*pi*pi) sin(2*pi*x)"
+forcing_function_td = "sin(2*pi*x) * cos(t) + 4*pi*pi*sin(2*pi*x)*sin(t)"
+
+# Time-dependent boundary conditions
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "0.0"  # fallback static
+time_function = "sin(2*pi*x)*sin(t)"  # u(0,t) = 0
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "0.0"  # fallback static
+time_function = "sin(2*pi*x)*sin(t)"  # u(1,t) = sin(t)

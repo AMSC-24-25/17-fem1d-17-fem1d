@@ -1,0 +1,59 @@
+# Complete Time-Dependent Example - showcases all available TOML options
+# Exact solution: u(x,y,t) = x*y*t
+# with mixed boundary conditions on a 2D square domain
+
+[problem]
+dimension = 2                                           # Spatial dimension (1, 2, or 3)
+mesh_file = "../mesh/mesh-square-h0.050000_gmsh22.msh"  # Path to GMSH mesh file
+output_file = "output/complete_example_td"              # Output file prefix
+time_dependent = true                                   # Enable time-dependent solver
+# For 1D problems, you can also specify:
+# 1d_start = 0.0                                # 1D grid start coordinate
+# 1d_end = 1.0                                  # 1D grid end coordinate  
+# 1d_size = 100                                 # Number of 1D grid points
+
+[quadrature]
+type = "order2"                                 # Quadrature rule: "order2" or "order4"
+
+[equation]
+# PDE coefficients as mathematical expressions (support x, y, z, pi, e)
+# NOTE: the quotes "" are important and must always be used
+diffusion_function = "1.0"                      # Diffusion coefficient D(x,y,z)
+transport_function_x = "0.0"                    # x-component of transport b_x(x,y,z)
+transport_function_y = "0.0"                    # y-component of transport b_y(x,y,z)
+transport_function_z = "0.0"                    # z-component of transport b_z(x,y,z)
+reaction_function = "x"                         # Reaction coefficient c(x,y,z)
+forcing_function = "0"                          # Static forcing (ignored for TD problems)
+
+[time_dependent]
+final_time = 1.0                                # Simulation end time
+time_step = 0.01                                # Time step dt
+theta = 0.5                                     # Theta-method: 0=Explicit, 0.5=Crank-Nicolson, 1=Implicit
+initial_condition = "0.0"                       # u0(x,y,z) = 0 at t=0
+forcing_function_td = "x*y + x*x*y*t"           # Time-dependent forcing term f(x,y,z,t)
+
+# Boundary conditions (can have multiple, mixed types)
+# Exact solution: u(x,y,t) = x*y*t
+[[boundary_conditions]]
+type = "neumann"                              # Dirichlet: specify u = g
+tag = 0                                         # Boundary tag from mesh (x=0)
+function = "0.0"                                # Fallback static function
+time_function = "-y*t"                          # (-du/dx)             
+
+[[boundary_conditions]]  
+type = "dirichlet"                              # Dirichlet: specify u = g
+tag = 1                                         # Different boundary tag (x=1)
+function = "0.0"                                # Fallback static function
+time_function = "x*y*t"                         # Exact solution: u(x,y,t) = x*y*t
+
+[[boundary_conditions]]
+type = "dirichlet"                              # Another Dirichlet condition
+tag = 2                                         # Another boundary tag (y=0)
+function = "0.0"                                # Fallback static function
+time_function = "0.0"                         # Exact solution: u(x,0,t) = 0
+
+[[boundary_conditions]]
+type = "neumann"                              # Another Dirichlet condition  
+tag = 3                                         # Final boundary tag (y=1)
+function = "0.0"                                # Fallback static function
+time_function = "x*t"                           # (du/dy)    
