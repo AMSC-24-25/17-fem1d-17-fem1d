@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# plot.py
+
+# Usage: python plot.py <input_csv> <output_png>
+
+# Example: python plot.py "parsed_results.csv" "speedup_plot.png"
+
 import sys, os, re
 import pandas as pd
 import matplotlib.pyplot as plt
