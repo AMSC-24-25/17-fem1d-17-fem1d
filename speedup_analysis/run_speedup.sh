@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # Usage:
-#   bash ../run_speedup.sh <omp_bin> <config_dir> <out_csv> [sequential_bin]
-# Esempio (dalla cartella build):
-#   bash ../run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_result ./sequentialTomlMain
-# Env opzionali:
+#   bash ../speedup_analysis/run_speedup.sh <omp_bin> <config_dir> <out_csv> [sequential_bin]
+# Example (from build folder):
+#   bash ../speedup_analysis/run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_result ./sequentialTomlMain
+# Optional env vars:
 #   THREADS="2 4 8 12 16"
 #   REPEAT=1
 
+# REPEAT=3 bash ../speedup_analysis/run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_results.csv ./sequentialTomlMain
 
+# Or combined
+# REPEAT=3 THREADS="4 8 16" bash ../speedup_analysis/run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_results.csv ./sequentialTomlMain
 
-# REPEAT=3 bash ../run_speedup.sh ./TomlMain ../config/speedup-analysis ../speedup_results.csv ./sequentialTomlMain
-
-
-set -uo pipefail  # (niente -e: non fermarti al primo errore)
+set -uo pipefail  # (don't stop at errors)
 
 OMP_BIN="${1:-./TomlMain}"
 CFG_DIR="${2:-../config/speedup-analysis}"
@@ -42,13 +42,13 @@ if ((${#CFGS[@]} == 0)); then
   exit 1
 fi
 
-# CSV header (sovrascrive)
+# CSV header (overwrites)
 echo "config,mode,threads,run,elapsed_s" > "$OUT_CSV"
 
-# Timer robusto: usa /usr/bin/time con output su file temporaneo (solo secondi)
+# Robust timer: uses /usr/bin/time with output to temporary file (only seconds)
 time_cmd() {
   local out_tmp="$(mktemp)"
-  # -f '%e' = solo elapsed seconds; stdout del programma buttata, stderr su log del run
+  # -f '%e' = only elapsed seconds; stdout of the program discarded, stderr to run log
   /usr/bin/time -f '%e' -o "$out_tmp" "$@" 1>/dev/null
   local rc=$?
   if ((rc != 0)); then
@@ -63,16 +63,16 @@ time_cmd() {
 
 for cfg in "${CFGS[@]}"; do
   cfg_dir="$(dirname "$cfg")"
-  cfg_base="$(basename "$cfg")"     # <-- solo il nome file nel CSV
+  cfg_base="$(basename "$cfg")"     
   echo "[INFO] Config: $cfg"
 
   pushd "$cfg_dir" >/dev/null
 
-  # --- SEQUENZIALE ---
+  # --- SEQUENTIAL ---
   for r in $(seq 1 "$REPEAT"); do
     echo "=== sequential | $cfg_base | run $r/$REPEAT ==="
     log="logs-${cfg_base//\//_}-seq-$r.log"
-    # esegui senza passare i thread
+    # execute sequential
     if t="$(time_cmd "$SEQ_BIN" "$cfg_base" 2> "$log")"; then
       echo "$cfg_base,sequential,1,$r,$t" >> "$OUT_CSV"
     else
@@ -86,7 +86,7 @@ for cfg in "${CFGS[@]}"; do
     for r in $(seq 1 "$REPEAT"); do
       echo "=== openmp | $cfg_base | ${th}t | run $r/$REPEAT ==="
       log="logs-${cfg_base//\//_}-omp-${th}-r${r}.log"
-      # passa sia ENV OMP_NUM_THREADS che argomento <nThreads>
+      # pass ENV OMP_NUM_THREADS as argument <nThreads>
       if t="$(OMP_NUM_THREADS="$th" time_cmd "$OMP_BIN" "$cfg_base" "$th" 2> "$log")"; then
         echo "$cfg_base,openmp,$th,$r,$t" >> "$OUT_CSV"
       else
