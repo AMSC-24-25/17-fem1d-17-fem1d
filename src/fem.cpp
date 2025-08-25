@@ -4,7 +4,7 @@ template class Fem<1>;
 template class Fem<2>;
 template class Fem<3>;
 
-// Constructor
+// FEM constructor: initialize system matrices and configure solver
 template<unsigned int dim>
 Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusion, 
              Function<dim, dim> transport, Function<dim, 1> reaction,
@@ -25,7 +25,9 @@ Fem<dim>::Fem(Grid<dim> grid, Function<dim, 1> forcing, Function<dim, 1> diffusi
     solution.setZero();
 }
 
-// Main assembly
+
+// Main assembly: build global system matrix A and RHS vector
+// Uses parallel assembly with thread-local storage for efficiency
 template<unsigned int dim>
 void Fem<dim>::assemble() {
     std::cout << "### ASSEMBLE " << dim << "D ###" << std::endl;
@@ -55,12 +57,11 @@ void Fem<dim>::assemble() {
         }
     }
     
-    // Merge RHS contributions
+    // Merge thread-local contributions
     for (int t = 0; t < nthreads; ++t) {
         rhs += rhs_thread[t];
     }
     
-    // Merge thread-local contributions
     std::vector<Triplet> triplets;
     for (std::vector<Triplet>& v : triplets_thread) {
         triplets.insert(triplets.end(), v.begin(), v.end());
@@ -77,13 +78,14 @@ void Fem<dim>::assemble() {
     boundaryConditions.apply(mesh, A, rhs);
 }
 
-// Element assembly
+
+// Element assembly: compute local matrices and add to global system
 template<unsigned int dim>
 void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, VectorXd& local_rhs) const {
     const Cell<dim>& cell = mesh.getCell(elemIndex);
     unsigned int matSize = dim+1;
 
-    // Variables for quadrature data
+    // Get quadrature data for this element
     std::vector<Point<dim>> grad_phi;
     std::vector<Point<dim>> quadrature_points;
     std::vector<std::vector<double>> phi;
@@ -91,25 +93,25 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
     
     quadrature.getQuadratureData(cell, grad_phi, quadrature_points, phi, weights);
 
-    // Local matrices
-    MatrixXd diff_local = MatrixXd::Zero(matSize, matSize); // Diffusion
-    MatrixXd transport_local = MatrixXd::Zero(matSize, matSize); // Transport
-    MatrixXd react_local = MatrixXd::Zero(matSize, matSize); // Reaction
-    VectorXd forc_local = VectorXd::Zero(matSize); // Forcing
+    // Local matrices: diffusion + transport + reaction
+    MatrixXd diff_local = MatrixXd::Zero(matSize, matSize);
+    MatrixXd transport_local = MatrixXd::Zero(matSize, matSize);
+    MatrixXd react_local = MatrixXd::Zero(matSize, matSize);
+    VectorXd forc_local = VectorXd::Zero(matSize);
 
-    // Quadrature loop
+    // Quadrature loop: integrate over element
     for (int q = 0; q < quadrature_points.size(); ++q) {
         const Point<dim>& p = quadrature_points[q];
         const double w = weights[q];
         const std::vector<double>& phi_q = phi[q];
         
-        // Evaluate parameters on quadrature point (cache these values)
+        // Evaluate PDE coefficients at quadrature point
         const double w_diff = diffusion_term.value(p) * w;
         const Point<dim> w_transport = transport_term.value(p) * w;
         const double w_react = reaction_term.value(p) * w;
         const double w_forc = forcing_term.value(p) * w;
 
-        // Optimized matrix assembly with reduced memory accesses
+        // Assemble local matrices
         for (int i = 0; i < matSize; ++i) {
             const double phi_i = phi_q[i];
             const Point<dim>& grad_phi_i = grad_phi[i];
@@ -120,7 +122,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
                 const double phi_j = phi_q[j];
                 const Point<dim>& grad_phi_j = grad_phi[j];
                 
-                // Pre-compute common terms
+                // Pre-compute common terms for efficiency
                 const double phi_i_phi_j = phi_i * phi_j;
                 const double grad_dot = grad_phi_i * grad_phi_j;
                 const double transport_contrib = (w_transport * grad_phi_j) * phi_i;
@@ -132,13 +134,12 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
         }
     }
     
-    // Global assembly
+    // Add local contributions to global system
     for (int i = 0; i < matSize; ++i) {
         int globalI = cell.getNodeIndex(i);
         for (int j = 0; j < matSize; ++j) {
             int globalJ = cell.getNodeIndex(j);
 
-            // Add to the global matrix only if not zero
             double value = diff_local(i,j) + transport_local(i,j) + react_local(i,j);
             if (std::abs(value) > 1e-15) {
                 triplets.push_back(Triplet(globalI, globalJ, value));
@@ -148,12 +149,13 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
     }
 }
 
-// Linear system solver
+// Solve linear system: choose direct (LU) or iterative (BiCGSTAB) based on size
 template<unsigned int dim>
 void Fem<dim>::solve() {
     std::cout << "### SOLVE " << dim << "D ###" << std::endl;
 
     if(A.nonZeros() < 4e3) {
+        // Small systems: use direct solver
         std::cout << "[TD] Solving small system (" << A.nonZeros() << ") with SparseLU\n";
         Eigen::SparseLU<SparseMat> solver;
         solver.analyzePattern(A);
@@ -170,7 +172,7 @@ void Fem<dim>::solve() {
         }
     }
     else{
-        // Lighter iterative solver (BiCGSTAB)
+        // Large systems: use iterative solver with preconditioning
         std::cout << "[TD] Solving large system (" << A.nonZeros() << ") with BiCGSTAB\n";
         Eigen::BiCGSTAB<SparseMat, Eigen::IncompleteLUT<double>> solver;
         solver.setMaxIterations(1000);
@@ -193,6 +195,7 @@ void Fem<dim>::solve() {
     }
 }
 
+// Output solution to CSV format: coordinates and values
 template<unsigned int dim>
 void Fem<dim>::outputCsv(const std::string& filename) const {
     if (filename.size() < 4 || filename.substr(filename.size() - 4) != ".csv") {
@@ -218,6 +221,7 @@ void Fem<dim>::outputCsv(const std::string& filename) const {
     std::cout << "Solution norm: " << solution.norm() << std::endl;
 }
 
+// Output solution to VTU format for visualization (ParaView/VisIt)
 template<unsigned int dim>
 void Fem<dim>::outputVtu(const std::string& filename) const {
     if (filename.size() < 4 || filename.substr(filename.size() - 4) != ".vtu") {
@@ -234,8 +238,9 @@ void Fem<dim>::outputVtu(const std::string& filename) const {
     vtuFile << "<VTKFile type=\"UnstructuredGrid\" version=\"0.1\" byte_order=\"LittleEndian\">\n";
     vtuFile << "<UnstructuredGrid>\n";
 
-    // Nodes
     vtuFile << "<Piece NumberOfPoints=\"" << mesh.getNumNodes() << "\" NumberOfCells=\"" << mesh.getNumElements() << "\">\n";
+    
+    // Write node coordinates (always 3D for VTK)
     vtuFile << "<Points>\n<DataArray type=\"Float64\" NumberOfComponents=\"3\" format=\"ascii\">\n";
     for (const Point<dim>& node : mesh.getUniqueNodes()) {
         for (unsigned int i = 0; i < 3; ++i) {
@@ -244,7 +249,7 @@ void Fem<dim>::outputVtu(const std::string& filename) const {
     }
     vtuFile << "</DataArray>\n</Points>\n";
 
-    // Solution output as PointData
+    // Write solution values
     vtuFile << "<PointData Scalars=\"solution\">\n";
     vtuFile << "<DataArray type=\"Float64\" Name=\"solution\" format=\"ascii\">\n";
     for (unsigned int i = 0; i < mesh.getNumNodes(); ++i) {
@@ -252,7 +257,7 @@ void Fem<dim>::outputVtu(const std::string& filename) const {
     }
     vtuFile << "</DataArray>\n</PointData>\n";
 
-    // Cells
+    // Write element connectivity
     vtuFile << "<Cells>\n<DataArray type=\"Int32\" Name=\"connectivity\" format=\"ascii\">\n";
     for (const Cell<dim>& cell : mesh.getCells()) {
         for (unsigned int i = 0; i < cell.getN(); ++i) {
@@ -267,9 +272,8 @@ void Fem<dim>::outputVtu(const std::string& filename) const {
         vtuFile << offset << "\n";
     }
     vtuFile << "</DataArray>\n<DataArray type=\"UInt8\" Name=\"types\" format=\"ascii\">\n";
-    unsigned int vtkType = (dim == 1) ? 3 : // 3=line
-                           (dim == 2) ? 5 : // 5=triangle
-                                        10; // 10=tetrahedron
+    // VTK cell types: line=3, triangle=5, tetrahedron=10
+    unsigned int vtkType = (dim == 1) ? 3 : (dim == 2) ? 5 : 10;
     for (unsigned int i = 0; i < mesh.getNumElements(); ++i) {
         vtuFile << vtkType << "\n";
     }

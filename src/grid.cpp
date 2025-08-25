@@ -8,7 +8,7 @@ bool compare(std::string line, std::string text) {
     return line.compare(text) == 0;
 }
 
-// Assume format .msh 2.2
+// Parse mesh from .msh file format (version 2.2): read nodes and elements
 template<unsigned int dim>
 void Grid<dim>::parseFromMsh(const std::string& filename) {
     std::ifstream file(filename);
@@ -101,6 +101,8 @@ bool Grid<3>::isBoundaryCell(int elemType) {
     }
 }
 
+
+//Parse boundary cell element from .msh file data
 template<unsigned int dim>
 void Grid<dim>::parseBoundaryCell(std::istringstream& iss, int boundaryId){
     typename BoundaryCell<dim-1>::NodeVector elementNodes;
@@ -128,6 +130,8 @@ void Grid<dim>::parseBoundaryCell(std::istringstream& iss, int boundaryId){
     boundary_cells.emplace_back(BoundaryCell<dim-1>(elementNodes, elementNodeIndices, boundaryId));
 }
 
+
+// Parse internal (volume) cell element from .msh file data
 template<unsigned int dim>
 void Grid<dim>::parseInternalCell(std::istringstream& iss) {
     typename Cell<dim>::NodeVector elementNodes;

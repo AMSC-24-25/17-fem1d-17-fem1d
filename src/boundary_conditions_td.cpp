@@ -1,6 +1,8 @@
 #include "boundary_conditions_td.hpp"
 
-// Apply boundary conditions (main method)
+/**
+ * Apply time-dependent boundary conditions to the finite element system
+ */
 template <unsigned int dim, unsigned int returnDim>
 void BoundaryConditions_td<dim, returnDim>::apply(const Grid<dim>& mesh, 
     SparseMat& A, VectorXd& rhs, double t) const {
@@ -12,6 +14,7 @@ void BoundaryConditions_td<dim, returnDim>::apply(const Grid<dim>& mesh,
 
     std::cout << "Applying " << conditions.size() << " boundary conditions..." << std::endl;
 
+    // Apply Neumann first (RHS only), then Dirichlet (matrix + RHS)
     std::vector<BoundaryCondition_td<dim, returnDim>> dirichletConditions;
 
     for (const BoundaryCondition_td<dim, returnDim>& condition : conditions) {
@@ -25,6 +28,7 @@ void BoundaryConditions_td<dim, returnDim>::apply(const Grid<dim>& mesh,
         }
     }
 
+    // Apply Dirichlet conditions last to avoid matrix overwriting
     for (const BoundaryCondition_td<dim, returnDim>& dirichletCondition : dirichletConditions) {
         applyDirichlet(dirichletCondition, mesh, A, rhs, t);
     }
@@ -32,10 +36,9 @@ void BoundaryConditions_td<dim, returnDim>::apply(const Grid<dim>& mesh,
     std::cout << "Boundary conditions applied successfully" << std::endl;
 }
 
-// -----------------------------------------------------------------------------
-// Helper methods for applying specific boundary condition types
-// -----------------------------------------------------------------------------
-
+/**
+ * Apply time-dependent Dirichlet boundary conditions: u = g(x,t)
+ */
 template <unsigned int dim, unsigned int returnDim>
 void BoundaryConditions_td<dim, returnDim>::applyDirichlet(
     const BoundaryCondition_td<dim, returnDim>& bc, const Grid<dim>& mesh, 
@@ -45,38 +48,38 @@ void BoundaryConditions_td<dim, returnDim>::applyDirichlet(
     std::cout << "  Applying Dirichlet condition on tag " << bc.getBoundaryId() 
               << " (" << boundaryNodes.size() << " nodes)" << std::endl;
 
-    // This loop is embarassingly parallel: boundaryNodes does not contain duplicates
+    // Parallel safe: each thread works on different DOFs
     #pragma omp parallel for
     for (unsigned int nodeIndex : boundaryNodes) {
         const Point<dim>& nodePoint = mesh.getNode(nodeIndex);
         
-        // Set row to zero (only iterates over nonzero elements in the row)
+        // Zero out matrix row for constrained DOF
         for (SparseMat::InnerIterator it(A, nodeIndex); it; ++it) {
             it.valueRef() = 0.0;
         }
         
-        // Set 1 on diagonal
+        // Set identity: u_i = g(x_i, t)
         A.coeffRef(nodeIndex, nodeIndex) = 1.0;
-        // Set dirichlet value in rhs
         rhs[nodeIndex] = bc.getBoundaryFunction(t).value(nodePoint);
     }
 }
 
+/**
+ * Apply time-dependent Neumann boundary conditions: grad(u) * n = g(x,t)
+ */
 template <unsigned int dim, unsigned int returnDim>
 void BoundaryConditions_td<dim, returnDim>::applyNeumann(
     const BoundaryCondition_td<dim, returnDim>& bc, const Grid<dim>& mesh, 
     SparseMat& A, VectorXd& rhs, double t) const {
     
-    // Get boundary cells with the specified physical tag
     std::vector<BoundaryCell<dim-1>> boundaryCells = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
     std::cout << "  Applying Neumann boundary condition " << dim << "D on tag " << bc.getBoundaryId()
               << " (" << boundaryCells.size() << " " << (dim == 1 ? "edges" : "faces") << ")" << std::endl;
 
-    // Initialize quadrature
     GaussLegendre<dim-1> quadrature;
     
-    // Iterate over all boundary cells with this tag
 #ifdef _OPENMP
+    // Thread-local storage to avoid race conditions
     int nthreads = omp_get_max_threads();
     static std::vector<VectorXd> rhs_threads(nthreads, VectorXd::Zero(rhs.size()));
 
@@ -85,15 +88,15 @@ void BoundaryConditions_td<dim, returnDim>::applyNeumann(
         int tid = omp_get_thread_num();
         VectorXd& rhs_local = rhs_threads[tid];
         rhs_local.setZero();
+        
         #pragma omp for schedule(static)
         for (int c = 0; c < boundaryCells.size(); ++c) {
             const BoundaryCell<dim-1>& cell = boundaryCells[c];
             
-            // Compute the contributions to the cell nodes using quadrature
+            // Integrate: ∫_∂Ω g(x,t) * φ_i dS
             std::vector<double> contributions;
             quadrature.integrateShapeFunctions(cell, bc.getBoundaryFunction(t), contributions);
             
-            // Add the contributions to the local RHS vector
             const std::vector<unsigned int>& nodeIndices = cell.getNodeIndexes();
             for (size_t i = 0; i < nodeIndices.size(); ++i) {
                 int globalNodeIndex = nodeIndices[i];
@@ -102,17 +105,16 @@ void BoundaryConditions_td<dim, returnDim>::applyNeumann(
         }
     }
     
-    // Sum all thread-local vectors
+    // Combine thread-local contributions
     for (int tid = 0; tid < nthreads; ++tid) {
         rhs += rhs_threads[tid];
     }
 #else
+    // Serial version: directly accumulate into global RHS
     for (const BoundaryCell<dim-1>& cell : boundaryCells) {
-        // Compute the contributions to the cell nodes using quadrature
         std::vector<double> contributions;
         quadrature.integrateShapeFunctions(cell, bc.getBoundaryFunction(t), contributions);
         
-        // Add the contributions to the RHS vector
         const std::vector<unsigned int>& nodeIndices = cell.getNodeIndexes();
         for (size_t i = 0; i < nodeIndices.size(); ++i) {
             int globalNodeIndex = nodeIndices[i];
@@ -122,11 +124,14 @@ void BoundaryConditions_td<dim, returnDim>::applyNeumann(
 #endif
 }
 
+/**
+ * 1D time-dependent Neumann specialization: flux g(x,t) at boundary points
+ */
 template<>
 void BoundaryConditions_td<1,1>::applyNeumann(
     const BoundaryCondition_td<1,1>& bc,
     const Grid<1>& mesh,
-    SparseMat& /*A*/,
+    SparseMat& /*A*/,  // Matrix A is not modified for Neumann conditions
     VectorXd& rhs, double t) const {
 
     const std::vector<BoundaryCell<0>> bcs = mesh.getBoundaryCellsByTag(bc.getBoundaryId());
@@ -137,10 +142,10 @@ void BoundaryConditions_td<1,1>::applyNeumann(
     }
 
     const BoundaryCell<0>& bc0 = bcs[0];
-    const int       d = bc0.getNodeIndex(0);   // DOF globale
-    const Point<1>& X = bc0.getNode(0);        // coordinata fisica
+    const int       d = bc0.getNodeIndex(0);   // Global DOF index
+    const Point<1>& X = bc0.getNode(0);        // Physical coordinate
 
-    const double g = bc.getBoundaryFunction(t).value(X); // g = μ ∂u/∂n (flusso uscente)
+    const double g = bc.getBoundaryFunction(t).value(X);
     rhs[d] += g;
 }
 

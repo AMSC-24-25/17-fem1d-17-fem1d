@@ -3,7 +3,8 @@
 #include <iostream>
 #include <cmath>
 
-// Constructor
+
+// Time-dependent FEM constructor: initialize matrices and parallel structures
 template<unsigned int dim>
 FemTD<dim>::FemTD(Grid<dim> grid,
                   Function<dim,1> diffusion,
@@ -59,7 +60,8 @@ void FemTD<dim>::set_forcing(ForcingTD f_td) { forcing_td_ = std::move(f_td); }
 template<unsigned int dim>
 void FemTD<dim>::set_initial_condition(Function<dim,1> u0) { u0_ = std::move(u0); }
 
-// Assemble time-invariant matrices M and K
+
+// Assemble time-invariant matrices M (mass) and K (stiffness) with parallel assembly
 template<unsigned int dim>
 void FemTD<dim>::assemble_time_invariant() {
     const int numElements = mesh_.getNumElements();
@@ -89,6 +91,8 @@ void FemTD<dim>::assemble_time_invariant() {
     K_.setFromTriplets(tripletK.begin(), tripletK.end());
 }
 
+
+// Element assembly: compute local mass M and stiffness K matrices for time-dependent PDE
 template<unsigned int dim>
 void FemTD<dim>::assemble_M_and_K_element(int elem,
                                           std::vector<Triplet>& tripletM,
@@ -147,7 +151,8 @@ void FemTD<dim>::assemble_M_and_K_element(int elem,
     }
 }
 
-// Build forcing vector for time step
+
+// Build time-dependent forcing vector f(x,t) at given time t
 template<unsigned int dim>
 void FemTD<dim>::build_load(double t) {
     f_new.setZero();
@@ -210,7 +215,8 @@ void FemTD<dim>::build_load(double t) {
 #endif
 }
 
-// Apply initial condition
+
+// Apply initial condition u(x,0) = u0(x) to solution vector
 template<unsigned int dim>
 void FemTD<dim>::apply_initial_condition() {
     #pragma omp parallel for
@@ -221,7 +227,8 @@ void FemTD<dim>::apply_initial_condition() {
     u_old_ = u_;
 }
 
-// Time stepping
+
+// Time step: solve theta-method scheme
 template<unsigned int dim>
 double FemTD<dim>::step(double t_new, double dt, double theta) {
     const int N = mesh_.getNumNodes();
@@ -256,7 +263,8 @@ double FemTD<dim>::step(double t_new, double dt, double theta) {
     return diff;
 }
 
-// Time integration
+
+// Time integration loop: solve time-dependent PDE from t=0 to t=T
 template<unsigned int dim>
 void FemTD<dim>::run(double T, double dt, double theta,
                      const std::string& vtu_prefix,
@@ -285,7 +293,7 @@ void FemTD<dim>::run(double T, double dt, double theta,
     }
 }
 
-// Output methods
+// Output solution to CSV format: coordinates and values
 template<unsigned int dim>
 void FemTD<dim>::outputCsv(const std::string& filename) const {
     std::ofstream csv(filename);
@@ -298,6 +306,8 @@ void FemTD<dim>::outputCsv(const std::string& filename) const {
     }
 }
 
+
+// Output solution to VTU format for visualization (ParaView/VisIt)
 template<unsigned int dim>
 void FemTD<dim>::outputVtu(const std::string& filename) const {
     std::ofstream vtu(filename);

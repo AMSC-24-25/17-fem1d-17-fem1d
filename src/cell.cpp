@@ -1,5 +1,6 @@
 #include "cell.hpp"
 
+// Compute 1D element measure (length): |B - A|
 template<>
 double Cell<1>::measure() const {
     const Cell<1>& cell = *this;
@@ -7,6 +8,8 @@ double Cell<1>::measure() const {
     const Point<1>& B = cell[1];
     return std::abs(B[0] - A[0]);
 }
+
+// Compute 2D triangle measure (area): 0.5 * |AB x AC|
 template<>
 double Cell<2>::measure() const {
     if (getN() != 3) {
@@ -22,6 +25,8 @@ double Cell<2>::measure() const {
     double detT = (AB[0] * AC[1]) - (AC[0] * AB[1]);
     return 0.5 * std::abs(detT);
 }
+
+// Compute 3D tetrahedron measure (volume): |(AB x AC) · AD| / 6
 template<>
 double Cell<3>::measure() const {
     if (getN() != 4) {
@@ -44,6 +49,8 @@ double Cell<3>::measure() const {
     return std::abs(cross * AD) / 6.0;
 }
 
+
+// Compute gradient of i-th 1D barycentric shape function
 template<>
 Point<1> Cell<1>::barycentricGradient(int i) const {
     if (getN() != 2) {
@@ -60,7 +67,8 @@ Point<1> Cell<1>::barycentricGradient(int i) const {
     exit(-1);
 }
 
-// Returns gradient of i-th barycentric shape function (constant on triangles)
+
+// Compute gradient of i-th 2D barycentric shape function (constant on triangles)
 template<>
 Point<2> Cell<2>::barycentricGradient(int i) const {
     if (getN() != 3) {
@@ -84,7 +92,8 @@ Point<2> Cell<2>::barycentricGradient(int i) const {
     exit(-1);
 }
 
-// Returns gradient of i-th barycentric shape function (constant on tetrahedra)
+
+// Compute gradient of i-th 3D barycentric shape function (constant on tetrahedra)
 template<>
 Point<3> Cell<3>::barycentricGradient(int i) const {
     // Gradient of barycentric coordinates in a tetrahedron
@@ -103,8 +112,8 @@ Point<3> Cell<3>::barycentricGradient(int i) const {
         return Point<3>(0,0,0);
     }
 
-    // Standard formula: grad(λᵢ) = (face_normal_opposite_to_i) / (6*volume)
-    // For tetrahedron ABCD, the gradient of λᵢ is the outward normal to face opposite node i
+    // Standard formula: grad = (face_normal_opposite_to_i) / (6*volume)
+    // For tetrahedron ABCD, the gradient is the outward normal to face opposite node i
     const Cell<3>& cell = *this;
     
     // Define the three vertices of the face opposite to node i
@@ -133,6 +142,8 @@ Point<3> Cell<3>::barycentricGradient(int i) const {
     exit(-1);
 }
 
+
+// Compute 2D boundary face measure (triangle area): 0.5 * |v1 × v2|
 template<>
 double BoundaryCell<2>::measure() const {
     // Computes the area of the triangular face
@@ -152,6 +163,8 @@ double BoundaryCell<2>::measure() const {
     return 0.5 * sqrt(nx*nx + ny*ny + nz*nz);
 }
 
+
+//Compute 1D boundary edge measure (length): |p2 - p1|
 template<>
 double BoundaryCell<1>::measure() const {
     // Computes the length of the edge

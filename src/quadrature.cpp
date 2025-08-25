@@ -4,6 +4,7 @@ template class QuadratureRule<1>;
 template class QuadratureRule<2>;
 template class QuadratureRule<3>;
 
+// Two-point Gauss-Legendre quadrature for 1D interval [0,1]
 template<>
 OrderTwoQuadrature<1>::OrderTwoQuadrature() {
     // Two-point Gauss-Legendre quadrature for interval [0,1]
@@ -16,6 +17,7 @@ OrderTwoQuadrature<1>::OrderTwoQuadrature() {
     w = {0.5, 0.5};
 }
 
+// Four-point Gauss-Legendre quadrature for 1D interval [0,1]
 template<>
 OrderFourQuadrature<1>::OrderFourQuadrature() {
     // Four-point Gauss-Legendre quadrature for interval [0,1]
@@ -36,6 +38,7 @@ OrderFourQuadrature<1>::OrderFourQuadrature() {
     w = {w1, w2, w2, w1};
 }
 
+// Four-point quadrature rule for 3D tetrahedron (degree 2 exact)
 template<>
 OrderTwoQuadrature<3>::OrderTwoQuadrature() {
     // Four-point quadrature rule for tetrahedron (degree 2 exact)
@@ -53,6 +56,8 @@ OrderTwoQuadrature<3>::OrderTwoQuadrature() {
     // Weights sum to 1
     w = {1.0/4.0, 1.0/4.0, 1.0/4.0, 1.0/4.0};
 }
+
+// Three-point quadrature rule for 2D triangle (order 2)
 template<>
 OrderTwoQuadrature<2>::OrderTwoQuadrature() {
     // Three-point quadrature rule for triangle (order 2)
@@ -64,6 +69,8 @@ OrderTwoQuadrature<2>::OrderTwoQuadrature() {
     // Weights sum to 1
     w = {1/3.0, 1/3.0, 1/3.0};
 }
+
+// Six-point quadrature rule for 2D triangle (degree 4 exact)
 template<>
 OrderFourQuadrature<2>::OrderFourQuadrature() {
     double a = 0.4459484909;
@@ -92,6 +99,8 @@ OrderFourQuadrature<2>::OrderFourQuadrature() {
     }
 }
 
+
+// Get quadrature data: points, shape functions, and weights for element integration
 template<unsigned int dim>
 void QuadratureRule<dim>::getQuadratureData(
     const Cell<dim>& cell,
@@ -122,8 +131,9 @@ void QuadratureRule<dim>::getQuadratureData(
     }
 }
 
-// ============= GaussLegendre general implementations ======
+// ============= GaussLegendre general implementations ==================
 
+// Get boundary quadrature data for Neumann boundary condition integration
 template<unsigned int dim>
 void GaussLegendre<dim>::getQuadratureData(const BoundaryCell<dim>& boundary,
                                           std::vector<Point<dim+1>>& quadrature_points,
@@ -153,6 +163,7 @@ void GaussLegendre<dim>::getQuadratureData(const BoundaryCell<dim>& boundary,
     }
 }
 
+// Integrate function over boundary element using Gauss-Legendre quadrature
 template<unsigned int dim>
 double GaussLegendre<dim>::integrate(const BoundaryCell<dim>& edge, 
                                  const Function<dim+1,1>& func) const {

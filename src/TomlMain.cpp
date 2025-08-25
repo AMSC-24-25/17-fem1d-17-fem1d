@@ -15,6 +15,8 @@ template<unsigned int dim>
 void solveTimeDependentProblem(const Config& config);
 
 
+// TOML-based FEM solver main: load configuration from file and solve PDE
+// Usage: ./fem_toml <config.toml> [nThreads]
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <config.toml>";

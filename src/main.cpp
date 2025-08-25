@@ -14,12 +14,8 @@ constexpr double PI = EIGEN_PI;
 #define M_PI 3.14159265358979323846
 #endif
 
-/**
- * Simple FEM solver for 1D and 2D problems
- * Usage: ./fem 1d L N  or  ./fem 2d mesh.msh
- */
-
-
+// Simple FEM solver main: parse arguments and solve 1D/2D/3D problems
+// Usage: ./fem [1d L N] or [2d mesh.msh] or [3d mesh.msh]
 int main(int argc, char *argv[])
 {
     cout << "-------------17-FEM1D PROJECT-----------" << endl;
@@ -75,7 +71,6 @@ int main(int argc, char *argv[])
             }
         );
 
-    // Function<1,1> diffusion_term = OneFunction<1,1>();
         Function<1,1> diffusion_term = Function<1,1>([](Point<1> p) -> double { return 2.0; });
         Function<1,1> transport_term = Function<1,1>([](Point<1> p) -> double { return 4.0; });
         Function<1,1> reaction_term = Function<1,1>([](Point<1> p) -> double {return 5.0; });

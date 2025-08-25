@@ -14,12 +14,8 @@ using std::endl;
 
 constexpr double PI = EIGEN_PI;
 
-/**
- * Simple FEM solver for 1D and 2D problems
- * Usage: ./fem 1d L N  or  ./fem 2d mesh.msh
- */
-
-
+// Time-dependent FEM solver main: parse arguments and solve time-dependent PDEs
+// Usage: ./fem_td [1d L N] or [2d mesh.msh] or [3d mesh.msh]
 int main(int argc, char *argv[])
 {
     cout << "-------------17-FEM1D PROJECT-----------" << endl;
@@ -172,7 +168,7 @@ int main(int argc, char *argv[])
         // 2. Configure boundary conditions BEFORE mesh parsing
         BoundaryConditions_td<3,1> boundary_conditions;
 
-        // Manufactured solution: u(x, y, z, t) = sin(2π x y z) * t
+        // Manufactured solution: u(x, y, z, t) = sin(2pi * x * y * z) * t
         fun_td<3,1> exact_sol = [](const Point<3>& p, double t) -> double {
             return std::sin(2.0 * M_PI * p[0] * p[1] * p[2]) * t;
         };
@@ -186,19 +182,19 @@ int main(int argc, char *argv[])
             double xyz = p[0]*p[1]*p[2];
             double pi2 = 2.0*M_PI;
             double cos_term = std::cos(pi2*xyz);
-            return pi2 * p[0]*p[1] * cos_term * t; // dudx
+            return pi2 * p[0]*p[1] * cos_term * t; // du/dx
         });
         boundary_conditions.addNeumann(3, [](const Point<3>& p, double t) {
             double xyz = p[0]*p[1]*p[2];
             double pi2 = 2.0*M_PI;
             double cos_term = std::cos(pi2*xyz);
-            return pi2 * p[0]*p[2] * cos_term * t; // dudy
+            return pi2 * p[0]*p[2] * cos_term * t; // du/dy
         });
         boundary_conditions.addNeumann(4, [](const Point<3>& p, double t) {
             double xyz = p[0]*p[1]*p[2];
             double pi2 = 2.0*M_PI;
             double cos_term = std::cos(pi2*xyz);
-            return -pi2 * p[0]*p[1] * cos_term * t; // dudz
+            return -pi2 * p[0]*p[1] * cos_term * t; // du/dz
         });
 
         // cout << "Boundary conditions configured:" << endl;
@@ -232,7 +228,7 @@ int main(int argc, char *argv[])
         // 4. Create the time-dependent FEM solver
         FemTD<3> femtd(grid, diffusion, transport, reaction, boundary_conditions, quadrature);
 
-        // 5. Set manufactured solution forcing: u(x,y,z,t) = sin(2π x y z) * t
+        // 5. Set manufactured solution forcing: u(x,y,z,t) = sin(2pi * x * y * z) * t
         femtd.set_forcing([](const Point<3>& p, double t) -> double {
             double xyz = p[0] * p[1] * p[2];
             double s = std::sin(2.0 * M_PI * xyz);
