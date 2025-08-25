@@ -85,18 +85,6 @@ struct Config {
     EquationConfig equation;
     std::vector<BCConfig> boundary_conditions;
     TimeDependentConfig time_dependent;
-    int quadrature_order = 2;
-    template<int dim>
-    static std::unique_ptr<QuadratureRule<dim>> make_quadrature(int order) {
-        if (order == 2) return std::make_unique<OrderTwoQuadrature<dim>>();
-        if (order == 4) {
-            if constexpr (dim == 3) {
-                throw std::runtime_error("OrderFourQuadrature<3> is not implemented.");
-            }
-            return std::make_unique<OrderFourQuadrature<dim>>();
-        }
-        throw std::runtime_error("Quadrature order not supported");
-    }
     QuadratureCfg quadrature;
 
     // Configuration loading and validation
