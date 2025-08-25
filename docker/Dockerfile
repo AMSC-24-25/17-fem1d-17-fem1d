@@ -22,7 +22,7 @@ RUN pip3 install cmake>=3.26
 WORKDIR /app
 
 # Copy source code
-COPY . .
+COPY .. .
 
 # Create build directory and configure
 RUN mkdir -p build && cd build && \

@@ -7,6 +7,9 @@ This directory contains Docker configuration files for the FEM1D project.
 ### Build and Run with Docker Compose
 
 ```bash
+# From the docker/ directory
+cd docker
+
 # Run TomlMain with default config
 docker-compose run --rm fem-runtime
 

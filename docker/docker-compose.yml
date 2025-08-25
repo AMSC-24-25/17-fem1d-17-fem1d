@@ -1,5 +1,5 @@
 services:
-  # Production runtime - TomlMain
+  # Default runtime - TomlMain
   fem-runtime:
     build:
       context: .
@@ -10,10 +10,10 @@ services:
       - ./output:/app/build/output
       - ./config:/app/config
     working_dir: /app/build
-    command: ["toml", "config/good-examples/polynomial_1d.toml"]
+    command: ["toml", "config/good-examples/polynomial_2d.toml"]
 
   # Interactive bash runtime
-  fem-bashRuntime:
+  fem-bash:
     build:
       context: .
       target: runtime

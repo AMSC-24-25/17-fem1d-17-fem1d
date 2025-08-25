@@ -104,14 +104,11 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
         const std::vector<double>& phi_q = phi[q];
         
         // Evaluate parameters on quadrature point (cache these values)
-        const double diff_val = diffusion_term.value(p);
-        const Point<dim> transport_val = transport_term.value(p);
-        const double react_val = reaction_term.value(p);
-        const double forc_val = forcing_term.value(p);
         
-        const double w_diff = w * diff_val;
-        const double w_react = w * react_val;
-        const double w_forc = w * forc_val;
+        const double w_diff = diffusion_term.value(p) * w;
+        const Point<dim> w_transport = transport_term.value(p) * w;
+        const double w_react = reaction_term.value(p) * w;
+        const double w_forc = forcing_term.value(p) * w;
 
         // Optimized matrix assembly with reduced memory accesses
         for (int i = 0; i < matSize; ++i) {
@@ -127,10 +124,10 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
                 // Pre-compute common terms
                 const double phi_i_phi_j = phi_i * phi_j;
                 const double grad_dot = grad_phi_i * grad_phi_j;
-                const double transport_contrib = (transport_val * grad_phi_j) * phi_i;
+                const double transport_contrib = (w_transport * grad_phi_j) * phi_i;
                 
                 diff_local(i,j) += w_diff * grad_dot;
-                transport_local(i,j) += w * transport_contrib;
+                transport_local(i,j) += transport_contrib;
                 react_local(i,j) += w_react * phi_i_phi_j;
             }
         }
@@ -144,7 +141,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, Ve
 
             // Add to the global matrix only if not zero
             double value = diff_local(i,j) + transport_local(i,j) + react_local(i,j);
-            if (std::abs(value) > 1e-14) {
+            if (std::abs(value) > 1e-15) {
                 triplets.push_back(Triplet(globalI, globalJ, value));
             }
         }

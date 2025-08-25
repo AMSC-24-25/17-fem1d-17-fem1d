@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Docker entrypoint script for multiple command options
+# If running manually (e.g. not in Docker), run from build directory
 set -e
 
 case "$1" in
