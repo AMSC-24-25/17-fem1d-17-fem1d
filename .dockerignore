@@ -1,0 +1,44 @@
+# Build artifacts
+build/
+*.o
+*.a
+*.so
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Documentation that's not needed in container
+*.md
+docs/
+imgs/
+
+# Logs and temporary files
+*.log
+*.tmp
+speedup_result/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Scripts that might not be needed
+clone_submodule.sh
+test_configs.sh
+
+# Python cache
+__pycache__/
+*/__pycache__/
+*/*/__pycache__/
+*.pyc
+*.pyo
+
+# Text files that might contain notes
+text/

@@ -1,0 +1,81 @@
+services:
+  # Production runtime - TomlMain
+  fem-runtime:
+    build:
+      context: .
+      target: runtime
+    image: fem:runtime
+    container_name: fem-runtime
+    volumes:
+      - ./output:/app/build/output
+      - ./config:/app/config
+    working_dir: /app/build
+    command: ["toml", "config/good-examples/polynomial_1d.toml"]
+
+  # Interactive bash runtime
+  fem-bashRuntime:
+    build:
+      context: .
+      target: runtime
+    image: fem:runtime
+    container_name: fem-bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./output:/app/build/output
+      - ./config:/app/config
+    working_dir: /app
+    command: ["bash"]
+
+  # Development environment
+  fem-dev:
+    build:
+      context: .
+      target: development
+    image: fem:dev
+    container_name: fem-dev
+    volumes:
+      - .:/app
+      - /app/build  # Anonymous volume for build artifacts
+    working_dir: /app
+    stdin_open: true
+    tty: true
+    command: ["/bin/bash"]
+
+  # Run all good examples
+  fem-test:
+    build:
+      context: .
+      target: runtime
+    image: fem:runtime
+    container_name: fem-test
+    volumes:
+      - ./output:/app/build/output
+    working_dir: /app/build
+    command: ["examples"]
+
+  # Sequential version for performance comparison
+  fem-sequential:
+    build:
+      context: .
+      target: runtime
+    image: fem:runtime
+    container_name: fem-sequential
+    volumes:
+      - ./output:/app/build/output
+      - ./config:/app/config
+    working_dir: /app/build
+    command: ["sequential", "config/good-examples/polynomial_3d.toml"]
+
+  # Speedup analysis (default behavior)
+  fem-speedup:
+    build:
+      context: .
+      target: runtime
+    image: fem:runtime
+    container_name: fem-speedup
+    volumes:
+      - ./output:/app/build/output
+      - ./config:/app/config
+    working_dir: /app/build
+    command: ["speedup"]
