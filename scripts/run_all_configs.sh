@@ -1,6 +1,13 @@
 #!/bin/bash
 
-# Run this script from root, after compiling.
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Run this script from scripts, after compiling.
 if [[ "$(basename $(pwd))" != "scripts" ]]; then
     echo -e "${RED}This script should be run from the scripts directory, after compiling.${NC}"
     exit 1
