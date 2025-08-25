@@ -10,8 +10,8 @@ OrderTwoQuadrature<1>::OrderTwoQuadrature() {
     double x1 = 0.7886751346;
     double x2 = 0.2113248654;
     barycPoints = {
-        {x1, 1.0 - x1},
-        {x2, 1.0 - x2}
+        {1.0 - x1, x1},
+        {1.0 - x2, x2}
     };
     w = {0.5, 0.5};
 }
@@ -28,10 +28,10 @@ OrderFourQuadrature<1>::OrderFourQuadrature() {
     double w2 = 0.3260725774;
 
     barycPoints = {
-        {x1, 1.0 - x1},
-        {x2, 1.0 - x2},
-        {x3, 1.0 - x3},
-        {x4, 1.0 - x4}
+        {1.0 - x1, x1},
+        {1.0 - x2, x2},
+        {1.0 - x3, x3},
+        {1.0 - x4, x4}
     };
     w = {w1, w2, w2, w1};
 }
@@ -208,10 +208,10 @@ GaussLegendre<1>::GaussLegendre() {
     double w2 = 0.3260725774;
 
     points = {
-        {x1, 1.0 - x1},
-        {x2, 1.0 - x2},
-        {x3, 1.0 - x3},
-        {x4, 1.0 - x4}
+        {1.0 - x1, x1},
+        {1.0 - x2, x2},
+        {1.0 - x3, x3},
+        {1.0 - x4, x4}
     };
     w = {w1, w2, w2, w1};
 }
