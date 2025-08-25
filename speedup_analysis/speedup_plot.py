@@ -61,6 +61,6 @@ def main(csv_path: str = "speedup_results.csv",
         pass
 
 if __name__ == "__main__":
-    csv = sys.argv[1] if len(sys.argv) >= 2 else "speedup_results.csv"
+    csv = sys.argv[1] if len(sys.argv) >= 2 else "parsed_results.csv"
     png = sys.argv[2] if len(sys.argv) >= 3 else "speedup_vs_threads.png"
     main(csv, png)

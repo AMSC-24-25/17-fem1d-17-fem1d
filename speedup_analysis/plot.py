@@ -74,6 +74,6 @@ def main(csv_path: str = "speedup_results.csv", out_png: str = "speedup_plot.png
         pass
 
 if __name__ == "__main__":
-    csv = sys.argv[1] if len(sys.argv) >= 2 else "speedup_results.csv"
+    csv = sys.argv[1] if len(sys.argv) >= 2 else "parsed_results.csv"
     png = sys.argv[2] if len(sys.argv) >= 3 else "speedup_plot.png"
     main(csv, png)

@@ -10,7 +10,7 @@ import pandas as pd
 def main():
     ap = argparse.ArgumentParser(description="Average multiple runs from speedup_results.csv")
     ap.add_argument("--input", "-i", required=True, help="Path to speedup_results.csv")
-    ap.add_argument("--output", "-o", default=None, help="Output CSV path (default: <input> with _avg suffix)")
+    ap.add_argument("--output", "-o", default="parsed_results.csv", help="Output CSV path (default: <input> with _avg suffix)")
     ap.add_argument("--keep-path", action="store_true",
                     help="Keep full config path instead of just basename")
     args = ap.parse_args()
