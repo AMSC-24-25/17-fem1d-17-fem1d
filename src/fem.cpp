@@ -39,19 +39,28 @@ void Fem<dim>::assemble() {
      
     unsigned int expNonZero = (dim==1) ? 3 : (dim==2) ? 9 : 16;
     int numElements = mesh.getNumElements();
-    // Parallel: each thread has its own triplet vector
+    // Parallel: each thread has its own triplet vector and rhs vector
 #ifdef _OPENMP
     int nthreads = omp_get_max_threads();
     std::vector<std::vector<Triplet>> triplets_thread(nthreads);
+    std::vector<VectorXd> rhs_thread(nthreads, VectorXd::Zero(numNodes));
+    
     #pragma omp parallel
     {
         int tid = omp_get_thread_num();
         std::vector<Triplet>& local_triplets = triplets_thread[tid];
+        VectorXd& local_rhs = rhs_thread[tid];
         local_triplets.reserve(expNonZero * (numElements / nthreads + 1));
-        #pragma omp for schedule(static)
+
+        #pragma omp for schedule(dynamic, 32)
         for (int e = 0; e < numElements; ++e) {
-            assembleElement(e, local_triplets);
+            assembleElement(e, local_triplets, local_rhs);
         }
+    }
+    
+    // Merge RHS contributions
+    for (int t = 0; t < nthreads; ++t) {
+        rhs += rhs_thread[t];
     }
     // Unisci tutti i triplet
     // Merge all triplet vectors
@@ -63,7 +72,7 @@ void Fem<dim>::assemble() {
     std::vector<Triplet> triplets;
     triplets.reserve(expNonZero * numElements);
     for (int e = 0; e < numElements; ++e) {
-        assembleElement(e, triplets);
+        assembleElement(e, triplets, rhs);
     }
 #endif
     
@@ -76,7 +85,7 @@ void Fem<dim>::assemble() {
 
 // Assemblaggio di un singolo elemento (triangolo)
 template<unsigned int dim>
-void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
+void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets, VectorXd& local_rhs) const {
     const Cell<dim>& cell = mesh.getCell(elemIndex);
     unsigned int matSize = dim+1;
 
@@ -98,29 +107,41 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
     // Loop on quadrature points (no OpenMP here - quadrature loops are small)
     for (int q = 0; q < quadrature_points.size(); ++q) {
         const Point<dim>& p = quadrature_points[q];
-        double w = weights[q];
+        const double w = weights[q];
+        const std::vector<double>& phi_q = phi[q];
         
-        // Evaluate parameters on quadrature point
-        double diff_val = diffusion_term.value(p);
-        Point<dim> transport_val = transport_term.value(p);
-        double react_val = reaction_term.value(p);
-        double forc_val = forcing_term.value(p);
+        // Evaluate parameters on quadrature point (cache these values)
+        const double diff_val = diffusion_term.value(p);
+        const Point<dim> transport_val = transport_term.value(p);
+        const double react_val = reaction_term.value(p);
+        const double forc_val = forcing_term.value(p);
+        
+        const double w_diff = w * diff_val;
+        const double w_react = w * react_val;
+        const double w_forc = w * forc_val;
 
-        // Contributions to local matrices
+        // Optimized matrix assembly with reduced memory accesses
         for (int i = 0; i < matSize; ++i) {
+            const double phi_i = phi_q[i];
+            const Point<dim>& grad_phi_i = grad_phi[i];
+            
+            // Forcing term (moved inside to improve cache locality)
+            forc_local(i) += w_forc * phi_i;
+            
             for (int j = 0; j < matSize; ++j) {
+                const double phi_j = phi_q[j];
+                const Point<dim>& grad_phi_j = grad_phi[j];
                 
-                // Diffusion contribution matrix: ∫ ∇φᵢ · ∇φⱼ dx
-                // Transport contribution term ∫ (b·∇φᵢ) φⱼ dx
-                // Note: product of 2 Points is their scalar product
-                diff_local(i,j) += w * diff_val * (grad_phi[i] * grad_phi[j]);
-                transport_local(i,j) += w * (transport_val * grad_phi[j]) * phi[q][i];
-
-                // Reaction contribution matrix: ∫ φᵢ φⱼ dx
-                react_local(i,j) += w * react_val * phi[q][i] * phi[q][j];
+                // Pre-compute common terms
+                const double phi_i_phi_j = phi_i * phi_j;
+                const double grad_dot = grad_phi_i * grad_phi_j;
+                const double transport_contrib = (transport_val * grad_phi_j) * phi_i;
+                
+                // Combine all contributions in one operation
+                diff_local(i,j) += w_diff * grad_dot;
+                transport_local(i,j) += w * transport_contrib;
+                react_local(i,j) += w_react * phi_i_phi_j;
             }
-            // Forcing term: ∫ f φᵢ dx
-            forc_local(i) += w * forc_val * phi[q][i];
         }
     }
     
@@ -138,7 +159,7 @@ void Fem<dim>::assembleElement(int elemIndex, std::vector<Triplet>& triplets) {
             }
         }
         // Assembly of RHS
-        rhs[globalI] += forc_local(i);
+        local_rhs[globalI] += forc_local(i);
     }
 }
 

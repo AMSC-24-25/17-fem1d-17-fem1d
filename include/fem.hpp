@@ -59,7 +59,7 @@ public:
 private:
 
     // Helper methods for assembly
-    void assembleElement(int elemIndex, std::vector<Triplet>& triplets);
+    void assembleElement(int elemIndex, std::vector<Triplet>& triplets, VectorXd& local_rhs) const;
 };
 
 #endif // FEM2D_HPP

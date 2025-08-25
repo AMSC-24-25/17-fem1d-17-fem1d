@@ -76,7 +76,7 @@ void FemTD<dim>::assemble_time_invariant() {
         tM.clear();
         tK.clear();
 
-        #pragma omp for schedule(static)
+        #pragma omp for schedule(dynamic, 32)
         for (int e=0; e < numElements; ++e) assemble_M_and_K_element(e, tM, tK);
     }
     for (std::vector<Triplet>& v: tripletM_thr) tripletM.insert(tripletM.end(), v.begin(), v.end());
@@ -109,21 +109,30 @@ void FemTD<dim>::assemble_M_and_K_element(int elem,
     for (int q=0; q<(int)quadraturePoints.size(); ++q) {
         const Point<dim>& p = quadraturePoints[q];
         const double weight = weights[q];
+        const std::vector<double>& phi_q = phi[q];
 
-        const double mu = diffusion_.value(p);
-        const Point<dim> b = transport_.value(p);
-        const double r = reaction_.value(p);
+        const double w_mu = weight * diffusion_.value(p);
+        const Point<dim> w_b = transport_.value(p) * weight;
+        const double w_r = weight * reaction_.value(p);
 
         for (unsigned i=0; i<matSize; ++i) {
+            const double phi_i = phi_q[i];
+            const Point<dim>& grad_phi_i = grad_phi[i];
+            
             for (unsigned j=0; j<matSize; ++j) {
-                // M
-                M_local(i,j) += weight * phi[q][i] * phi[q][j];
+                const double phi_j = phi_q[j];
+                const Point<dim>& grad_phi_j = grad_phi[j];
+                
+                // Pre-compute common terms
+                const double phi_i_phi_j = phi_i * phi_j;
+                
+                // M matrix (mass)
+                M_local(i,j) += weight * phi_i_phi_j;
 
-                // K = μ ∇φ_i·∇φ_j + (b·∇φ_i) φ_j + r φ_i φ_j
-                const double diff_c = mu * (grad_phi[i] * grad_phi[j]);
-                const double adv_c  = (b * grad_phi[j]) * phi[q][i];
-                const double reac_c = r * phi[q][i] * phi[q][j];
-                K_local(i,j) += weight * (diff_c + adv_c + reac_c);
+                // K matrix components
+                const double diff_c = w_mu * (grad_phi_i * grad_phi_j);
+                const double adv_c  = (w_b * grad_phi_j) * phi_i;
+                K_local(i,j) += (diff_c + adv_c) + w_r * phi_i_phi_j;
             }
         }
     }
@@ -153,7 +162,7 @@ void FemTD<dim>::build_load(double t) {
         VectorXd& F_local = F_threads[tid];
         F_local.setZero();
 
-        #pragma omp for schedule(static)
+        #pragma omp for schedule(dynamic, 32)
         for (int i = 0; i < numElements; ++i) {
             const Cell<dim>& cell = mesh_.getCell(i);
 
@@ -165,10 +174,12 @@ void FemTD<dim>::build_load(double t) {
 
             for (int q=0; q < quadraturePoints.size(); ++q) {
                 const double forcingVal = forcing_td_(quadraturePoints[q], t);
-                const double weight = weights[q];
+                const double w_forcing = weights[q] * forcingVal;
+                const std::vector<double>& phi_q = phi[q];
+                
                 for (unsigned j=0; j<matSize; ++j) {
                     const int jGlobal = cell.getNodeIndex(j);
-                    F_local[jGlobal] += weight * forcingVal * phi[q][j];
+                    F_local[jGlobal] += w_forcing * phi_q[j];
                 }
             }
         }
@@ -189,11 +200,10 @@ void FemTD<dim>::build_load(double t) {
         quad_.getQuadratureData(cell, grad_phi, quadraturePoints, phi, weights);
 
         for (int q=0; q < quadraturePoints.size(); ++q) {
-            const double forcingVal = forcing_td_(quadraturePoints[q], t);
-            const double weight = weights[q];
+            const double w_forcingVal = weights[q] * forcing_td_(quadraturePoints[q], t);
             for (unsigned j=0; j<matSize; ++j) {
                 const int jGlobal = cell.getNodeIndex(j);
-                f_new[jGlobal] += weight * forcingVal * phi[q][j];
+                f_new[jGlobal] += w_forcingVal * phi[q][j];
             }
         }
     }
