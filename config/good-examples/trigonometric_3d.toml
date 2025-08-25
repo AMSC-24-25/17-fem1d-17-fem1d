@@ -1,7 +1,7 @@
 [problem]
 dimension = 3
 mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
-output_file = "output/trigonometric_3d_test"
+output_file = "output/good_examples/trigonometric_3d"
 
 [quadrature]
 type = "order2"
@@ -17,29 +17,29 @@ forcing_function = "2*pi^2*(sin(pi*x)*sin(pi*y)*sin(pi*z)) + pi*(cos(pi*x)*sin(p
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 0
-function = "0"
+function = "sin(pi*x)*sin(pi*y)*sin(pi*z)"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 1
-function = "sin(pi*1)*sin(pi*y)*sin(pi*z)"
+function = "sin(pi*x)*sin(pi*y)*sin(pi*z)"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 2
-function = "0"
+function = "sin(pi*x)*sin(pi*y)*sin(pi*z)"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 3
-function = "sin(pi*x)*sin(pi*1)*sin(pi*z)"
+function = "sin(pi*x)*sin(pi*y)*sin(pi*z)"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 4
-function = "0"
+function = "sin(pi*x)*sin(pi*y)*sin(pi*z)"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 5
-function = "sin(pi*x)*sin(pi*y)*sin(pi*1)"
+function = "sin(pi*x)*sin(pi*y)*sin(pi*z)"

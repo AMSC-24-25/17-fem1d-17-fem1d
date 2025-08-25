@@ -1,7 +1,7 @@
 [problem]
 dimension = 2
 mesh_file = "../mesh/mesh-square-h0.050000_gmsh22.msh"
-output_file = "output/good_example_trigonometric_2d"
+output_file = "output/good_examples/trigonometric_2d"
 
 [quadrature]
 type = "order2"

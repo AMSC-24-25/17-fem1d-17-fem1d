@@ -1,7 +1,7 @@
 [problem]
 dimension = 3
 mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
-output_file = "output/mixed_bc_3d_test"
+output_file = "output/good_examples/mixed_bc_3d"
 
 [quadrature]
 type = "order2"
@@ -17,12 +17,12 @@ forcing_function = "0.5*(-6*x*y*z*(1-x)*(1-y)*(1-z) + 2*y*z*(1-y)*(1-z) + 2*x*z*
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 0
-function = "0"
+function = "x*y*z*(1-x)*(1-y)*(1-z)"
 
 [[boundary_conditions]]
 type = "dirichlet"
 tag = 1
-function = "0"
+function = "x*y*z*(1-x)*(1-y)*(1-z)"
 
 [[boundary_conditions]]
 type = "neumann"

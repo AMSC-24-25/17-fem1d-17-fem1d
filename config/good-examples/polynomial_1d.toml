@@ -1,7 +1,7 @@
 [problem]
 dimension = 1
 grid_size = 50
-output_file = "output/good_example_polynomial_1d"
+output_file = "output/good_examples/polynomial_1d"
 
 [quadrature]
 type = "order2"
