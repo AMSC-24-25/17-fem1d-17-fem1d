@@ -50,6 +50,7 @@ ENV LINES=24
 RUN apt-get update && apt-get install -y \
     libeigen3-dev \
     libgomp1 \
+    time \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
