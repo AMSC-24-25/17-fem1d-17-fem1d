@@ -75,10 +75,6 @@ public:
                           std::vector<Point<dim+1>>& quadrature_points,
                           std::vector<std::vector<double>>& phi,
                           std::vector<double>& weights) const;
-    
-    // Integrates a function along a boundary segment
-    double integrate(const BoundaryCell<dim>& edge, 
-                    const Function<dim+1,1>& func) const;
 
     // Integrates shape functions along a segment for Neumann BC
     void integrateShapeFunctions(const BoundaryCell<dim>& edge,

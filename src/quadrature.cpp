@@ -163,25 +163,6 @@ void GaussLegendre<dim>::getQuadratureData(const BoundaryCell<dim>& boundary,
     }
 }
 
-// Integrate function over boundary element using Gauss-Legendre quadrature
-template<unsigned int dim>
-double GaussLegendre<dim>::integrate(const BoundaryCell<dim>& edge, 
-                                 const Function<dim+1,1>& func) const {
-    std::vector<Point<dim+1>> quadrature_points;
-    std::vector<std::vector<double>> phi;
-    std::vector<double> weights;
-    
-    getQuadratureData(edge, quadrature_points, phi, weights);
-    
-    double integral = 0.0;
-    for (size_t q = 0; q < quadrature_points.size(); ++q) {
-        double funcValue = func.value(quadrature_points[q]);
-        integral += weights[q] * funcValue;
-    }
-    
-    return integral;
-}
-
 template<unsigned int dim>
 void GaussLegendre<dim>::integrateShapeFunctions(const BoundaryCell<dim>& edge,
                                              const Function<dim+1, 1>& neumannFunc,
