@@ -82,7 +82,6 @@ echo -e "Successful runs: ${GREEN}$successful_runs${NC}"
 echo -e "Failed runs: ${RED}$failed_runs${NC}"
 echo ""
 
-mv $OUTPUT_DIR/*.log $OUTPUT_DIR/log/
 mv $OUTPUT_DIR/*.csv $OUTPUT_DIR/csv/
 
 echo "Output vtu saved to: $OUTPUT_PRINT_DIR"

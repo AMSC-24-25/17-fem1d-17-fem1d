@@ -16,13 +16,15 @@ Config Config::loadFromFile(const std::string& filename) {
         
         // Parse problem section
         const toml::value& problem = toml::find(data, "problem");
-        config.problem.dimension = toml::find_or(problem, "dimension", 2);
-        config.problem.mesh_file = toml::find_or(problem, "mesh_file", std::string("mesh/default.msh"));
-        config.problem.grid1d_start = toml::find_or(problem, "1d_start", 0.0);
-        config.problem.grid1d_end = toml::find_or(problem, "1d_end", 1.0);
-        config.problem.grid1d_size = toml::find_or(problem, "1d_size", 100);
-        config.problem.output_file = toml::find_or(problem, "output_file", std::string("output/solution"));
-        config.problem.time_dependent = toml::find_or(problem, "time_dependent", false); 
+        config.problem.dimension = toml::find_or<int>(problem, "dimension", 2);
+        config.problem.mesh_file = toml::find_or<std::string>(problem, "mesh_file", "mesh/default.msh");
+        config.problem.grid1d_start = toml::find_or<double>(problem, "1d_start", 
+            toml::find_or<int>(problem, "1d_start", 0));
+        config.problem.grid1d_end = toml::find_or<double>(problem, "1d_end", 
+            toml::find_or<int>(problem, "1d_end", 1));
+        config.problem.grid1d_size = toml::find_or<int>(problem, "1d_size", 100);
+        config.problem.output_file = toml::find_or<std::string>(problem, "output_file", "output/solution");
+        config.problem.time_dependent = toml::find_or<bool>(problem, "time_dependent", false); 
         
     // Parse equation section - functions preferred, coefficients as fallback
         const toml::value& equation = toml::find(data, "equation");
@@ -46,9 +48,9 @@ Config Config::loadFromFile(const std::string& filename) {
                 BCConfig bc;
                 bc.tag = toml::find<int>(bc_toml, "tag");
                 bc.function = toml::find_or<std::string>(bc_toml, "function", std::string("0.0"));
-                bc.time_function = toml::find_or(bc_toml, "time_function", std::string("")); 
+                bc.time_function = toml::find_or<std::string>(bc_toml, "time_function", std::string("")); 
                 
-                std::string type_str = toml::find_or(bc_toml, "type", std::string("dirichlet"));
+                std::string type_str = toml::find_or<std::string>(bc_toml, "type", std::string("dirichlet"));
                 bc.type = (type_str == "neumann") ? BCConfig::NEUMANN : BCConfig::DIRICHLET;
                 
                 config.boundary_conditions.push_back(bc);
@@ -62,10 +64,17 @@ Config Config::loadFromFile(const std::string& filename) {
                 config.problem.time_dependent = true;
             }
             const toml::value& td = toml::find(data, "time_dependent");
-            config.time_dependent.final_time = toml::find_or(td, "final_time", 1.0);
-            config.time_dependent.time_step = toml::find_or(td, "time_step", 0.01);
-            config.time_dependent.theta = toml::find_or(td, "theta", 0.5);
-            config.time_dependent.initial_condition = toml::find_or(td, "initial_condition", std::string("0.0"));
+            config.time_dependent.time_step = toml::find_or<double>(td, "time_step", 0.01);
+            
+            config.time_dependent.final_time = toml::find_or<double>(td, "final_time", 1.0);
+            if(config.time_dependent.final_time == 1.0) // If default, attempt parse int
+                config.time_dependent.final_time = toml::find_or<int>(td, "final_time", 1);
+
+            config.time_dependent.theta = toml::find_or<double>(td, "theta", 0.5);
+            if(config.time_dependent.theta == 0.5) // If default, attempt parse int
+                config.time_dependent.theta = toml::find_or<int>(td, "theta", 1);
+
+            config.time_dependent.initial_condition = toml::find<std::string>(td, "initial_condition");
             config.time_dependent.forcing_function_td = toml::find<std::string>(td, "forcing_function_td");
         }
         else if (config.problem.time_dependent) {
