@@ -11,7 +11,10 @@ C++ implementation for solving PDEs in 1D, 2D, and 3D
 
 To clone the repository, run the following:
 ```bash
+$ git clone git@github.com:AMSC-24-25/17-fem1d-17-fem1d.git
+$ # or (without ssh)
 $ git clone https://github.com/AMSC-24-25/17-fem1d-17-fem1d.git
+$ # then
 $ cd 17-fem1d-17-fem1d
 $ git submodule update --init --recursive
 ```
@@ -293,8 +296,10 @@ See `config/good-examples/` for additional validated test cases with known analy
 - **Memory efficiency**: Sparse matrix formats (COO → CSR conversion)
 - **Cache optimization**: Element-wise loop blocking
 
+![1D Sinusoid Solution](speedup_analysis/speedup_vs_threads.png)
+
 ### Result Validation  
-- **Method of manufactured solutions**: Agreement with analytical solutions
+- **Method of manufactured solutions**: Agreement with analytical solutions (see visual results below)
 
 ## Dependencies
 ### External Dependencies
@@ -324,5 +329,16 @@ See `config/good-examples/` for additional validated test cases with known analy
 
 ### Visualizations and Data
 - [Google Drive Folder](https://drive.google.com/drive/u/0/folders/1jyTtZIlKgKUbD5iOasbDGOTDXXaa_0tJ) - Contains simulation results, plots, speedup data, and mesh files.
+
+The following figures demonstrate the accuracy of our FEM implementation:
+
+![1D Sinusoid Solution](imgs/sinusoidal_1d.png)
+*Figure 1: Exact solution = sin(2pi\*x).*
+
+![2D Gaussian bump](imgs/gaussian_bump_2d.png)
+*Figure 2: Exact solution for the 2D Gaussian bump (warped in 3rd dimension)*
+
+![3D Gaussian bump](imgs/gaussian_3d_clippedHalf.png)
+*Figure 3: Exact solution for the 3D Gaussian bump (clipped at x=0.5)*
 
 
