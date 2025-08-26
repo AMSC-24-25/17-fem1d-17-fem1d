@@ -4,7 +4,7 @@
 
 [problem]
 dimension = 3
-mesh_file = "../mesh/cube.msh"
+mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
 output_file = "output/manufactured_3d_td"
 time_dependent = true
 

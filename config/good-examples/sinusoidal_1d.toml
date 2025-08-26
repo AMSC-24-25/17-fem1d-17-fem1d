@@ -1,6 +1,6 @@
 [problem]
 dimension = 1
-grid_size = 50
+1d_size = 50
 output_file = "output/good_examples/sinusoidal_1d"
 
 [quadrature]

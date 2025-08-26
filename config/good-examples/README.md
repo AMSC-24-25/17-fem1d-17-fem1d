@@ -4,22 +4,28 @@ This directory contains TOML configuration files for finite element problems wit
 
 ## Problem Categories
 
-### 1D Problems (3 examples)
+### 1D Problems (4 examples)
 
 #### `polynomial_1d.toml`
-- **Exact solution**: u(x) = x\^3 - x\^2 + x
+- **Exact solution**: u(x) = x^3 - x^2 + x
 - **PDE coefficients**: D=2, b=1, r=0.5
 - **Boundary conditions**: Dirichlet at both ends
 - **Expected behavior**: Smooth cubic polynomial
 
 #### `sinusoidal_1d.toml`
-- **Exact solution**: u(x) = sin(pi\*x)
+- **Exact solution**: u(x) = sin(2pi*x)
 - **PDE coefficients**: D=1, b=0.5, r=2
-- **Boundary conditions**: Dirichlet u=0 at both ends
-- **Expected behavior**: Smooth sine wave from 0 to 0
+- **Boundary conditions**: Dirichlet at x=0, Neumann at x=1
+- **Expected behavior**: Smooth sine wave
+
+#### `longer_sinusoidal_1d.toml`
+- **Exact solution**: Extended sinusoidal solution to [0, 5] interval
+- **PDE coefficients**: Varying parameters
+- **Boundary conditions**: Mixed Dirichlet/Neumann
+- **Expected behavior**: Extended sinusoidal pattern
 
 #### `mixed_bc_1d.toml`
-- **Exact solution**: u(x) = x(1-x)e\^x
+- **Exact solution**: u(x) = x(1-x)e^x
 - **PDE coefficients**: D=0.5, b=1.5, r=1
 - **Boundary conditions**: Dirichlet at x=0, Neumann at x=1
 - **Expected behavior**: Parabolic shape with exponential growth
@@ -27,21 +33,21 @@ This directory contains TOML configuration files for finite element problems wit
 ### 2D Problems (5 examples)
 
 #### `polynomial_2d.toml`
-- **Exact solution**: u(x,y) = x\^2\*y\*(1-y)
+- **Exact solution**: u(x,y) = x(1-x)\*y(1-y)
 - **PDE coefficients**: D=1, b=(0.5,0), r=1
-- **Boundary conditions**: Mixed Dirichlet/Neumann
-- **Expected behavior**: Smooth polynomial surface, zero on most boundaries
+- **Boundary conditions**: Three Dirichlet faces, one Neumann
+- **Expected behavior**: Smooth bilinear surface, zero on boundaries
 
 #### `trigonometric_2d.toml`
-- **Exact solution**: u(x,y) = sin(pi\*x)\*sin(pi\*y)
+- **Exact solution**: u(x,y) = sin(pi\*x)·sin(pi\*y)
 - **PDE coefficients**: D=2, b=(1,0.5), r=0.5
-- **Boundary conditions**: Mixed Dirichlet/Neumann
-- **Expected behavior**: Sinusoidal dome, zero on 3 boundaries
+- **Boundary conditions**: Dirichlet on all boundaries (naturally zero)
+- **Expected behavior**: Sinusoidal dome, zero on all boundaries
 
 #### `variable_coeffs_2d.toml`
-- **Exact solution**: u(x,y) = x\*y\*(1-x)\*(1-y)
-- **PDE coefficients**: D=(1+x+y), b=(x,y), r=x\*y (spatially varying)
-- **Boundary conditions**: Mixed Dirichlet/Neumann
+- **Exact solution**: u(x,y) = xy(1-x)(1-y)
+- **PDE coefficients**: D=(1+x+y), b=(x,y), r=xy (spatially varying)
+- **Boundary conditions**: Two Dirichlet, two Neumann
 - **Expected behavior**: Smooth bilinear surface, zero on boundaries
 
 #### `exponential_2d.toml`
@@ -59,10 +65,10 @@ This directory contains TOML configuration files for finite element problems wit
 ### 3D Problems (5 examples)
 
 #### `polynomial_3d.toml`
-- **Exact solution**: u(x,y,z) = x\^3 + x\*y\^2 + x\*z\^2
-- **PDE coefficients**: D=1, b=(0.5,0.3,0.2), r=1
-- **Boundary conditions**: Dirichlet on all faces
-- **Expected behavior**: Smooth polynomial surface with cubic growth in x
+- **Exact solution**: u(x,y,z) = xyz(1-x)(1-y)(1-z)
+- **PDE coefficients**: D=1, b=(0,0,0), r=0 (pure diffusion)
+- **Boundary conditions**: Dirichlet on all faces (u=0)
+- **Expected behavior**: Smooth polynomial volume, zero on all boundaries
 
 #### `trigonometric_3d.toml`
 - **Exact solution**: u(x,y,z) = sin(pi\*x)\*sin(pi\*y)\*sin(pi\*z)
@@ -98,9 +104,8 @@ These problems are designed for:
 
 ## Verification Process
 
-1. Run the FEM solver on these configurations
-2. Compare numerical solution with exact solution analytically
-3. Compute L2 error norms for quantitative verification
+1. Run the FEM solver on these configurations (use TomlMain)
+2. Compare numerical solution with exact analytical solution 
 4. Visualize results to check for expected patterns
 
 ## Expected Error Behavior
