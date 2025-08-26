@@ -22,6 +22,10 @@ rm -rf build
 echo -e "${BLUE}Creating new build directory...${NC}"
 mkdir -p build
 
+echo -e "${BLUE}Synchronising submodules...${NC}"
+bash ./scripts/clone_submodule.sh
+git submodule update --init --recursive
+
 cd build
 echo -e "${YELLOW}Running cmake...${NC}"
 cmake ..
