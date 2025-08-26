@@ -21,8 +21,14 @@ case "$1" in
         REPEAT="${2:-3}"
         CONFIG_DIR="${3:-../config/speedup-analysis}"
         OUTPUT_FILE="${4:-../speedup_results.csv}"
+        MOUNTED_FOLDER="./output"
+        MOUNTED_OUTPUT="$MOUNTED_FOLDER/$OUTPUT_FILE"
         echo "Running speedup analysis (REPEAT=$REPEAT)"
-        exec bash ../speedup_analysis/run_speedup.sh ./TomlMain "$CONFIG_DIR" "$OUTPUT_FILE" ./sequentialTomlMain
+        exec bash ../speedup_analysis/run_speedup.sh ./TomlMain "$CONFIG_DIR" "$MOUNTED_OUTPUT" ./sequentialTomlMain
+        exec python parsecsv.py -i $MOUNTED_OUTPUT -o $MOUNTED_FOLDER/parsed_output.csv
+        exec python plot.py $MOUNTED_FOLDER/parsed_output.csv $MOUNTED_FOLDER/timings_plot.png
+        exec python speedup_plot.py $MOUNTED_FOLDER/parsed_output.csv $MOUNTED_FOLDER/speedup_plot.png
+        cp ./*.py $MOUNTED_FOLDER
         ;;
     "examples")
         echo "Running all good examples"

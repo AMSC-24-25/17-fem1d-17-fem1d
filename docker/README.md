@@ -11,7 +11,7 @@ This directory contains Docker configuration files for the FEM1D project.
 cd docker
 
 # Build the images
-docker-compose build
+docker-compose build --parallel
 
 # Run TomlMain with default config
 docker-compose run --rm fem-runtime
