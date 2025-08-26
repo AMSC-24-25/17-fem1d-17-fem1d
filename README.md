@@ -105,6 +105,11 @@ $ python3 plot_speedup_vs_threads.py speedup_results_agg.csv speedup_vs_threads.
 The `scripts/` directory contains helpful scripts for building the project, running all TOML test cases, and executing examples from the `config/good_examples/` folder.
 It also contains the python script we used to obtain the quadrature point values.
 
+### Docker
+Docker support is provided to build and run the project in a consistent environment without manual dependency setup. For setup instructions and usage details, see [docker folder](docker/).
+
+The docker "fem-runtime" image is also published on [Docker Hub](https://hub.docker.com/layers/alessandroruzza/fem-runtime/latest/images/sha256:cc29c2af7f446fb99a7e73f7570d7efb06d8096260d2f07fc77a48ef291484b5).
+
 ## What is it?
 
 This is a comprehensive C++ implementation of the Finite Element Method (FEM) capable of solving partial differential equations in 1D, 2D, and 3D domains. The implementation supports both time-dependent and steady-state problems with flexible boundary conditions.
