@@ -6,7 +6,7 @@
 [problem]
 dimension = 1
 1d_size = 100
-output_file = "output/heat_equation_1d_td"
+output_file = "output/sinusoidal_1d_td"
 time_dependent = true
 
 [quadrature]

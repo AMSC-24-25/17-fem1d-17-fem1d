@@ -12,12 +12,12 @@ time_dependent = true
 type = "order2"
 
 [equation]
+# Exact solution: u(x,y,z,t) = (x+y+z)*sin(2*pi*t)
 diffusion_function = "1.0"
 transport_function_x = "0.0"
 transport_function_y = "1.0"
 transport_function_z = "0.0"
 reaction_function = "0.0"
-forcing_function = "0"
 
 [time_dependent]
 final_time = 1.0
