@@ -37,7 +37,6 @@ int main(int argc, char* argv[]) {
     //Output OpenMP info (max threads, parameters, etc.)
     std::cout << "OpenMP is enabled." << std::endl;
     std::cout << "Max threads: " << omp_get_max_threads() << std::endl;
-    std::cout << "Num threads: " << omp_get_num_threads() << std::endl;
 #else
     std::cout << "OpenMP is not enabled. Running sequentially." << std::endl;
 #endif
