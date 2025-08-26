@@ -24,6 +24,7 @@ case "$1" in
         MOUNTED_FOLDER="./output"
         MOUNTED_OUTPUT="$MOUNTED_FOLDER/$OUTPUT_FILE"
         echo "Running speedup analysis (REPEAT=$REPEAT)"
+        mkdir -p "$MOUNTED_FOLDER/analysis"
         exec bash ../speedup_analysis/run_speedup.sh ./TomlMain "$CONFIG_DIR" "$MOUNTED_OUTPUT" ./sequentialTomlMain
         exec python parsecsv.py -i $MOUNTED_OUTPUT -o $MOUNTED_FOLDER/parsed_output.csv
         exec python plot.py $MOUNTED_FOLDER/parsed_output.csv $MOUNTED_FOLDER/timings_plot.png

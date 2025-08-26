@@ -74,7 +74,11 @@ COPY mesh /app/mesh/
 
 # Create output directory
 RUN mkdir -p build/output && \
-    chown -R femuser:femuser /app
+    mkdir -p build/output/analysis && \
+    mkdir -p build/output/good_results && \
+
+# Change ownership of the app directory to user
+RUN chown -R femuser:femuser /app
 
 # Make scripts executable
 RUN chmod +x ./scripts/*.sh && chmod +x ./*.sh && chmod +x ./speedup_analysis/*.sh
