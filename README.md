@@ -24,6 +24,13 @@ $ cmake ..
 $ make [-j N]      # -j flag enables parallel compilation
 ```
 
+If you get dependency errors, run the following to install required libraries:
+```bash
+$ apt-get update
+$ apt-get install libeigen3-dev 
+$ apt-get install libgomp1 
+```
+
 To execute, run one of the following after compiling:
 ```bash
 # Time-dependent and Static problems with TOML configuration  

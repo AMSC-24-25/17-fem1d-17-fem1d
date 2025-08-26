@@ -7,16 +7,22 @@ This directory contains Docker configuration files for the FEM1D project.
 ### Build and Run with Docker Compose
 
 ```bash
-# From the docker/ directory
+# Enter the docker/ directory
 cd docker
+
+# Build the images
+docker-compose build
 
 # Run TomlMain with default config
 docker-compose run --rm fem-runtime
 
+# Or pass a custom command, it will be parsed by entrypoint.sh
+docker-compose run --rm fem-runtime help
+
 # Run all good examples
 docker-compose run --rm fem-test
 
-# Development environment
+# Interactive development environment
 docker-compose run --rm -it fem-dev
 
 # Sequential version for performance comparison
@@ -29,6 +35,11 @@ docker-compose run --rm fem-speedup
 docker-compose run --rm -it fem-bash
 ```
 
+Note: 
+- All runtime images will mount local `build/output` directory. 
+- fem-runtime and fem-bash will mount local `config` directory as well.
+- fem-dev will mount the whole project folder instead.
+
 ### Build and Run with Docker
 
 ```bash
@@ -37,11 +48,9 @@ docker build -t fem:runtime --target runtime .
 docker build -t fem:dev --target development .
 
 # Run with entrypoint commands
-docker run --rm -v $(pwd)/output:/app/build/output fem:runtime toml config/good-examples/polynomial_2d.toml
-docker run --rm -v $(pwd)/output:/app/build/output fem:runtime sequential
 docker run --rm -v $(pwd)/output:/app/build/output fem:runtime examples
 docker run --rm -v $(pwd)/output:/app/build/output fem:runtime speedup
-docker run --rm -v $(pwd)/output:/app/build/output fem:runtime help
+docker run --rm -v $(pwd)/output:/app/build/output fem:runtime help # List all commands
 
 # Interactive development
 docker run -it --rm -v $(pwd):/app fem:dev
@@ -60,7 +69,7 @@ The runtime image uses an entrypoint script that accepts these commands:
 
 ## Available Images
 
-- **runtime**: Minimal image (~72MB) with runtime dependencies, built executables, and entrypoint script
+- **runtime**: Minimal image (~300MB) with runtime dependencies, built executables, and entrypoint script
 - **development**: Full development environment (~1.3GB) with build tools, debuggers, and source code
 
 ## Docker Compose Services
@@ -74,9 +83,9 @@ The runtime image uses an entrypoint script that accepts these commands:
 
 ## Volume Mounts
 
-- `./output:/app/build/output` - Results and output files (runtime containers)
-- `./config:/app/config` - Configuration files (read-only in runtime)
-- `.:/app` - Full source code (development only)
+- `../output:/app/build/output` - Results and output files (runtime containers)
+- `../config:/app/config` - Configuration files
+- `..:/app` - Full source code (development only)
 - `/app/build` - Anonymous volume for build artifacts (development)
 
 ## Usage Examples

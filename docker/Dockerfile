@@ -21,12 +21,18 @@ RUN pip3 install cmake>=3.26
 # Set working directory
 WORKDIR /app
 
-# Copy source code
-COPY .. .
+# Copy source code (exclude unused folders)
+COPY CMakeLists.txt .
+COPY src ./src/
+COPY include ./include/
+COPY test ./test/
+COPY config ./config/
+COPY googletest ./googletest/
+COPY speedup_analysis ./speedup_analysis/
+COPY scripts ./scripts/
 
 # Create build directory and configure
-RUN mkdir -p build && cd build && \
-    cmake .. -DCMAKE_BUILD_TYPE=Release
+RUN mkdir -p build && cd build && cmake ..
 
 # Build the project
 RUN cd build && make -j$(nproc) TomlMain && make -j$(nproc) sequentialTomlMain
@@ -57,20 +63,20 @@ RUN mkdir -p build
 COPY --from=builder /app/build/TomlMain /app/build/
 COPY --from=builder /app/build/sequentialTomlMain /app/build/
 COPY --from=builder /app/config /app/config/
-COPY --from=builder /app/mesh /app/mesh/
-COPY --from=builder /app/run_good_examples.sh /app/
+COPY --from=builder /app/scripts /app/scripts/
 # Copy necessary files for running speedup analysis
 COPY --from=builder /app/speedup_analysis /app/speedup_analysis/
 # Copy entrypoint script
-COPY entrypoint.sh /app/
+COPY docker/entrypoint.sh /app/
+# Copy meshes
+COPY mesh /app/mesh/
 
 # Create output directory
 RUN mkdir -p build/output && \
     chown -R femuser:femuser /app
 
 # Make scripts executable
-RUN chmod +x ./*.sh
-RUN chmod +x ./speedup_analysis/*.sh
+RUN chmod +x ./scripts/*.sh && chmod +x ./*.sh && chmod +x ./speedup_analysis/*.sh
 
 # Switch to non-root user
 USER femuser
@@ -106,4 +112,4 @@ USER devuser
 WORKDIR /app
 
 # Default command for development
-CMD ["/bin/bash"]
+CMD ["echo \"docker run -v \$\(pwd\):/app to mount local directory\" && /bin/bash"]

@@ -26,7 +26,8 @@ case "$1" in
         ;;
     "examples")
         echo "Running all good examples"
-        exec ../run_good_examples.sh
+        cd ../scripts
+        exec ./run_good_examples.sh
         ;;
     "bash")
         echo "Starting interactive bash shell"
