@@ -183,10 +183,10 @@ docker buildx build --platform linux/amd64,linux/arm64 -t fem:multi --target run
 │   ├── sequentialTomlMain    # Sequential FEM solver
 │   └── output/               # Results output directory
 ├── config/                   # TOML configuration files
+├── scripts/                  # Useful scripts
 ├── mesh/                     # Mesh files (.msh)
 ├── speedup_analysis/         # Performance analysis scripts
-├── run_good_examples.sh      # Script to run all examples
-└── entrypoint.sh            # Docker entrypoint with commands
+└── entrypoint.sh             # Docker entrypoint with commands
 ```
 
 ## Troubleshooting
@@ -243,8 +243,8 @@ If you encounter mesh file errors:
 ### Output Files
 
 All output files are organized as follows:
-- **Good examples**: `output/good_examples/[problem_name].*`
-- **Speedup analysis**: `output/speedup_results.csv`
-- **Custom runs**: `output/[custom_name].*`
+- **Good examples**: `build/output/good_examples/[problem_name].*`
+- **Speedup analysis**: `build/output/speedup_results.csv`
+- **Custom runs**: `build/output/[custom_name].*`
 
 The output directory is automatically created and mounted from the host system.
