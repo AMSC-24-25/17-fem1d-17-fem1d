@@ -1,0 +1,57 @@
+# 3D Time-Dependent with Simple Exact Solution
+# Exact solution: u(x,y,z,t) = (x+y+z)*sin(2*pi*t)
+# Simple sinusoidal solution for validation
+
+[problem]
+dimension = 3
+mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
+output_file = "output/polynomial_3d_td"
+time_dependent = true
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Exact solution: u(x,y,z,t) = (x+y+z)*sin(2*pi*t)
+diffusion_function = "1.0"
+transport_function_x = "0.0"
+transport_function_y = "1.0"
+transport_function_z = "0.0"
+reaction_function = "0.0"
+
+[time_dependent]
+final_time = 1.0
+time_step = 0.01
+theta = 0.5
+initial_condition = "0.0"                           
+forcing_function_td = "(x+y+z)*2*pi*cos(2*pi*t) + (x+z)*sin(2*pi*t)"   # du/dt = (x+y+z)*2*pi*cos(2*pi*t)
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0  # x=0 face
+time_function = "(x+y+z)*sin(2*pi*t)"  # u(0,y,z,t) = (y+z)*sin(2*pi*t)
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1  # x=1 face
+time_function = "(x+y+z)*sin(2*pi*t)" 
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2  # y=0 face
+time_function = "(x+y+z)*sin(2*pi*t)" 
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3  # y=1 face
+time_function = "(x+y+z)*sin(2*pi*t)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 4  # z=0 face
+time_function = "(x+y+z)*sin(2*pi*t)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 5  # z=1 face
+time_function = "(x+y+z)*sin(2*pi*t)"  

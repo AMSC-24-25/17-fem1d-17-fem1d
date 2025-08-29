@@ -1,0 +1,46 @@
+[problem]
+dimension = 3
+mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
+output_file = "output/good_examples/gaussian_3d"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Exact solution u(x,y,z) = e^((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2)
+diffusion_function = "1.0"
+transport_function_x = "0.2"
+transport_function_y = "0.15"
+transport_function_z = "0.1"
+reaction_function = "0.3"
+forcing_function = "exp(-5*((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2)) * (30*((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2) - 15 + 0.2*(-10*(x-0.5)) + 0.15*(-10*(y-0.5)) + 0.1*(-10*(z-0.5)) + 0.3)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "exp((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "exp(-5*((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2))"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "exp(-5*((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2))"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3
+function = "exp(-5*((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2))"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 4
+function = "exp(-5*((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2))"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 5
+function = "exp(-5*((x-0.5)^2 + (y-0.5)^2 + (z-0.5)^2))"

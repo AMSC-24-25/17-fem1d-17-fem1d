@@ -1,6 +1,29 @@
 # Prerequisites
 *.d
 
+# VSCode
+.VSCode/*
+.vscode
+
+# Debug/Outputs
+valgrind-out.txt
+*.csv
+*.vtu
+
+# CMake
+CMakeFiles
+CMakeCache.txt
+cmake-build-debug
+cmake_install.cmake
+*.cmake
+Makefile
+./**Makefile
+
+# Test Library compiled objects
+*.pc
+Google_Tests_run
+ExtractMatPlot
+
 # Compiled Object files
 *.slo
 *.lo
@@ -30,3 +53,15 @@
 *.exe
 *.out
 *.app
+17_fem1d_17_fem1d
+
+# Meshes
+*.msh
+
+#idea
+.idea
+
+#build
+build/
+
+config/speedup-analysis/*.log

@@ -1,0 +1,36 @@
+[problem]
+dimension = 2
+mesh_file = "../../mesh/mesh-square-h0.050000_gmsh22.msh"
+output_file = "../../build/output/convergence_analysis/convergence_h005"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Exact solution: u(x,y) = x*(1-x) * y*(1-y)
+diffusion_function = "1.0"
+transport_function_x = "0.5"
+transport_function_y = "0.0"
+reaction_function = "1.0"
+forcing_function = "2*y*(1-y) + 2*x*(1-x) + 0.5*(1-2*x)*y*(1-y) + x*(1-x)*y*(1-y)"
+exact_solution = "x*(1-x) * y*(1-y)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "x*(1-x)*y*(1-y)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "x*(1-x)*y*(1-y)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "x*(1-x)*y*(1-y)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 3
+function = "x*(1-x)*(1-2*y)"

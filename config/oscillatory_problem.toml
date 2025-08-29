@@ -1,0 +1,36 @@
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
+output_file = "output/oscillatory_problem"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Problema con comportamento oscillatorio
+diffusion_function = "1.0 + 0.5*sin(4*pi*x)*sin(4*pi*y)"
+transport_function_x = "cos(pi*x)*sin(pi*y)"
+transport_function_y = "0.0"
+reaction_function = "0.5 + 0.3*sin(6*pi*x)*cos(6*pi*y)"
+forcing_function = "sin(2*pi*x)*sin(2*pi*y) + 3*cos(pi*(x+y))"
+
+# Condizioni periodiche approssimate con funzioni trigonometriche
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "sin(2*pi*y)"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "sin(2*pi*x)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 2
+function = "cos(2*pi*x)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 3
+function = "cos(2*pi*y)"

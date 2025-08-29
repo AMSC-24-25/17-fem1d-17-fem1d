@@ -1,0 +1,36 @@
+[problem]
+dimension = 2
+mesh_file = "../mesh/mesh-square-5_gmsh22.msh"
+output_file = "output/variable_coefficients"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Problema con tutte le funzioni variabili spazialmente
+diffusion_function = "2.0 + x + y"
+transport_function_x = "x"
+transport_function_y = "y"
+reaction_function = "x*y*(1-x)*(1-y)"
+forcing_function = "10*exp(-10*((x-0.3)*(x-0.3) + (y-0.7)*(y-0.7)))"
+
+# Boundary conditions complesse
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "x*x + y*y"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "exp(-x*y)"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 2
+function = "2*x*y"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 3
+function = "sin(pi*x + pi*y)"

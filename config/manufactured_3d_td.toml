@@ -1,0 +1,65 @@
+# Time-dependent 3D manufactured solution problem
+# u_t - laplace(u) = f(x,y,z,t)
+# Exact solution: u(x,y,z,t) = sin(2*pi*x*y*z) * t
+
+[problem]
+dimension = 3
+mesh_file = "../mesh/mesh-cube-10_gmsh22.msh"
+output_file = "output/manufactured_3d_td"
+time_dependent = true
+
+[quadrature]
+type = "order2"
+
+[equation]
+diffusion_function = "1.0"
+transport_function_x = "0.0"
+transport_function_y = "0.0"
+transport_function_z = "0.0"
+reaction_function = "0.0"
+
+[time_dependent]
+final_time = 1.0
+time_step = 0.01
+theta = 0.5  # Crank-Nicolson
+initial_condition = "0.0"  # u(x,y,z,0) = 0
+# Manufactured solution forcing: u_t - laplace(u)
+forcing_function_td = "sin(2*pi*x*y*z) + 4*pi*pi*t*sin(2*pi*x*y*z)*(x*x*z*z + y*y*z*z + x*x*y*y)"
+
+# Dirichlet on some faces (exact solution)
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "0.0"
+time_function = "sin(2*pi*x*y*z) * t"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "0.0"
+time_function = "sin(2*pi*x*y*z) * t"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "0.0"
+time_function = "sin(2*pi*x*y*z) * t"
+
+# Neumann on other faces (exact derivative)
+[[boundary_conditions]]
+type = "neumann"
+tag = 3
+function = "0.0"
+time_function = "2*pi*y*z*cos(2*pi*x*y*z) * t"  # du/dx for face x=const
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 4
+function = "0.0"
+time_function = "2*pi*x*z*cos(2*pi*x*y*z) * t"  # du/dy for face y=const
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 5
+function = "0.0"
+time_function = "2*pi*x*y*cos(2*pi*x*y*z) * t"  # du/dz for face z=const

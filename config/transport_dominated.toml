@@ -1,0 +1,37 @@
+[problem]
+dimension = 2
+mesh_file = "mesh/mesh-square-5_gmsh22.msh"
+output_file = "output/transport_dominated"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Problema dominato dal trasporto: b >> D
+diffusion_function = "0.01"
+transport_function_x = "1.0" # Trasporto forte
+transport_function_y = "1.0"
+transport_function_z = "1.0"
+reaction_function = "0.0"
+forcing_function = "1.0"
+
+# Condizioni per evidenziare l'effetto del trasporto
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 1
+function = "1.0"  # Inflow boundary
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 2
+function = "0.0"
+
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 3
+function = "0.0"  # Outflow boundary
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 4
+function = "0.0"  # Natural BC

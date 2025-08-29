@@ -1,0 +1,25 @@
+[problem]
+dimension = 1
+1d_size = 100
+output_file = "output/reaction_diffusion_1d"
+
+[quadrature]
+type = "order2"
+
+[equation]
+# Problema 1D di reazione-diffusione
+diffusion_function = "1.0 + 0.5*sin(pi*x)"
+transport_function_x = "0.1*x*(1-x)"
+reaction_function = "x*x*(1-x)*(1-x)"
+forcing_function = "exp(-10*(x-0.3)*(x-0.3)) + 2*exp(-20*(x-0.7)*(x-0.7))"
+
+# Boundary conditions 1D con funzioni
+[[boundary_conditions]]
+type = "dirichlet"
+tag = 0
+function = "0.5"
+
+[[boundary_conditions]]
+type = "neumann"
+tag = 1
+function = "x*x"
