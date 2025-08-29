@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
         }
         
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Exc Error: " << e.what() << std::endl;
         return 1;
     }
     
@@ -108,6 +108,27 @@ void solveSteadyStateProblem(const Config& config) {
     fem.solve();
     fem.outputCsv(config.problem.output_file + ".csv");
     fem.outputVtu(config.problem.output_file + ".vtu");
+
+    if(config.equation.exact_solution != ""){
+        Function<dim, 1> exact_sol = config.createExactSolutionFunction<dim>();
+        // Run error analysis
+        VectorXd solVec(grid.getNumNodes());
+        for (unsigned int i = 0; i < grid.getNumNodes(); i++)
+        {
+            solVec(i) = exact_sol(grid.getNode(i));
+        }
+        
+        const VectorXd& femSol = fem.getSolution();
+
+        double err_norm = (solVec - femSol).norm();
+        double relative_err = err_norm / solVec.norm();
+        std::cout << "Relative Norm of error: |exact - femSolution| / |exact| = "
+        << std::scientific << std::setprecision(5)
+        << relative_err << std::endl;
+    }
+    else{
+        std::cout << "Exact solution not provided in .toml, skipping relative error calculation.\n";
+    }
 }
 
 template<unsigned int dim>

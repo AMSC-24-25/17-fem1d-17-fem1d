@@ -48,6 +48,7 @@ struct EquationConfig {
     std::string transport_function_z;   // Transport coefficient b_z(x,y,z)
     std::string reaction_function;      // Reaction coefficient r(x,y,z)
     std::string forcing_function;       // Forcing term f(x,y,z)
+    std::string exact_solution;
 };
 
 // Boundary condition configuration
@@ -96,9 +97,11 @@ struct Config {
     template<unsigned int dim>
     Grid<dim> createGrid() const;
 
+    template<unsigned int dim> Function<dim,1> createExactSolutionFunction() const;
+    template<unsigned int dim> fun_td<dim,1> createExactSolutionFunction_td() const;
     template<unsigned int dim> Function<dim,1> createForcingFunction() const;
     template<unsigned int dim>
-    std::function<double(const Point<dim>&, double)> createForcingFunction_td() const;
+    fun_td<dim,1> createForcingFunction_td() const;
 
     template<unsigned int dim> Function<dim,1> createDiffusionFunction() const;
     template<unsigned int dim> Function<dim,1> createReactionFunction() const;

@@ -35,7 +35,8 @@ Config Config::loadFromFile(const std::string& filename) {
         config.equation.transport_function_y = toml::find_or<std::string>(equation, "transport_function_y", "0.0");
         config.equation.transport_function_z = toml::find_or<std::string>(equation, "transport_function_z", "0.0");
         config.equation.reaction_function = toml::find<std::string>(equation, "reaction_function");
-        
+        config.equation.exact_solution = toml::find_or<std::string>(equation, "exact_solution", "");
+
         if(config.problem.time_dependent || data.contains("time_dependent"))
             config.equation.forcing_function = toml::find_or<std::string>(equation, "forcing_function", "0.0");
         else
@@ -320,7 +321,15 @@ Function<dim,1> Config::createForcingFunction() const {
     return parseSimpleFunction<dim>(equation.forcing_function);
 }
 template<unsigned int dim>
-std::function<double(const Point<dim>&, double)> Config::createForcingFunction_td() const {
+Function<dim,1> Config::createExactSolutionFunction() const {
+    return parseSimpleFunction<dim>(equation.exact_solution);
+}
+template<unsigned int dim>
+fun_td<dim,1> Config::createExactSolutionFunction_td() const {
+    return parseTimeDependentFunction<dim>(equation.exact_solution);
+}
+template<unsigned int dim>
+fun_td<dim, 1> Config::createForcingFunction_td() const {
     return parseTimeDependentFunction<dim>(time_dependent.forcing_function_td);
 }
 template<unsigned int dim>
@@ -448,7 +457,9 @@ std::unique_ptr<QuadratureRule<3>> Config::createQuadrature<3>() const {
 #define INSTANTIATE_CONFIG_FUNCS(DIM) \
     template Grid<DIM> Config::createGrid<DIM>() const; \
     template Function<DIM,1> Config::createForcingFunction<DIM>() const; \
-    template std::function<double(const Point<DIM>&, double)> Config::createForcingFunction_td<DIM>() const; \
+    template fun_td<DIM,1> Config::createForcingFunction_td<DIM>() const; \
+    template Function<DIM,1> Config::createExactSolutionFunction<DIM>() const; \
+    template fun_td<DIM,1> Config::createExactSolutionFunction_td<DIM>() const; \
     template Function<DIM,1> Config::createDiffusionFunction<DIM>() const; \
     template Function<DIM,1> Config::createReactionFunction<DIM>() const; \
     template Function<DIM,1> Config::createInitialConditionFunction<DIM>() const; \
